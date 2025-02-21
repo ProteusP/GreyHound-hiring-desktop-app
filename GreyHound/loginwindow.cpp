@@ -2,6 +2,11 @@
 #include "ui_loginwindow.h"
 #include "mainwindow.h"
 #include "registerwindow.h"
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QDebug>
+
 LoginWindow::LoginWindow(QMainWindow *mainWindow_,QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::LoginWindow),
@@ -10,6 +15,20 @@ LoginWindow::LoginWindow(QMainWindow *mainWindow_,QWidget *parent)
     ui->setupUi(this);
     this->setWindowTitle("Login window");
     this->resize(800,600);
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
+    db.setHostName("your_host_name");
+    db.setDatabaseName("your_db");
+    db.setUserName("your_username");
+    db.setPassword("your_password");
+
+    if (!db.open()) {
+        qDebug() << "Error: Unable to connect to the database.";
+        qDebug() << db.lastError().text();
+    } else {
+        qDebug() << "Connected to the database successfully!";
+    }
+
 }
 
 LoginWindow::~LoginWindow()
