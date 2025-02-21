@@ -3,7 +3,7 @@
 #include <QPushButton>
 #include <QMenu>
 #include "profilewindow.h"
-
+#include <QThread>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("GreyHound");
     resize(800,600);
+
 
 
 
@@ -24,8 +25,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_profilePB_clicked()
 {
-    ProfileWindow *profileWindow = new ProfileWindow();
+    ProfileWindow *profileWindow = new ProfileWindow(this);
     this->hide();
     profileWindow->show();
+
 }
 
