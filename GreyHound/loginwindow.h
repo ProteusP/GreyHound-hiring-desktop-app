@@ -12,7 +12,7 @@ class LoginWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit LoginWindow(QWidget *parent = nullptr);
+    explicit LoginWindow(QMainWindow *mainWindow_,QWidget *parent = nullptr);
     ~LoginWindow();
 
 private slots:
@@ -24,6 +24,7 @@ private slots:
 
 private:
     Ui::LoginWindow *ui;
+    QMainWindow *mainWindow;
 };
 
 #endif // LOGINWINDOW_H

@@ -2,9 +2,10 @@
 #include "ui_loginwindow.h"
 #include "mainwindow.h"
 #include "registerwindow.h"
-LoginWindow::LoginWindow(QWidget *parent)
+LoginWindow::LoginWindow(QMainWindow *mainWindow_,QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::LoginWindow)
+    , ui(new Ui::LoginWindow),
+    mainWindow(mainWindow_)
 {
     ui->setupUi(this);
     this->setWindowTitle("Login window");
@@ -42,8 +43,8 @@ void LoginWindow::on_loginPB_clicked()
         QMessageBox::warning(this, "Упс...","Пароль или почта неверен!");
     }
     else{
-        MainWindow *mainWindow = new MainWindow();
-        this->hide();
+
+        this->close();
         mainWindow->show();
     }
 }
