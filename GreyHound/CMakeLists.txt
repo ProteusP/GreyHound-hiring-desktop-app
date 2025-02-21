@@ -17,6 +17,15 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        loginwindow.cpp
+        loginwindow.h
+        loginwindow.ui
+        registerwindow.cpp
+        registerwindow.h
+        registerwindow.ui
+        profilewindow.cpp
+        profilewindow.h
+        profilewindow.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -24,6 +33,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         resources.qrc
+        loginwindow.h loginwindow.cpp loginwindow.ui
+        registerwindow.h registerwindow.cpp registerwindow.ui
+        profilewindow.h profilewindow.cpp profilewindow.ui
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET GreyHound APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
