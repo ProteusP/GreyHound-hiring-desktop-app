@@ -20,6 +20,8 @@ private slots:
 
     void on_loginPB_clicked();
 
+    void on_registerPB_clicked();
+
 private:
     Ui::LoginWindow *ui;
 };
