@@ -2,6 +2,8 @@
 #include "./ui_mainwindow.h"
 #include <QPushButton>
 #include <QMenu>
+#include "profilewindow.h"
+
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -19,3 +21,11 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+void MainWindow::on_profilePB_clicked()
+{
+    ProfileWindow *profileWindow = new ProfileWindow();
+    this->hide();
+    profileWindow->show();
+}
+
