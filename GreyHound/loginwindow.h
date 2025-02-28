@@ -3,6 +3,10 @@
 
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QSqlDatabase>
+#include <QSqlQuery>
+#include <QSqlError>
+#include <QDebug>
 namespace Ui {
 class LoginWindow;
 }
@@ -25,6 +29,7 @@ private slots:
 private:
     Ui::LoginWindow *ui;
     QMainWindow *mainWindow;
+    QSqlDatabase db;
 };
 
 #endif // LOGINWINDOW_H
