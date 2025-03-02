@@ -1,78 +1,58 @@
 #include "loginwindow.h"
-#include "ui_loginwindow.h"
 #include "mainwindow.h"
-#include "registerwindow.h"
-#include <QSqlDatabase>
-#include <QSqlQuery>
-#include <QSqlError>
-#include <QDebug>
+#include "registerstatus.h"
+#include "ui_loginwindow.h"
+LoginWindow::LoginWindow(QMainWindow *mainWindow_, QWidget *parent)
+    : QMainWindow(parent), ui(new Ui::LoginWindow), mainWindow(mainWindow_) {
+  ui->setupUi(this);
+  this->setWindowTitle("Login window");
+  this->resize(800, 600);
 
-LoginWindow::LoginWindow(QMainWindow *mainWindow_,QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::LoginWindow),
-    mainWindow(mainWindow_)
-{
-    ui->setupUi(this);
-    this->setWindowTitle("Login window");
-    this->resize(800,600);
+  db = QSqlDatabase::addDatabase("QMYSQL");
+  db.setHostName("92.63.178.117");
+  db.setDatabaseName("default_db");
+  db.setUserName("gen_user");
+  db.setPassword("HskcQ!tRbm}f05");
 
-    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("your_host_name");
-    db.setDatabaseName("your_db");
-    db.setUserName("your_username");
-    db.setPassword("your_password");
-
-    if (!db.open()) {
-        qDebug() << "Error: Unable to connect to the database.";
-        qDebug() << db.lastError().text();
-    } else {
-        qDebug() << "Connected to the database successfully!";
-    }
-
+  if (!db.open()) {
+    qDebug() << "Error: Unable to connect to the database.";
+    qDebug() << db.lastError().text();
+  } else {
+    qDebug() << "Connected to the database successfully!";
+  }
 }
 
-LoginWindow::~LoginWindow()
-{
-    delete ui;
+LoginWindow::~LoginWindow() { delete ui; }
+
+void LoginWindow::on_exitPB_clicked() {
+  QMessageBox::StandardButton reply;
+  reply = QMessageBox::question(this, "Выход", "Вы точно хотите выйти?",
+                                QMessageBox::Yes | QMessageBox::No);
+
+  if (reply == QMessageBox::No) {
+    return;
+  }
+
+  QApplication::exit();
 }
 
-void LoginWindow::on_exitPB_clicked()
-{
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "Выход","Вы точно хотите выйти?", QMessageBox::Yes | QMessageBox::No);
+void LoginWindow::on_loginPB_clicked() {
+  // TODO: Миша и/или Глеб
+  // Нужна реализация норм проверки пароля для пользователя!
+  QString userMail = ui->mailLine->text();
+  QString userPassword = ui->passwordLine->text();
 
-    if (reply == QMessageBox::No){
-        return;
-    }
+  if (!(userMail == userPassword)) {
+    QMessageBox::warning(this, "Упс...", "Пароль или почта неверен!");
+  } else {
 
-    QApplication::exit();
-
+    this->close();
+    mainWindow->show();
+  }
 }
 
-
-void LoginWindow::on_loginPB_clicked()
-{
-    //TODO: Миша и/или Глеб
-    //Нужна реализация норм проверки пароля для пользователя!
-
-    QString userMail = ui->mailLine->text();
-    QString userPassword = ui->passwordLine->text();
-
-    if (!(userMail == userPassword)){
-        QMessageBox::warning(this, "Упс...","Пароль или почта неверен!");
-    }
-    else{
-
-        this->close();
-        mainWindow->show();
-    }
+void LoginWindow::on_registerPB_clicked() {
+  RegisterStatus *registerStatus = new RegisterStatus(mainWindow);
+  this->hide();
+  registerStatus->show();
 }
-
-
-void LoginWindow::on_registerPB_clicked()
-{
-    RegisterWindow *registerWindow = new RegisterWindow();
-    this->hide();
-    registerWindow->show();
-}
-
