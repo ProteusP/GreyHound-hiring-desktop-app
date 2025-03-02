@@ -1,8 +1,7 @@
 #include "loginwindow.h"
 #include "mainwindow.h"
-#include "registerwindow.h"
+#include "registerstatus.h"
 #include "ui_loginwindow.h"
-
 LoginWindow::LoginWindow(QMainWindow *mainWindow_, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::LoginWindow), mainWindow(mainWindow_) {
   ui->setupUi(this);
@@ -53,7 +52,7 @@ void LoginWindow::on_loginPB_clicked() {
 }
 
 void LoginWindow::on_registerPB_clicked() {
-  RegisterWindow *registerWindow = new RegisterWindow(mainWindow);
+  RegisterStatus *registerStatus = new RegisterStatus(mainWindow);
   this->hide();
-  registerWindow->show();
+  registerStatus->show();
 }
