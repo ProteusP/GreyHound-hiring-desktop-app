@@ -2,7 +2,7 @@
 #define PROFILEWINDOW_H
 
 #include <QMainWindow>
-
+#include "mainwindow.h"
 namespace Ui {
 class ProfileWindow;
 }
@@ -11,7 +11,7 @@ class ProfileWindow : public QMainWindow {
   Q_OBJECT
 
 public:
-  explicit ProfileWindow(QMainWindow *mainWindow_, QWidget *parent = nullptr);
+  explicit ProfileWindow(MainWindow *mainWindow_, QWidget *parent = nullptr);
   ~ProfileWindow();
 
 private slots:
@@ -19,7 +19,7 @@ private slots:
 
 private:
   Ui::ProfileWindow *ui;
-  QMainWindow *mainWindow;
+  MainWindow *mainWindow;
 };
 
 #endif // PROFILEWINDOW_H

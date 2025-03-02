@@ -2,7 +2,7 @@
 #include "mainwindow.h"
 #include "registerstatus.h"
 #include "ui_loginwindow.h"
-LoginWindow::LoginWindow(QMainWindow *mainWindow_, QWidget *parent)
+LoginWindow::LoginWindow(MainWindow *mainWindow_, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::LoginWindow), mainWindow(mainWindow_) {
   ui->setupUi(this);
   this->setWindowTitle("Login window");
@@ -37,8 +37,6 @@ void LoginWindow::on_exitPB_clicked() {
 }
 
 void LoginWindow::on_loginPB_clicked() {
-  // TODO: Миша и/или Глеб
-  // Нужна реализация норм проверки пароля для пользователя!
   QString userMail = ui->mailLine->text();
   QString userPassword = ui->passwordLine->text();
 

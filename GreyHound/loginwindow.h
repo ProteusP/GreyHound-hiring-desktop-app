@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QMainWindow>
 #include <QMessageBox>
+#include "mainwindow.h"
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -15,7 +16,7 @@ class LoginWindow : public QMainWindow {
   Q_OBJECT
 
 public:
-  explicit LoginWindow(QMainWindow *mainWindow_, QWidget *parent = nullptr);
+  explicit LoginWindow(MainWindow *mainWindow_, QWidget *parent = nullptr);
   ~LoginWindow();
 
 private slots:
@@ -27,7 +28,7 @@ private slots:
 
 private:
   Ui::LoginWindow *ui;
-  QMainWindow *mainWindow;
+  MainWindow *mainWindow;
   QSqlDatabase db;
 };
 

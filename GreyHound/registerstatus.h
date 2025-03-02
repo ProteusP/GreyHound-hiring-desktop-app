@@ -2,6 +2,7 @@
 #define REGISTERSTATUS_H
 
 #include <QMainWindow>
+#include "mainwindow.h"
 
 namespace Ui {
 class RegisterStatus;
@@ -11,7 +12,7 @@ class RegisterStatus : public QMainWindow {
   Q_OBJECT
 
 public:
-  explicit RegisterStatus(QMainWindow *mainWindow_, QWidget *parent = nullptr);
+  explicit RegisterStatus(MainWindow *mainWindow_, QWidget *parent = nullptr);
   ~RegisterStatus();
 
 private slots:
@@ -21,7 +22,7 @@ private slots:
 
 private:
   Ui::RegisterStatus *ui;
-  QMainWindow *mainWindow;
+  MainWindow *mainWindow;
 };
 
 #endif // REGISTERSTATUS_H

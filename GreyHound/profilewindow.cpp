@@ -1,12 +1,7 @@
 #include "profilewindow.h"
 #include "ui_profilewindow.h"
-// TODO: Дима и Миша
-//  Нужно глянуть в дб и решить что будет в профиле, как добавлять анкету
-//  Добавить функцию загрузки резюме в дб
-//  добавить функцию создания объекта анкеты, который будет использоваться
-//  для отображения анкет в мейн окне (надо подумать над деталями реализации, мб
-//  откажемся от класса)
-ProfileWindow::ProfileWindow(QMainWindow *mainWindow_, QWidget *parent)
+#include "mainwindow.h"
+ProfileWindow::ProfileWindow(MainWindow *mainWindow_, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::ProfileWindow), mainWindow(mainWindow_) {
   ui->setupUi(this);
   this->setWindowTitle("Profile window");
