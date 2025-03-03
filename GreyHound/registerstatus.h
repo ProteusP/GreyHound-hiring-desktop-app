@@ -20,9 +20,12 @@ private slots:
 
   void on_statusEmployerPB_clicked();
 
-private:
+  void on_backToLoginPB_clicked();
+
+  private:
   Ui::RegisterStatus *ui;
   MainWindow *mainWindow;
+  QWidget *parentLogin;
 };
 
 #endif // REGISTERSTATUS_H

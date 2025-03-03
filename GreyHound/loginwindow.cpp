@@ -50,7 +50,7 @@ void LoginWindow::on_loginPB_clicked() {
 }
 
 void LoginWindow::on_registerPB_clicked() {
-  RegisterStatus *registerStatus = new RegisterStatus(mainWindow);
+  RegisterStatus *registerStatus = new RegisterStatus(mainWindow, this);
   this->hide();
   registerStatus->show();
 }
