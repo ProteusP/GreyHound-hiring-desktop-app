@@ -8,8 +8,6 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include "mainwindow.h"
-#include "mainwindow.h"
-
 
 namespace Ui {
 class RegisterWindowForCandidate;
@@ -19,8 +17,10 @@ class RegisterWindowForCandidate : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit RegisterWindowForCandidate(MainWindow *mainWindow_,
-                                        QWidget *parent = nullptr);
+    explicit RegisterWindowForCandidate(
+        MainWindow *mainWindow_,
+        QWidget *parent = nullptr
+    );
     ~RegisterWindowForCandidate();
 
 private slots:
@@ -34,4 +34,4 @@ private:
     QWidget *parentStatus;
 };
 
-#endif // REGISTERWINDOWFORCANDIDATE_H
+#endif  // REGISTERWINDOWFORCANDIDATE_H
