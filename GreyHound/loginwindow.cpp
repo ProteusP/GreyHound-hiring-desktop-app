@@ -3,15 +3,7 @@
 #include "mainwindow.h"
 #include "registerstatus.h"
 #include "ui_loginwindow.h"
-
-bool validateEmail(const QString &email) {
-    QRegularExpression regex(R"([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})"
-    );
-
-    QRegularExpressionMatch match = regex.match(email);
-
-    return match.hasMatch();
-}
+#include "validation.h"
 
 LoginWindow::LoginWindow(MainWindow *mainWindow_, QWidget *parent)
     : QMainWindow(parent), ui(new Ui::LoginWindow), mainWindow(mainWindow_) {
@@ -53,17 +45,11 @@ void LoginWindow::on_exitPB_clicked() {
 
 void LoginWindow::on_loginPB_clicked() {
     QString userMail = ui->mailLine->text();
-    if (userMail.isEmpty()) {
-        QMessageBox::warning(
-            this, "Ошибка", "Поле электронной почты не может быть пустым"
-        );
-        return;
-    }
     QString userPassword = ui->passwordLine->text();
-    if (userPassword.isEmpty()) {
-        QMessageBox::warning(
-            this, "Ошибка", "Поле пароля не может быть пустым"
-        );
+    std::vector<QString> fieldInputVec = {userMail, userPassword};
+    if (checkIfFieldsAreEmpty(
+            this, fieldInputVec, "Никакое поле не должно быть пустым"
+        )) {
         return;
     }
     if (validateEmail(userMail)) {

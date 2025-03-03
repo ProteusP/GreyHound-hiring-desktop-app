@@ -1,5 +1,6 @@
 #include "registerwindowforcandidate.h"
 #include "ui_registerwindowforcandidate.h"
+#include "validation.h"
 
 RegisterWindowForCandidate::RegisterWindowForCandidate(
     MainWindow *mainWindow_,
@@ -24,20 +25,30 @@ void RegisterWindowForCandidate::on_PBregistrationCandidate_clicked() {
     QString email = ui->registrationLineEmailCandidate->text();
     QString password = ui->registrationLinePasswordCandidate->text();
 
-    QSqlQuery query;
-    query.prepare(
-        "INSERT INTO candidates (name, surname, email, password) VALUES "
-        "(:name, :surname, :email, :password)"
-    );
-    query.bindValue(":name", name);
-    query.bindValue(":surname", surname);
-    query.bindValue(":email", email);
-    query.bindValue(":password", password);
-    query.exec();
+    std::vector<QString> fieldInputVec = {name, surname, email, password};
+    if (checkIfFieldsAreEmpty(
+            this, fieldInputVec, "Никакое поле не должно быть пустым"
+        )) {
+        return;
+    }
+    if (validateEmail(email)) {
+        QSqlQuery query;
+        query.prepare(
+            "INSERT INTO candidates (name, surname, email, password) VALUES "
+            "(:name, :surname, :email, :password)"
+        );
+        query.bindValue(":name", name);
+        query.bindValue(":surname", surname);
+        query.bindValue(":email", email);
+        query.bindValue(":password", password);
+        query.exec();
 
-    QMessageBox::information(this, "", "Вы зарегистрировались!");
-    this->close();
-    mainWindow->show();
+        QMessageBox::information(this, "", "Вы зарегистрировались!");
+        this->close();
+        mainWindow->show();
+    } else {
+        QMessageBox::warning(this, "Ошибка", "Введите корректную почту");
+    }
 }
 
 void RegisterWindowForCandidate::on_backToStatusPB_clicked() {
