@@ -7,6 +7,7 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
+#include "mainwindow.h"
 
 namespace Ui {
 class RegisterWindowForEmployer;
@@ -16,16 +17,19 @@ class RegisterWindowForEmployer : public QMainWindow {
   Q_OBJECT
 
 public:
-  explicit RegisterWindowForEmployer(QMainWindow *mainWindow_,
+  explicit RegisterWindowForEmployer(MainWindow *mainWindow_,
                                      QWidget *parent = nullptr);
   ~RegisterWindowForEmployer();
 
 private slots:
   void on_registrationPB_employer_clicked();
 
+    void on_backToStatusPB_clicked();
+
 private:
   Ui::RegisterWindowForEmployer *ui;
-  QMainWindow *mainWindow;
+  MainWindow *mainWindow;
+  QWidget *parentStatus;
 };
 
 #endif // REGISTERWINDOWFOREMPLOYER_H
