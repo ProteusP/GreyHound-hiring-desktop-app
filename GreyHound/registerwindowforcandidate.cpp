@@ -1,16 +1,22 @@
 #include "registerwindowforcandidate.h"
 #include "ui_registerwindowforcandidate.h"
 
-RegisterWindowForCandidate::RegisterWindowForCandidate(MainWindow *mainWindow_,
-                                                       QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::RegisterWindowForCandidate),
-    mainWindow(mainWindow_), parentStatus(parent) {
+RegisterWindowForCandidate::RegisterWindowForCandidate(
+    MainWindow *mainWindow_,
+    QWidget *parent
+)
+    : QMainWindow(parent),
+      ui(new Ui::RegisterWindowForCandidate),
+      mainWindow(mainWindow_),
+      parentStatus(parent) {
     ui->setupUi(this);
     this->setWindowTitle("Register window for candidate");
     this->resize(800, 600);
 }
 
-RegisterWindowForCandidate::~RegisterWindowForCandidate() { delete ui; }
+RegisterWindowForCandidate::~RegisterWindowForCandidate() {
+    delete ui;
+}
 
 void RegisterWindowForCandidate::on_PBregistrationCandidate_clicked() {
     QString name = ui->registrationLineNameCandidate->text();
@@ -21,7 +27,8 @@ void RegisterWindowForCandidate::on_PBregistrationCandidate_clicked() {
     QSqlQuery query;
     query.prepare(
         "INSERT INTO candidates (name, surname, email, password) VALUES "
-        "(:name, :surname, :email, :password)");
+        "(:name, :surname, :email, :password)"
+    );
     query.bindValue(":name", name);
     query.bindValue(":surname", surname);
     query.bindValue(":email", email);
@@ -33,9 +40,7 @@ void RegisterWindowForCandidate::on_PBregistrationCandidate_clicked() {
     mainWindow->show();
 }
 
-void RegisterWindowForCandidate::on_backToStatusPB_clicked()
-{
+void RegisterWindowForCandidate::on_backToStatusPB_clicked() {
     this->hide();
     parentStatus->show();
 }
-

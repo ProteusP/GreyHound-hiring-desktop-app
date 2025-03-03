@@ -14,22 +14,24 @@ class RegisterWindowForEmployer;
 }
 
 class RegisterWindowForEmployer : public QMainWindow {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  explicit RegisterWindowForEmployer(MainWindow *mainWindow_,
-                                     QWidget *parent = nullptr);
-  ~RegisterWindowForEmployer();
+    explicit RegisterWindowForEmployer(
+        MainWindow *mainWindow_,
+        QWidget *parent = nullptr
+    );
+    ~RegisterWindowForEmployer();
 
 private slots:
-  void on_registrationPB_employer_clicked();
+    void on_registrationPB_employer_clicked();
 
     void on_backToStatusPB_clicked();
 
 private:
-  Ui::RegisterWindowForEmployer *ui;
-  MainWindow *mainWindow;
-  QWidget *parentStatus;
+    Ui::RegisterWindowForEmployer *ui;
+    MainWindow *mainWindow;
+    QWidget *parentStatus;
 };
 
-#endif // REGISTERWINDOWFOREMPLOYER_H
+#endif  // REGISTERWINDOWFOREMPLOYER_H
