@@ -1,5 +1,6 @@
 #include "registerwindowforemployer.h"
 #include "hashing.h"
+#include "passwordwarningdialog.h"
 #include "ui_registerwindowforemployer.h"
 #include "validation.h"
 
@@ -32,9 +33,31 @@ void RegisterWindowForEmployer::on_registrationPB_employer_clicked() {
         return;
     }
 
+    if (!isPasswordValid(password)) {
+        PasswordWarningDialog dialog(this);
+        dialog.exec();
+        return;
+    }
+
+    QSqlQuery checkQuery;
+    checkQuery.prepare("SELECT COUNT(*) FROM candidates WHERE email = :email");
+    checkQuery.bindValue(":email", email);
+
+    if (!checkQuery.exec()) {
+        QMessageBox::warning(
+            this, "Ошибка", "Ошибка при выполнении запроса к базе данных."
+        );
+        return;
+    }
+
+    if (checkQuery.next() && checkQuery.value(0).toInt() > 0) {
+        QMessageBox::warning(this, "Ошибка", "Этот email уже зарегистрирован.");
+        return;
+    }
+
     QString hashedPassword = hashPassword(password);
 
-    if (validateEmail(email)) {
+    if (isEmailValid(email)) {
         QSqlQuery query;
         query.prepare(
             "INSERT INTO employers (email, company_name, password) VALUES "

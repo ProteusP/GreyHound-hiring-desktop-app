@@ -53,7 +53,7 @@ void LoginWindow::on_loginPB_clicked() {
         )) {
         return;
     }
-    if (validateEmail(userMail)) {
+    if (isEmailValid(userMail)) {
         QSqlQuery query;
         query.prepare("SELECT password FROM candidates WHERE email = :email");
         query.bindValue(":email", userMail);

@@ -4,7 +4,9 @@
 #include <QMainWindow>
 #include <QRegularExpression>
 
-bool validateEmail(const QString &email);
+bool isEmailValid(const QString &email);
+
+bool isPasswordValid(const QString &password);
 
 bool checkIfFieldsAreEmpty(
     QMainWindow *curWindow,
