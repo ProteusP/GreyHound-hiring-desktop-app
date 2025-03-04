@@ -40,6 +40,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         registerwindowforemployer.h registerwindowforemployer.cpp registerwindowforemployer.ui
         validation.h
         validation.cpp
+        hashing.h
+        hashing.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET GreyHound APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

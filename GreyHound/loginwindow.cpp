@@ -1,5 +1,6 @@
 #include "loginwindow.h"
 #include <QRegularExpression>
+#include "hashing.h"
 #include "mainwindow.h"
 #include "registerstatus.h"
 #include "ui_loginwindow.h"
@@ -66,7 +67,7 @@ void LoginWindow::on_loginPB_clicked() {
         if (query.next()) {
             QString dbPassword = query.value(0).toString();
 
-            if (dbPassword == userPassword) {
+            if (dbPassword == hashPassword(userPassword)) {
                 this->close();
                 mainWindow->show();
             } else {
