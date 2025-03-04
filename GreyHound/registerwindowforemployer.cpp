@@ -1,4 +1,5 @@
 #include "registerwindowforemployer.h"
+#include "hashing.h"
 #include "ui_registerwindowforemployer.h"
 #include "validation.h"
 
@@ -31,6 +32,8 @@ void RegisterWindowForEmployer::on_registrationPB_employer_clicked() {
         return;
     }
 
+    QString hashedPassword = hashPassword(password);
+
     if (validateEmail(email)) {
         QSqlQuery query;
         query.prepare(
@@ -39,10 +42,9 @@ void RegisterWindowForEmployer::on_registrationPB_employer_clicked() {
         );
         query.bindValue(":email", email);
         query.bindValue(":company_name", company_name);
-        query.bindValue(":password", password);
+        query.bindValue(":hashedPassword", hashedPassword);
         query.exec();
 
-        QMessageBox::information(this, "", "Вы зарегистрировались!");
         this->close();
         mainWindow->show();
     } else {

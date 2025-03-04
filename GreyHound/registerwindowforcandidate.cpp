@@ -1,4 +1,5 @@
 #include "registerwindowforcandidate.h"
+#include "hashing.h"
 #include "ui_registerwindowforcandidate.h"
 #include "validation.h"
 
@@ -31,6 +32,9 @@ void RegisterWindowForCandidate::on_PBregistrationCandidate_clicked() {
         )) {
         return;
     }
+
+    QString hashedPassword = hashPassword(password);
+
     if (validateEmail(email)) {
         QSqlQuery query;
         query.prepare(
@@ -40,10 +44,9 @@ void RegisterWindowForCandidate::on_PBregistrationCandidate_clicked() {
         query.bindValue(":name", name);
         query.bindValue(":surname", surname);
         query.bindValue(":email", email);
-        query.bindValue(":password", password);
+        query.bindValue(":password", hashedPassword);
         query.exec();
 
-        QMessageBox::information(this, "", "Вы зарегистрировались!");
         this->close();
         mainWindow->show();
     } else {
