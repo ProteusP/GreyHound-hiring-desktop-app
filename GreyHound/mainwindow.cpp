@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle("GreyHound");
     resize(800, 600);
     qDebug() << QSqlDatabase::drivers();
-    qDebug() << "HERE";
+    qDebug() << "DRIVERS CHECKED";
 }
 
 MainWindow::~MainWindow() {
