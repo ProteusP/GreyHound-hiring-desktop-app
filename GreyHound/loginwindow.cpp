@@ -55,7 +55,9 @@ void LoginWindow::on_loginPB_clicked() {
     }
     if (isEmailValid(userMail)) {
         QSqlQuery query;
-        query.prepare("SELECT password FROM candidates WHERE email = :email");
+        query.prepare("SELECT password FROM candidates WHERE email = :email "
+            "UNION ALL "
+            "SELECT password FROM employers WHERE email = :email");
         query.bindValue(":email", userMail);
         if (!query.exec()) {
             QMessageBox::warning(
