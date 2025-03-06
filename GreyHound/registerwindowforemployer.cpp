@@ -65,7 +65,7 @@ void RegisterWindowForEmployer::on_registrationPB_employer_clicked() {
         );
         query.bindValue(":email", email);
         query.bindValue(":company_name", company_name);
-        query.bindValue(":hashedPassword", hashedPassword);
+        query.bindValue(":password", hashedPassword);
         query.exec();
 
         this->close();
