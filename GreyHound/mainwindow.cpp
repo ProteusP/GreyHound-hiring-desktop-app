@@ -5,7 +5,11 @@
 #include <QSqlDatabase>
 #include <QThread>
 #include "./ui_mainwindow.h"
+//
 #include "profilewindow.h"
+//
+#include "profilewindowforcandidate.h"
+#include "profilewindowforemployer.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -21,9 +25,18 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::on_profilePB_clicked() {
-    ProfileWindow *profileWindow = new ProfileWindow(this);
-    this->hide();
-    profileWindow->show();
+
+    if (isemployee){
+        auto myProfile = new ProfileWindowForEmployer(this);
+        this->hide();
+        myProfile->show();
+    }
+    else{
+        auto myProfile = new ProfileWindowForCandidate(this);
+        this->hide();
+        myProfile->show();
+    }
+
 }
 
 void MainWindow::set_status_to_employee() {
