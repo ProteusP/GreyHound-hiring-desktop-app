@@ -44,6 +44,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         hashing.cpp
         passwordwarningdialog.h
         passwordwarningdialog.cpp
+
+        profilewindowforemployer.h profilewindowforemployer.cpp profilewindowforemployer.ui
+        profilewindowforcandidate.h profilewindowforcandidate.cpp profilewindowforcandidate.ui
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET GreyHound APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
