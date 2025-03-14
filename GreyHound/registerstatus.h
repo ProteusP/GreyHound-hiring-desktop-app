@@ -1,31 +1,33 @@
 #ifndef REGISTERSTATUS_H
 #define REGISTERSTATUS_H
 
-#include <QMainWindow>
-#include "mainwindow.h"
+#include <QWidget>
 
 namespace Ui {
 class RegisterStatus;
 }
 
-class RegisterStatus : public QMainWindow {
-    Q_OBJECT
+class RegisterStatus : public QWidget {
+  Q_OBJECT
 
 public:
-    explicit RegisterStatus(MainWindow *mainWindow_, QWidget *parent = nullptr);
-    ~RegisterStatus();
+  explicit RegisterStatus(QWidget *parent = nullptr);
+  ~RegisterStatus();
 
 private slots:
-    void on_statusCandidatePB_clicked();
+  void on_backToLoginPB_clicked();
 
-    void on_statusEmployerPB_clicked();
+  void on_statusCandidatePB_clicked();
 
-    void on_backToLoginPB_clicked();
+  void on_statusEmployerPB_clicked();
 
 private:
-    Ui::RegisterStatus *ui;
-    MainWindow *mainWindow;
-    QWidget *parentLogin;
+  Ui::RegisterStatus *ui;
+
+signals:
+  void backToLoginPressed();
+  void statusCandidatePressed();
+  void statusEmployerPressed();
 };
 
-#endif  // REGISTERSTATUS_H
+#endif // REGISTERSTATUS_H
