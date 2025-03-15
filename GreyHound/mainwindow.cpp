@@ -69,6 +69,11 @@ MainWindow::MainWindow(QWidget *parent)
   connect(mainPage, &MainPage::onProfilePressed, this,
           &MainWindow::onProfilePage);
   connect(profileCandidatePage,&ProfilePageForCandidate::homeButtonClicked, this,&MainWindow::onMainPage);
+  connect(profileCandidatePage,&ProfilePageForCandidate::logoutButtonClicked, this,[this](){
+      //TODO
+      //clear text in login page after pageback
+      onBackToLoginPage();
+  });
 
 }
 

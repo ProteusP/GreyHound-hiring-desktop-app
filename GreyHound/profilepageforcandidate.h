@@ -8,8 +8,10 @@
 #include <QString>
 #include <QFormLayout>
 #include <QPushButton>
-
-
+#include <QLineEdit>
+#include <QtSql/QSqlDatabase>
+#include <QtSql/QSqlError>
+#include <QtSql/QSqlQuery>
 namespace Ui {
 class ProfilePageForCandidate;
 }
@@ -21,16 +23,21 @@ public:
   explicit ProfilePageForCandidate(QWidget *parent = nullptr);
   ~ProfilePageForCandidate();
   void updateUserData(const QString& name, const QString& email, const QString& surname);
-
+  void saveChangesToDB(const QString& newPhone);
   signals:
   void homeButtonClicked();
+    void logoutButtonClicked();
+
+
+private slots:
+      void onSaveClicked();
 
 private:
   void SetupUI();
   QLabel *nameLabel;
   QLabel *emailLabel;
   QLabel *surnameLabel;
-
+  QLineEdit *phoneEdit;
 
 };
 
