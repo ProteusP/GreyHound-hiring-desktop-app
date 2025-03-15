@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-
+#include <QString>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -95,7 +95,28 @@ void MainWindow::onBackToRegisterStatusPage() {
   ui->stackedWidget->setCurrentWidget(registerStatusPage);
 }
 
+void MainWindow::loadProfileData(){
+  QSqlQuery query;
+  query.prepare("SELECT name,email,phone FROM users WHERE id = :id");
+  query.bindValue(":id", currentUsedId);
+
+  if (!query.exec() || !query.next()){
+    qDebug() << "Ошибка загрузки данных: " << query.lastError().text();
+    return;
+  }
+
+  QString name = query.value(0).toString();
+  QString email = query.value(1).toString();
+  QString phone = query.value(2).toString();
+
+  profileCandidatePage->updateUserData(name,email,phone);
+
+  /*I need to add this when I finalize the profile page for the employer*/
+  //profileEmployerPage->...;
+}
+
 void MainWindow::onProfilePage() {
+  loadProfileData();
   if (isemployee) {
     ui->stackedWidget->setCurrentWidget(profileEmployerPage);
   } else {

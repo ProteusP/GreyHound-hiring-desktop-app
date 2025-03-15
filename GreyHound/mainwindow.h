@@ -35,6 +35,7 @@ private slots:
 private:
   Ui::MainWindow *ui;
   QSqlDatabase db;
+  int currentUsedId = -1;
   bool isemployee;
   LoginWidget *loginPage;
   RegisterStatus *registerStatusPage;
@@ -43,5 +44,7 @@ private:
   MainPage *mainPage;
   ProfilePageForCandidate *profileCandidatePage;
   ProfilePageForEmployer *profileEmployerPage;
+  void loadProfileData();
 };
 #endif // MAINWINDOW_H
+

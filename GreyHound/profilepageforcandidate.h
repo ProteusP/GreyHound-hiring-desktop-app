@@ -9,6 +9,7 @@
 #include <QFormLayout>
 #include <QPushButton>
 
+
 namespace Ui {
 class ProfilePageForCandidate;
 }
@@ -19,9 +20,14 @@ class ProfilePageForCandidate : public QWidget {
 public:
   explicit ProfilePageForCandidate(QWidget *parent = nullptr);
   ~ProfilePageForCandidate();
+  void updateUserData(const QString& name, const QString& email, const QString& phone);
 
 private:
   void SetupUI();
+QLabel *nameLabel;
+QLabel *emailLabel;
+QLabel *phoneLabel;
+
 
 };
 

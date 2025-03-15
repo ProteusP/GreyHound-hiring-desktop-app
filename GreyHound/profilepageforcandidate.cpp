@@ -36,9 +36,14 @@ void ProfilePageForCandidate::SetupUI(){
 
 
             //TODO add fields from DB
-    formLayout->addRow("Имя", new QLabel("МОЁ ИМЯ"));
-    formLayout->addRow("Email", new QLabel("МОЙ МЕЙЛ"));
-    formLayout->addRow("Телефон",new QLabel("МОЙ НОМЕР"));
+
+    nameLabel = new QLabel("Загрузка...");
+    emailLabel = new QLabel("Загрузка...");
+    phoneLabel = new QLabel("Загрузка...");
+
+    formLayout->addRow("Имя", nameLabel);
+    formLayout->addRow("Email", emailLabel);
+    formLayout->addRow("Телефон", phoneLabel);
 
     formLayout->setContentsMargins(20,20,20,20);
 
@@ -65,4 +70,10 @@ void ProfilePageForCandidate::SetupUI(){
     centralWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     rightWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
+}
+
+void ProfilePageForCandidate::updateUserData(const QString &name, const QString &email, const QString &phone){
+    nameLabel->setText(name);
+    phoneLabel->setText(phone);
+    emailLabel->setText(email);
 }
