@@ -35,6 +35,7 @@ private:
   QList<QLayoutItem *> itemList;
   int m_hSpace;
   int m_vSpace;
+
 };
 //! [0]
 

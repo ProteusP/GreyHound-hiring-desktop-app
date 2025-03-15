@@ -4,6 +4,7 @@
 #include "flowlayout.h"
 //! [1]
 FlowLayout::FlowLayout(QWidget *parent, int margin, int hSpacing, int vSpacing)
+
     : QLayout(parent), m_hSpace(hSpacing), m_vSpace(vSpacing) {
   setContentsMargins(margin, margin, margin, margin);
 }
@@ -11,18 +12,22 @@ FlowLayout::FlowLayout(QWidget *parent, int margin, int hSpacing, int vSpacing)
 FlowLayout::FlowLayout(int margin, int hSpacing, int vSpacing)
     : m_hSpace(hSpacing), m_vSpace(vSpacing) {
   setContentsMargins(margin, margin, margin, margin);
+
 }
 //! [1]
 
 //! [2]
+
 FlowLayout::~FlowLayout() {
   QLayoutItem *item;
   while ((item = takeAt(0)))
     delete item;
+
 }
 //! [2]
 
 //! [3]
+
 void FlowLayout::addItem(QLayoutItem *item) { itemList.append(item); }
 //! [3]
 
@@ -41,10 +46,12 @@ int FlowLayout::verticalSpacing() const {
   } else {
     return smartSpacing(QStyle::PM_LayoutVerticalSpacing);
   }
+
 }
 //! [4]
 
 //! [5]
+
 int FlowLayout::count() const { return itemList.size(); }
 
 QLayoutItem *FlowLayout::itemAt(int index) const {
@@ -55,10 +62,12 @@ QLayoutItem *FlowLayout::takeAt(int index) {
   if (index >= 0 && index < itemList.size())
     return itemList.takeAt(index);
   return nullptr;
+
 }
 //! [5]
 
 //! [6]
+
 Qt::Orientations FlowLayout::expandingDirections() const { return {}; }
 //! [6]
 
@@ -68,10 +77,12 @@ bool FlowLayout::hasHeightForWidth() const { return true; }
 int FlowLayout::heightForWidth(int width) const {
   int height = doLayout(QRect(0, 0, width, 0), true);
   return height;
+
 }
 //! [7]
 
 //! [8]
+
 void FlowLayout::setGeometry(const QRect &rect) {
   QLayout::setGeometry(rect);
   doLayout(rect, false);
@@ -88,6 +99,7 @@ QSize FlowLayout::minimumSize() const {
   size +=
       QSize(margins.left() + margins.right(), margins.top() + margins.bottom());
   return size;
+
 }
 //! [8]
 
@@ -142,5 +154,6 @@ int FlowLayout::smartSpacing(QStyle::PixelMetric pm) const {
   } else {
     return static_cast<QLayout *>(parent)->spacing();
   }
+
 }
 //! [12]

@@ -14,3 +14,4 @@ public:
 };
 
 #endif // CUSTOMWIDGETS_H
+

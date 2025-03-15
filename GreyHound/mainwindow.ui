@@ -6,14 +6,17 @@
    <rect>
     <x>0</x>
     <y>0</y>
+
     <width>800</width>
     <height>600</height>
+
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+
    <widget class="QStackedWidget" name="stackedWidget">
     <property name="geometry">
      <rect>
@@ -26,6 +29,7 @@
     <widget class="QWidget" name="page"/>
     <widget class="QWidget" name="page_2"/>
    </widget>
+
   </widget>
  </widget>
  <resources/>

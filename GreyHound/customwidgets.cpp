@@ -1,5 +1,4 @@
 #include "customwidgets.h"
-
 VacancyCard::VacancyCard(const QString &titleLabel_,
                          const QString &companyLabel_,
                          const QString &descLabel_, QWidget *parent)
@@ -14,4 +13,5 @@ VacancyCard::VacancyCard(const QString &titleLabel_,
   layout->addWidget(companyLabel);
   layout->addWidget(descLabel);
   setLayout(layout);
+
 }

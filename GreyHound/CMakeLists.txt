@@ -29,8 +29,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         validation.h validation.cpp
         hashing.h hashing.cpp
         registerstatus.h registerstatus.cpp registerstatus.ui
-
-
         passwordwarningdialog.h passwordwarningdialog.cpp
         registerpageforcandidate.h registerpageforcandidate.cpp registerpageforcandidate.ui
         registerpageforemployer.h registerpageforemployer.cpp registerpageforemployer.ui
@@ -39,6 +37,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         mainpage.h mainpage.cpp mainpage.ui
         profilepageforcandidate.h profilepageforcandidate.cpp profilepageforcandidate.ui
         profilepageforemployer.h profilepageforemployer.cpp profilepageforemployer.ui
+
 
     )
 # Define target properties for Android with Qt 6 as:
