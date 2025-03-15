@@ -6,6 +6,11 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
 
+    QWidget *centralWidget =new QWidget(this);
+    setCentralWidget(centralWidget);
+    QHBoxLayout* centralLayout = new QHBoxLayout(centralWidget);
+    centralLayout->addWidget(ui->stackedWidget);
+
   db = QSqlDatabase::addDatabase("QMYSQL");
   db.setHostName("92.63.178.117");
   db.setDatabaseName("default_db");
@@ -26,6 +31,8 @@ MainWindow::MainWindow(QWidget *parent)
   mainPage = new MainPage(this);
   profileCandidatePage = new ProfilePageForCandidate(this);
   profileEmployerPage = new ProfilePageForEmployer(this);
+
+
 
   ui->stackedWidget->addWidget(loginPage);
   ui->stackedWidget->addWidget(registerStatusPage);

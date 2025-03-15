@@ -2,6 +2,12 @@
 #define PROFILEPAGEFORCANDIDATE_H
 
 #include <QWidget>
+#include <QHBoxLayout>
+#include <QScrollArea>
+#include <QLabel>
+#include <QString>
+#include <QFormLayout>
+#include <QPushButton>
 
 namespace Ui {
 class ProfilePageForCandidate;
@@ -15,7 +21,8 @@ public:
   ~ProfilePageForCandidate();
 
 private:
-  Ui::ProfilePageForCandidate *ui;
+  void SetupUI();
+
 };
 
 #endif // PROFILEPAGEFORCANDIDATE_H
