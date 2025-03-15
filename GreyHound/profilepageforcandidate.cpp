@@ -38,12 +38,12 @@ void ProfilePageForCandidate::SetupUI(){
             //TODO add fields from DB
 
     nameLabel = new QLabel("Загрузка...");
+    surnameLabel = new QLabel("Загрузка...");
     emailLabel = new QLabel("Загрузка...");
-    phoneLabel = new QLabel("Загрузка...");
 
     formLayout->addRow("Имя", nameLabel);
+    formLayout->addRow("Фамилия", surnameLabel);
     formLayout->addRow("Email", emailLabel);
-    formLayout->addRow("Телефон", phoneLabel);
 
     formLayout->setContentsMargins(20,20,20,20);
 
@@ -72,8 +72,8 @@ void ProfilePageForCandidate::SetupUI(){
 
 }
 
-void ProfilePageForCandidate::updateUserData(const QString &name, const QString &email, const QString &phone){
+void ProfilePageForCandidate::updateUserData(const QString &name, const QString &email, const QString &surname){
     nameLabel->setText(name);
-    phoneLabel->setText(phone);
+    surnameLabel->setText(surname);
     emailLabel->setText(email);
 }

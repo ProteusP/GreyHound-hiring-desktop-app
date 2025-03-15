@@ -20,13 +20,13 @@ class ProfilePageForCandidate : public QWidget {
 public:
   explicit ProfilePageForCandidate(QWidget *parent = nullptr);
   ~ProfilePageForCandidate();
-  void updateUserData(const QString& name, const QString& email, const QString& phone);
+  void updateUserData(const QString& name, const QString& email, const QString& surname);
 
 private:
   void SetupUI();
-QLabel *nameLabel;
-QLabel *emailLabel;
-QLabel *phoneLabel;
+  QLabel *nameLabel;
+  QLabel *emailLabel;
+  QLabel *surnameLabel;
 
 
 };

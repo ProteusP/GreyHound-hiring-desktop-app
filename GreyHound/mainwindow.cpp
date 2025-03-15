@@ -44,8 +44,10 @@ MainWindow::MainWindow(QWidget *parent)
 
   ui->stackedWidget->setCurrentWidget(loginPage);
 
-  connect(loginPage, &LoginWidget::loginSuccessful, this,
-          &MainWindow::onMainPage);
+  connect(loginPage, &LoginWidget::loginSuccessful, [this](const QString& email){
+    setEmail(email);
+    onMainPage();
+  });
   connect(loginPage, &LoginWidget::registerPressed, this,
           &MainWindow::onRegisterStatusPage);
   connect(registerStatusPage, &RegisterStatus::backToLoginPressed, this,
@@ -97,19 +99,23 @@ void MainWindow::onBackToRegisterStatusPage() {
 
 void MainWindow::loadProfileData(){
   QSqlQuery query;
-  query.prepare("SELECT name,email,phone FROM users WHERE id = :id");
-  query.bindValue(":id", currentUsedId);
-
+  if (isemployee){
+  query.prepare("SELECT name,surname FROM employers WHERE email = :email");
+  }
+  else{query.prepare("SELECT name,surname FROM candidates WHERE email = :email");
+  }
+  query.bindValue(":email", getEmail());
   if (!query.exec() || !query.next()){
     qDebug() << "Ошибка загрузки данных: " << query.lastError().text();
     return;
   }
 
   QString name = query.value(0).toString();
-  QString email = query.value(1).toString();
-  QString phone = query.value(2).toString();
+  QString surname = query.value(1).toString();
+  QString email = getEmail();
 
-  profileCandidatePage->updateUserData(name,email,phone);
+
+  profileCandidatePage->updateUserData(name,email,surname);
 
   /*I need to add this when I finalize the profile page for the employer*/
   //profileEmployerPage->...;

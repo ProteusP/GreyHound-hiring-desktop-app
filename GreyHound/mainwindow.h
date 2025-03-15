@@ -22,6 +22,13 @@ class MainWindow : public QMainWindow {
 public:
   MainWindow(QWidget *parent = nullptr);
   ~MainWindow();
+  QString getEmail(){
+      return email;
+  }
+  void setEmail(QString email_){
+      email = email_;
+  }
+
 
 private slots:
   void onMainPage();
@@ -35,7 +42,7 @@ private slots:
 private:
   Ui::MainWindow *ui;
   QSqlDatabase db;
-  int currentUsedId = -1;
+  QString email;
   bool isemployee;
   LoginWidget *loginPage;
   RegisterStatus *registerStatusPage;
