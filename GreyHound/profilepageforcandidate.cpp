@@ -19,7 +19,7 @@ void ProfilePageForCandidate::SetupUI(){
 
     notificationsLayout->addWidget(notificationsLabel);
 
-            //TODO add notif-s from BD
+    //TODO add notif-s from BD
 
     for (int i  = 1; i <= 20; i++){
         notificationsLayout->addWidget(new QLabel(QString("Уведомления %1").arg(i)));
@@ -35,7 +35,7 @@ void ProfilePageForCandidate::SetupUI(){
     QFormLayout *formLayout = new QFormLayout(centralWidget);
 
 
-            //TODO add fields from DB
+    //TODO add fields from DB
 
     nameLabel = new QLabel("Загрузка...");
     surnameLabel = new QLabel("Загрузка...");
@@ -54,7 +54,9 @@ void ProfilePageForCandidate::SetupUI(){
     QVBoxLayout *rightLayout = new QVBoxLayout(rightWidget);
 
     QPushButton *homepagePB = new QPushButton("На главную");
-
+    connect(homepagePB, &QPushButton::clicked,this,[this](){
+        emit homeButtonClicked();
+    });
     QPushButton *logoutPB = new QPushButton("Выйти");
 
     rightLayout->addWidget(homepagePB,0,Qt::AlignTop);

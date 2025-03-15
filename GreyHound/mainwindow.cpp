@@ -68,6 +68,7 @@ MainWindow::MainWindow(QWidget *parent)
           this, &MainWindow::onMainPage);
   connect(mainPage, &MainPage::onProfilePressed, this,
           &MainWindow::onProfilePage);
+  connect(profileCandidatePage,&ProfilePageForCandidate::homeButtonClicked, this,&MainWindow::onMainPage);
 
 }
 

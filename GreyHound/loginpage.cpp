@@ -36,7 +36,6 @@ void LoginWidget::on_loginPB_clicked() {
       QString dbPassword = query.value(0).toString();
 
       if (dbPassword == hashPassword(userPassword)) {
-
         emit loginSuccessful(userMail);
       } else {
         QMessageBox::warning(this, "Упс...", "Неверный пароль.");

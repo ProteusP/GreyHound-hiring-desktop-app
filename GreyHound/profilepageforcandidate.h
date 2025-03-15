@@ -22,6 +22,9 @@ public:
   ~ProfilePageForCandidate();
   void updateUserData(const QString& name, const QString& email, const QString& surname);
 
+  signals:
+  void homeButtonClicked();
+
 private:
   void SetupUI();
   QLabel *nameLabel;
