@@ -1,10 +1,15 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-
+#include <QString>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
   ui->setupUi(this);
+
+    QWidget *centralWidget =new QWidget(this);
+    setCentralWidget(centralWidget);
+    QHBoxLayout* centralLayout = new QHBoxLayout(centralWidget);
+    centralLayout->addWidget(ui->stackedWidget);
 
   db = QSqlDatabase::addDatabase("QMYSQL");
   db.setHostName("92.63.178.117");
@@ -27,6 +32,8 @@ MainWindow::MainWindow(QWidget *parent)
   profileCandidatePage = new ProfilePageForCandidate(this);
   profileEmployerPage = new ProfilePageForEmployer(this);
 
+
+
   ui->stackedWidget->addWidget(loginPage);
   ui->stackedWidget->addWidget(registerStatusPage);
   ui->stackedWidget->addWidget(registerCandidatePage);
@@ -37,8 +44,10 @@ MainWindow::MainWindow(QWidget *parent)
 
   ui->stackedWidget->setCurrentWidget(loginPage);
 
-  connect(loginPage, &LoginWidget::loginSuccessful, this,
-          &MainWindow::onMainPage);
+  connect(loginPage, &LoginWidget::loginSuccessful, [this](const QString& email){
+    setEmail(email);
+    onMainPage();
+  });
   connect(loginPage, &LoginWidget::registerPressed, this,
           &MainWindow::onRegisterStatusPage);
   connect(registerStatusPage, &RegisterStatus::backToLoginPressed, this,
@@ -88,7 +97,32 @@ void MainWindow::onBackToRegisterStatusPage() {
   ui->stackedWidget->setCurrentWidget(registerStatusPage);
 }
 
+void MainWindow::loadProfileData(){
+  QSqlQuery query;
+  if (isemployee){
+  query.prepare("SELECT name,surname FROM employers WHERE email = :email");
+  }
+  else{query.prepare("SELECT name,surname FROM candidates WHERE email = :email");
+  }
+  query.bindValue(":email", getEmail());
+  if (!query.exec() || !query.next()){
+    qDebug() << "Ошибка загрузки данных: " << query.lastError().text();
+    return;
+  }
+
+  QString name = query.value(0).toString();
+  QString surname = query.value(1).toString();
+  QString email = getEmail();
+
+
+  profileCandidatePage->updateUserData(name,email,surname);
+
+  /*I need to add this when I finalize the profile page for the employer*/
+  //profileEmployerPage->...;
+}
+
 void MainWindow::onProfilePage() {
+  loadProfileData();
   if (isemployee) {
     ui->stackedWidget->setCurrentWidget(profileEmployerPage);
   } else {
