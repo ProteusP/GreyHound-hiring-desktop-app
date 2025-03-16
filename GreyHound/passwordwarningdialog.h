@@ -4,10 +4,10 @@
 #include <QDialog>
 
 class PasswordWarningDialog : public QDialog {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  explicit PasswordWarningDialog(QWidget *parent = nullptr);
+    explicit PasswordWarningDialog(QWidget *parent = nullptr);
 };
 
-#endif // PASSWORDWARNINGDIALOG_H
+#endif  // PASSWORDWARNINGDIALOG_H

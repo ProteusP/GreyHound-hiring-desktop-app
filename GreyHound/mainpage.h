@@ -8,20 +8,20 @@ class MainPage;
 }
 
 class MainPage : public QWidget {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  explicit MainPage(QWidget *parent = nullptr);
-  ~MainPage();
+    explicit MainPage(QWidget *parent = nullptr);
+    ~MainPage();
 
 private:
-  Ui::MainPage *ui;
+    Ui::MainPage *ui;
 
 private slots:
-  void on_profilePB_3_clicked();
+    void on_profilePB_3_clicked();
 
 signals:
-  void onProfilePressed();
+    void onProfilePressed();
 };
 
-#endif // MAINPAGE_H
+#endif  // MAINPAGE_H

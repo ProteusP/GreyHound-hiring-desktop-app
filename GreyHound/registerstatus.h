@@ -8,26 +8,26 @@ class RegisterStatus;
 }
 
 class RegisterStatus : public QWidget {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  explicit RegisterStatus(QWidget *parent = nullptr);
-  ~RegisterStatus();
+    explicit RegisterStatus(QWidget *parent = nullptr);
+    ~RegisterStatus();
 
 private slots:
-  void on_backToLoginPB_clicked();
+    void on_backToLoginPB_clicked();
 
-  void on_statusCandidatePB_clicked();
+    void on_statusCandidatePB_clicked();
 
-  void on_statusEmployerPB_clicked();
+    void on_statusEmployerPB_clicked();
 
 private:
-  Ui::RegisterStatus *ui;
+    Ui::RegisterStatus *ui;
 
 signals:
-  void backToLoginPressed();
-  void statusCandidatePressed();
-  void statusEmployerPressed();
+    void backToLoginPressed();
+    void statusCandidatePressed();
+    void statusEmployerPressed();
 };
 
-#endif // REGISTERSTATUS_H
+#endif  // REGISTERSTATUS_H

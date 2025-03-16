@@ -7,11 +7,14 @@
 #include <QWidget>
 
 class VacancyCard : public QFrame {
-  Q_OBJECT
+    Q_OBJECT
 public:
-  explicit VacancyCard(const QString &titleLabel_, const QString &companyLabel_,
-                       const QString &descLabel_, QWidget *parent = nullptr);
+    explicit VacancyCard(
+        const QString &titleLabel_,
+        const QString &companyLabel_,
+        const QString &descLabel_,
+        QWidget *parent = nullptr
+    );
 };
 
-#endif // CUSTOMWIDGETS_H
-
+#endif  // CUSTOMWIDGETS_H

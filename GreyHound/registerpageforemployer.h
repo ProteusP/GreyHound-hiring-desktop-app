@@ -14,23 +14,23 @@ class RegisterPageForEmployer;
 }
 
 class RegisterPageForEmployer : public QWidget {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  explicit RegisterPageForEmployer(QWidget *parent = nullptr);
-  ~RegisterPageForEmployer();
+    explicit RegisterPageForEmployer(QWidget *parent = nullptr);
+    ~RegisterPageForEmployer();
 
 private slots:
-  void on_registrationPB_employer_clicked();
+    void on_registrationPB_employer_clicked();
 
-  void on_backToStatusPB_clicked();
+    void on_backToStatusPB_clicked();
 
 private:
-  Ui::RegisterPageForEmployer *ui;
+    Ui::RegisterPageForEmployer *ui;
 
 signals:
-  void registerSuccessful();
-  void backToRegisterStatusPagePressed();
+    void registerSuccessful();
+    void backToRegisterStatusPagePressed();
 };
 
-#endif // REGISTERPAGEFOREMPLOYER_H
+#endif  // REGISTERPAGEFOREMPLOYER_H

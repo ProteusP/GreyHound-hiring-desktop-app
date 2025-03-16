@@ -3,7 +3,9 @@
 
 ProfilePageForEmployer::ProfilePageForEmployer(QWidget *parent)
     : QWidget(parent), ui(new Ui::ProfilePageForEmployer) {
-  ui->setupUi(this);
+    ui->setupUi(this);
 }
 
-ProfilePageForEmployer::~ProfilePageForEmployer() { delete ui; }
+ProfilePageForEmployer::~ProfilePageForEmployer() {
+    delete ui;
+}

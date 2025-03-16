@@ -14,23 +14,23 @@ class RegisterPageForCandidate;
 }
 
 class RegisterPageForCandidate : public QWidget {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  explicit RegisterPageForCandidate(QWidget *parent = nullptr);
-  ~RegisterPageForCandidate();
+    explicit RegisterPageForCandidate(QWidget *parent = nullptr);
+    ~RegisterPageForCandidate();
 
 private slots:
-  void on_PBregistrationCandidate_clicked();
+    void on_PBregistrationCandidate_clicked();
 
-  void on_backToStatusPB_clicked();
+    void on_backToStatusPB_clicked();
 
 private:
-  Ui::RegisterPageForCandidate *ui;
+    Ui::RegisterPageForCandidate *ui;
 
 signals:
-  void registerSuccessful();
-  void backToRegisterStatusPagePressed();
+    void registerSuccessful();
+    void backToRegisterStatusPagePressed();
 };
 
-#endif // REGISTERWINDOWFORCANDIDATE_H
+#endif  // REGISTERWINDOWFORCANDIDATE_H

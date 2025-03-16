@@ -14,25 +14,25 @@ class LoginWidget;
 }
 
 class LoginWidget : public QWidget {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  explicit LoginWidget(QWidget *parent = nullptr);
-  ~LoginWidget();
+    explicit LoginWidget(QWidget *parent = nullptr);
+    ~LoginWidget();
 
 private slots:
-  void on_loginPB_clicked();
+    void on_loginPB_clicked();
 
-  void on_registerPB_clicked();
+    void on_registerPB_clicked();
 
-  void on_exitPB_clicked();
+    void on_exitPB_clicked();
 
 private:
-  Ui::LoginWidget *ui;
+    Ui::LoginWidget *ui;
 
 signals:
-  void loginSuccessful(const QString& email);
-  void registerPressed();
+    void loginSuccessful(const QString &email, const bool status);
+    void registerPressed();
 };
 
-#endif // LOGINPAGE_H
+#endif  // LOGINPAGE_H

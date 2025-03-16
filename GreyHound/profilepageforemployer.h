@@ -8,14 +8,14 @@ class ProfilePageForEmployer;
 }
 
 class ProfilePageForEmployer : public QWidget {
-  Q_OBJECT
+    Q_OBJECT
 
 public:
-  explicit ProfilePageForEmployer(QWidget *parent = nullptr);
-  ~ProfilePageForEmployer();
+    explicit ProfilePageForEmployer(QWidget *parent = nullptr);
+    ~ProfilePageForEmployer();
 
 private:
-  Ui::ProfilePageForEmployer *ui;
+    Ui::ProfilePageForEmployer *ui;
 };
 
-#endif // PROFILEPAGEFOREMPLOYER_H
+#endif  // PROFILEPAGEFOREMPLOYER_H
