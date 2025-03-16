@@ -134,7 +134,7 @@ void MainWindow::onBackToRegisterStatusPage() {
 
 void MainWindow::loadProfileData() {
     QSqlQuery query;
-    if (isemployee) {
+    if (!isemployee) {
         query.prepare(
             "SELECT name,surname,phone_num, place FROM employers WHERE email = "
             ":email"
@@ -158,6 +158,7 @@ void MainWindow::loadProfileData() {
     QString email = getEmail();
 
     profileCandidatePage->updateUserData(name, email, surname, phoneNum, place);
+    profileCandidatePage->loadResumeData();
 
     /*I need to add this when I finalize the profile page for the employer*/
     // profileEmployerPage->...;
@@ -166,8 +167,8 @@ void MainWindow::loadProfileData() {
 void MainWindow::onProfilePage() {
     loadProfileData();
     if (isemployee) {
-        ui->stackedWidget->setCurrentWidget(profileEmployerPage);
-    } else {
         ui->stackedWidget->setCurrentWidget(profileCandidatePage);
+    } else {
+        ui->stackedWidget->setCurrentWidget(profileEmployerPage);
     }
 }

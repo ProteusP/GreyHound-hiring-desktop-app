@@ -187,8 +187,8 @@ void ProfilePageForCandidate::loadResumeData() {
         return;
     }
 
-    auto university = query.value(0).toString();
-    auto faculty = query.value(1).toString();
+    QString university = query.value(0).toString();
+    QString faculty = query.value(1).toString();
 
     universityEdit->setText(university);
     facultyEdit->setText(faculty);
