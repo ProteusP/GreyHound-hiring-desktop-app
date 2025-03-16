@@ -106,9 +106,9 @@ void MainWindow::onBackToRegisterStatusPage() {
 void MainWindow::loadProfileData(){
   QSqlQuery query;
   if (isemployee){
-  query.prepare("SELECT name,surname FROM employers WHERE email = :email");
+  query.prepare("SELECT name,surname,phone_num, place FROM employers WHERE email = :email");
   }
-  else{query.prepare("SELECT name,surname FROM candidates WHERE email = :email");
+  else{query.prepare("SELECT name,surname,phone_num,place FROM candidates WHERE email = :email");
   }
   query.bindValue(":email", getEmail());
   if (!query.exec() || !query.next()){
@@ -118,10 +118,12 @@ void MainWindow::loadProfileData(){
 
   QString name = query.value(0).toString();
   QString surname = query.value(1).toString();
+  QString phoneNum = query.value(2).toString();
+  QString place = query.value(3).toString();
   QString email = getEmail();
 
 
-  profileCandidatePage->updateUserData(name,email,surname);
+  profileCandidatePage->updateUserData(name,email,surname, phoneNum, place);
 
   /*I need to add this when I finalize the profile page for the employer*/
   //profileEmployerPage->...;

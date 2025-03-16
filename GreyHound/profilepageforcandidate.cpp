@@ -1,6 +1,7 @@
 #include "profilepageforcandidate.h"
 #include "ui_profilepageforcandidate.h"
 #include <QMessageBox>
+#include <QGroupBox>
 
 ProfilePageForCandidate::ProfilePageForCandidate(QWidget *parent)
     : QWidget(parent) {
@@ -32,8 +33,9 @@ void ProfilePageForCandidate::SetupUI(){
     mainLayout->addWidget(leftScrollArea, 1);
 
     QWidget *centralWidget = new QWidget();
-
-    QFormLayout *formLayout = new QFormLayout(centralWidget);
+    QVBoxLayout *centralLayout = new QVBoxLayout(centralWidget);
+    QGroupBox *basicInfoGroup = new QGroupBox("Основная информация");
+    QFormLayout *basicInfoLayout = new QFormLayout(basicInfoGroup);
 
 
     //TODO add fields from DB
@@ -42,16 +44,47 @@ void ProfilePageForCandidate::SetupUI(){
     surnameLabel = new QLabel("Загрузка...");
     emailLabel = new QLabel("Загрузка...");
     phoneEdit = new QLineEdit();
-
-    formLayout->addRow("Имя", nameLabel);
-    formLayout->addRow("Фамилия", surnameLabel);
-    formLayout->addRow("Email", emailLabel);
-    formLayout->addRow("Телефон",phoneEdit);
-
-
+    placeEdit = new QLineEdit();
+    statusCombo = new QComboBox();
+    statusCombo->addItem("Активно ищу работу", "active");
+    statusCombo->addItem("Рассматриваю предложения","searching");
+    statusCombo->addItem("Не ищу работу", "inactive");
 
 
-    formLayout->setContentsMargins(20,20,20,20);
+    basicInfoLayout->addRow("Имя", nameLabel);
+    basicInfoLayout->addRow("Фамилия", surnameLabel);
+    basicInfoLayout->addRow("Email", emailLabel);
+    basicInfoLayout->addRow("Телефон",phoneEdit);
+    basicInfoLayout->addRow("Местоположение", placeEdit);
+    basicInfoLayout->addRow("Статус", statusCombo);
+
+
+    QGroupBox *resumeGroup = new QGroupBox("Резюме");
+    QFormLayout *resumeLayout = new QFormLayout(resumeGroup);
+
+    universityEdit = new QLineEdit();
+    facultyEdit = new QLineEdit();
+    experinceCombo = new QComboBox();
+    experinceCombo->addItem("Нет", "intern");
+    experinceCombo->addItem("1 - 3 года","junior");
+    experinceCombo->addItem("3 - 5 лет", "middle");
+    experinceCombo->addItem("5+ лет","senior");
+
+
+    resumeLayout->addRow("Учебное заведение", universityEdit);
+    resumeLayout->addRow("Факультет", facultyEdit);
+    resumeLayout->addRow("Опыт работы",experinceCombo);
+
+
+
+
+    resumeLayout->setContentsMargins(20,20,20,20);
+    basicInfoLayout->setContentsMargins(20,20,20,20);
+
+    centralLayout->addWidget(basicInfoGroup);
+    centralLayout->addSpacing(15);
+    centralLayout->addWidget(resumeGroup);
+    centralLayout->addStretch();
 
     mainLayout->addWidget(centralWidget,3);
 
@@ -93,29 +126,70 @@ void ProfilePageForCandidate::SetupUI(){
 
 }
 
-void ProfilePageForCandidate::updateUserData(const QString &name, const QString &email, const QString &surname){
+void ProfilePageForCandidate::updateUserData(const QString &name, const QString &email, const QString &surname,const QString& phoneNum,
+const QString& place){
     nameLabel->setText(name);
     surnameLabel->setText(surname);
     emailLabel->setText(email);
+    phoneEdit->setText(phoneNum);
+    placeEdit->setText(place);
 }
 
 void ProfilePageForCandidate::onSaveClicked(){
     QString newPhone = phoneEdit->text();
-
-    saveChangesToDB(newPhone);
+    QString newPlace = placeEdit->text();
+    saveChangesToDB(newPhone, newPlace);
+    saveResumeData();
 }
 
-void ProfilePageForCandidate::saveChangesToDB(const QString &newPhone){
+void ProfilePageForCandidate::saveChangesToDB(const QString &newPhone, const QString& newPlace){
     QSqlQuery query;
-    query.prepare("UPDATE candidates SET phone_num = :phone WHERE email = :email");
+    query.prepare("UPDATE candidates SET phone_num = :phone, place = :new_place WHERE email = :email");
     QString email = emailLabel->text();
     query.bindValue(":email", email);
     query.bindValue(":phone", newPhone);
+    query.bindValue(":new_place",newPlace);
 
     if (!query.exec()) {
         QMessageBox::critical(this, "Ошибка",
                               "Не удалось обновить данные: " + query.lastError().text());
     } else {
         QMessageBox::information(this, "Успех", "Данные сохранены!");
+    }
+}
+
+void ProfilePageForCandidate::loadResumeData(){
+    QSqlQuery query;
+    query.prepare("SELECT place_of_study, faculty_of_educ FROM candidates WHERE email =:email");
+    QString email = emailLabel->text();
+    query.bindValue(":email", email);
+    if (!query.exec() || !query.next()){
+        qDebug() << "Не удалось получить данные для резюме";
+        return;
+    }
+
+    auto university = query.value(0).toString();
+    auto faculty = query.value(1).toString();
+
+    universityEdit->setText(university);
+    facultyEdit->setText(faculty);
+    //TODO add experience and smth else...
+}
+
+void ProfilePageForCandidate::saveResumeData(){
+    QSqlQuery query;
+    //TODO add experience and smth else...
+    query.prepare( "UPDATE candidates SET  place_of_study =:university, faculty_of_educ =:faculty WHERE email =:email");
+
+    QString email = emailLabel->text();
+    QString university = universityEdit->text();
+    QString faculty = facultyEdit->text();
+
+    query.bindValue(":email", email);
+    query.bindValue(":university", university);
+    query.bindValue(":faculty", faculty);
+
+    if (!query.exec()){
+        QMessageBox::critical(this, "Ошибка", "Ошибка сохранения резюме: "+query.lastError().text());
     }
 }

@@ -37,6 +37,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         mainpage.h mainpage.cpp mainpage.ui
         profilepageforcandidate.h profilepageforcandidate.cpp profilepageforcandidate.ui
         profilepageforemployer.h profilepageforemployer.cpp profilepageforemployer.ui
+        resume.h resume.cpp
 
 
     )
