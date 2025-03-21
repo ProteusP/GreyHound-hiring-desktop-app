@@ -91,6 +91,10 @@ MainWindow::MainWindow(QWidget *parent)
         profileCandidatePage, &ProfilePageForCandidate::homeButtonClicked, this,
         &MainWindow::onMainPage
     );
+    connect(profileEmployerPage, &ProfilePageForEmployer::homeButtonClicked, this, &MainWindow::onMainPage);
+    connect(profileEmployerPage, &ProfilePageForEmployer::logoutButtonClicked, this, [this](){
+        onBackToLoginPage();
+    });
     connect(
         profileCandidatePage, &ProfilePageForCandidate::logoutButtonClicked,
         this,
@@ -133,35 +137,48 @@ void MainWindow::onBackToRegisterStatusPage() {
 }
 
 void MainWindow::loadProfileData() {
-    QSqlQuery query;
-    if (!isemployee) {
-        query.prepare(
-            "SELECT name,surname,phone_num, place FROM employers WHERE email = "
-            ":email"
-        );
-    } else {
-        query.prepare(
-            "SELECT name,surname,phone_num,place FROM candidates WHERE email = "
-            ":email"
-        );
-    }
-    query.bindValue(":email", getEmail());
-    if (!query.exec() || !query.next()) {
-        qDebug() << "Ошибка загрузки данных: " << query.lastError().text();
-        return;
-    }
-
-    QString name = query.value(0).toString();
-    QString surname = query.value(1).toString();
-    QString phoneNum = query.value(2).toString();
-    QString place = query.value(3).toString();
     QString email = getEmail();
+    QSqlQuery query;
+    if (isemployee) {
+        qDebug() << " im in candidat loading...";
+        query.prepare(
+            "SELECT name,surname,phone_num, place FROM candidates WHERE email = "
+            ":email"
+        );
 
-    profileCandidatePage->updateUserData(name, email, surname, phoneNum, place);
-    profileCandidatePage->loadResumeData();
+        query.bindValue(":email", email);
+        if (!query.exec() || !query.next()) {
+            qDebug() << "Ошибка загрузки данных: " << query.lastError().text();
+            return;
+        }
 
-    /*I need to add this when I finalize the profile page for the employer*/
-    // profileEmployerPage->...;
+        QString name = query.value(0).toString();
+        QString surname = query.value(1).toString();
+        QString phoneNum = query.value(2).toString();
+        QString place = query.value(3).toString();
+        qDebug() << name <<" "<<surname<<" "<<phoneNum<<" "<<place<<" "<<email;
+        profileCandidatePage->updateUserData(name, email, surname, phoneNum, place);
+        profileCandidatePage->loadResumeData();
+
+    } else {
+        qDebug() << "im in employer loading...";
+        query.prepare(
+            "SELECT id, company_name, about FROM employers WHERE email =" ":email"
+            );
+        query.bindValue(":email", email);
+        if (!query.exec() || !query.next()){
+            qDebug() << "Ошибка загрузки данных: " << query.lastError().text();
+            return;
+        }
+
+        int ID = query.value(0).toInt();
+        QString companyName = query.value(1).toString();
+        QString about = query.value(2).toString();
+
+        qDebug() << ID << " " << companyName << " "<< about;
+        profileEmployerPage->updateEmployerData(companyName,email,about, ID);
+
+    }
 }
 
 void MainWindow::onProfilePage() {
