@@ -2,10 +2,11 @@
 #define PROFILEPAGEFOREMPLOYER_H
 
 #include <QWidget>
-
-namespace Ui {
-class ProfilePageForEmployer;
-}
+#include <QTableWidget>
+#include <QLineEdit>
+#include <QLabel>
+#include <QTextEdit>
+#include <QPushButton>
 
 class ProfilePageForEmployer : public QWidget {
     Q_OBJECT
@@ -14,8 +15,34 @@ public:
     explicit ProfilePageForEmployer(QWidget *parent = nullptr);
     ~ProfilePageForEmployer();
 
+    void updateEmployerData(const QString &companyName,
+                            const QString &email,
+                            const QString &about,
+                            const int ID);
+
+signals:
+    void homeButtonClicked();
+    void logoutButtonClicked();
+
+private slots:
+    void onSaveClicked();
+    void onAddVacancyClicked();
+    void onEditVacancyClicked();
+    void onDeleteVacancyClicked();
+
 private:
-    Ui::ProfilePageForEmployer *ui;
+    void SetupUI();
+    void saveCompanyInfo();
+    void loadVacancies();
+
+
+    QLineEdit *companyNameEdit;
+    QLabel *emailLabel;
+    QTextEdit *aboutEdit;
+    QTableWidget *vacanciesTable;
+    int currentEmployerId;
+
+    QPushButton *createActionButton(const QString &iconText, const QString &tooltip);
 };
 
-#endif  // PROFILEPAGEFOREMPLOYER_H
+#endif // PROFILEPAGEFOREMPLOYER_H
