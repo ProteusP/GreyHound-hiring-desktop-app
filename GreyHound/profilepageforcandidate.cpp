@@ -21,13 +21,6 @@ void ProfilePageForCandidate::SetupUI() {
 
     notificationsLayout->addWidget(notificationsLabel);
 
-    // TODO add notif-s from BD
-
-    for (int i = 1; i <= 20; i++) {
-        notificationsLayout->addWidget(
-            new QLabel(QString("Уведомления %1").arg(i))
-        );
-    }
 
     leftScrollArea->setWidget(notificationsWidget);
     leftScrollArea->setWidgetResizable(true);

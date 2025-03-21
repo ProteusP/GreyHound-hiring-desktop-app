@@ -50,8 +50,6 @@ private:
     QLineEdit *phoneEdit;
     QComboBox *statusCombo;
     QLineEdit *placeEdit;
-    // fix it after adding an output for resumes
-    // Resume currentResume;
     QLineEdit *universityEdit;
     QLineEdit *facultyEdit;
     QComboBox *experinceCombo;
