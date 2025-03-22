@@ -1,12 +1,12 @@
 #ifndef PROFILEPAGEFOREMPLOYER_H
 #define PROFILEPAGEFOREMPLOYER_H
 
-#include <QWidget>
-#include <QTableWidget>
-#include <QLineEdit>
 #include <QLabel>
-#include <QTextEdit>
+#include <QLineEdit>
 #include <QPushButton>
+#include <QTableWidget>
+#include <QTextEdit>
+#include <QWidget>
 
 class ProfilePageForEmployer : public QWidget {
     Q_OBJECT
@@ -15,10 +15,12 @@ public:
     explicit ProfilePageForEmployer(QWidget *parent = nullptr);
     ~ProfilePageForEmployer();
 
-    void updateEmployerData(const QString &companyName,
-                            const QString &email,
-                            const QString &about,
-                            const int ID);
+    void updateEmployerData(
+        const QString &companyName,
+        const QString &email,
+        const QString &about,
+        const int ID
+    );
 
 signals:
     void homeButtonClicked();
@@ -35,14 +37,14 @@ private:
     void saveCompanyInfo();
     void loadVacancies();
 
-
     QLineEdit *companyNameEdit;
     QLabel *emailLabel;
     QTextEdit *aboutEdit;
     QTableWidget *vacanciesTable;
     int currentEmployerId;
 
-    QPushButton *createActionButton(const QString &iconText, const QString &tooltip);
+    QPushButton *
+    createActionButton(const QString &iconText, const QString &tooltip);
 };
 
-#endif // PROFILEPAGEFOREMPLOYER_H
+#endif  // PROFILEPAGEFOREMPLOYER_H

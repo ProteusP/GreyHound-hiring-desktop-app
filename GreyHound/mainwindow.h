@@ -63,6 +63,5 @@ private:
     MainPage *mainPage;
     ProfilePageForCandidate *profileCandidatePage;
     ProfilePageForEmployer *profileEmployerPage;
-
 };
 #endif  // MAINWINDOW_H

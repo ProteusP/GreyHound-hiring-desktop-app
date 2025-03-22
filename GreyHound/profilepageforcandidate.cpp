@@ -21,7 +21,6 @@ void ProfilePageForCandidate::SetupUI() {
 
     notificationsLayout->addWidget(notificationsLabel);
 
-
     leftScrollArea->setWidget(notificationsWidget);
     leftScrollArea->setWidgetResizable(true);
 
@@ -158,7 +157,7 @@ void ProfilePageForCandidate::saveChangesToDB(
         "candidates.place = :new_place, "
         "candidates.search_status_id = search_statuses.id "
         "WHERE candidates.email = :email"
-        );
+    );
     QString email = emailLabel->text();
     query.bindValue(":email", email);
     query.bindValue(":phone", newPhone);
