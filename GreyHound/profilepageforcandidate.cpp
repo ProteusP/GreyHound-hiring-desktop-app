@@ -139,23 +139,31 @@ void ProfilePageForCandidate::updateUserData(
 void ProfilePageForCandidate::onSaveClicked() {
     QString newPhone = phoneEdit->text();
     QString newPlace = placeEdit->text();
-    saveChangesToDB(newPhone, newPlace);
+    QString newSearchStatus = statusCombo->currentData().toString();
+    saveChangesToDB(newPhone, newPlace, newSearchStatus);
     saveResumeData();
 }
 
 void ProfilePageForCandidate::saveChangesToDB(
     const QString &newPhone,
-    const QString &newPlace
+    const QString &newPlace,
+    const QString &newSearchStatus
 ) {
     QSqlQuery query;
     query.prepare(
-        "UPDATE candidates SET phone_num = :phone, place = :new_place WHERE "
-        "email = :email"
-    );
+        "UPDATE candidates "
+        "JOIN search_statuses ON search_statuses.name = :new_search_status "
+        "SET "
+        "candidates.phone_num = :phone, "
+        "candidates.place = :new_place, "
+        "candidates.search_status_id = search_statuses.id "
+        "WHERE candidates.email = :email"
+        );
     QString email = emailLabel->text();
     query.bindValue(":email", email);
     query.bindValue(":phone", newPhone);
     query.bindValue(":new_place", newPlace);
+    query.bindValue(":new_search_status", newSearchStatus);
 
     if (!query.exec()) {
         QMessageBox::critical(

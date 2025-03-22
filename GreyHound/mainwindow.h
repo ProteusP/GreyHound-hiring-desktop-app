@@ -37,6 +37,10 @@ public:
         isemployee = status_;
     }
 
+    bool get_status() const noexcept {
+        return isemployee;
+    }
+
 private slots:
     void onMainPage();
     void onRegisterStatusPage();
@@ -45,12 +49,13 @@ private slots:
     void onStatusEmployerPage();
     void onBackToRegisterStatusPage();
     void onProfilePage();
+    void loadProfileData();
 
 private:
+    bool isemployee;
     Ui::MainWindow *ui;
     QSqlDatabase db;
     QString email;
-    bool isemployee;
     LoginWidget *loginPage;
     RegisterStatus *registerStatusPage;
     RegisterPageForCandidate *registerCandidatePage;
@@ -58,6 +63,6 @@ private:
     MainPage *mainPage;
     ProfilePageForCandidate *profileCandidatePage;
     ProfilePageForEmployer *profileEmployerPage;
-    void loadProfileData();
+
 };
 #endif  // MAINWINDOW_H

@@ -31,7 +31,7 @@ private:
     Ui::LoginWidget *ui;
 
 signals:
-    void loginSuccessful(const QString &email, const bool status);
+    void loginSuccessful(const QString &email, bool status);
     void registerPressed();
 };
 
