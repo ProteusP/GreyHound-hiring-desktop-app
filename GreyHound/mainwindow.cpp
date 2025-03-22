@@ -44,7 +44,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(
         loginPage, &LoginWidget::loginSuccessful, this,
-        [this](const QString &email, const bool status) {
+        [this](const QString &email, bool status) {
             setEmail(email);
             setStatus(status);
             onMainPage();
@@ -107,6 +107,8 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::onMainPage() {
+    mainPage->setStatusOfCandidate(isemployee);
+    mainPage->show();
     ui->stackedWidget->setCurrentWidget(mainPage);
 }
 
