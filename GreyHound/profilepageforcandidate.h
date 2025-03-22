@@ -32,7 +32,11 @@ public:
         const QString &phoneNum,
         const QString &place
     );
-    void saveChangesToDB(const QString &newPhone, const QString &newPlace, const QString &newSearchStatus);
+    void saveChangesToDB(
+        const QString &newPhone,
+        const QString &newPlace,
+        const QString &newSearchStatus
+    );
     void loadResumeData();
     void saveResumeData();
 signals:

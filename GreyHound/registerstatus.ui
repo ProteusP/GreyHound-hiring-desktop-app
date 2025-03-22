@@ -6,73 +6,107 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>776</width>
+    <height>625</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QPushButton" name="statusEmployerPB">
-   <property name="geometry">
-    <rect>
-     <x>400</x>
-     <y>220</y>
-     <width>161</width>
-     <height>71</height>
-    </rect>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="leftMargin">
+    <number>100</number>
    </property>
-   <property name="text">
-    <string>Заказчик</string>
+   <property name="topMargin">
+    <number>170</number>
    </property>
-  </widget>
-  <widget class="QPushButton" name="backToLoginPB">
-   <property name="geometry">
-    <rect>
-     <x>240</x>
-     <y>320</y>
-     <width>271</width>
-     <height>41</height>
-    </rect>
+   <property name="rightMargin">
+    <number>100</number>
    </property>
-   <property name="text">
-    <string>Назад</string>
+   <property name="bottomMargin">
+    <number>170</number>
    </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>160</y>
-     <width>261</width>
-     <height>71</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>17</pointsize>
-    </font>
-   </property>
-   <property name="text">
-    <string>Выберите свой статус</string>
-   </property>
-   <property name="alignment">
-    <set>Qt::AlignmentFlag::AlignCenter</set>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="statusCandidatePB">
-   <property name="geometry">
-    <rect>
-     <x>210</x>
-     <y>220</y>
-     <width>161</width>
-     <height>71</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Исполнитель</string>
-   </property>
-  </widget>
+   <item row="0" column="0">
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="font">
+        <font>
+         <pointsize>17</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Выберите свой статус</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="leftMargin">
+        <number>5</number>
+       </property>
+       <property name="topMargin">
+        <number>10</number>
+       </property>
+       <property name="rightMargin">
+        <number>5</number>
+       </property>
+       <property name="bottomMargin">
+        <number>10</number>
+       </property>
+       <item>
+        <widget class="QPushButton" name="statusCandidatePB">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>300</width>
+           <height>100</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Исполнитель</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="statusEmployerPB">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>300</width>
+           <height>100</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Заказчик</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QPushButton" name="backToLoginPB">
+       <property name="text">
+        <string>Назад</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>
