@@ -7,6 +7,7 @@
 #include <QTableWidget>
 #include <QTextEdit>
 #include <QWidget>
+#include <QComboBox>
 
 class ProfilePageForEmployer : public QWidget {
     Q_OBJECT
@@ -20,7 +21,7 @@ public:
         const QString &email,
         const QString &about,
         const int ID
-    );
+        );
 
 signals:
     void homeButtonClicked();
@@ -37,14 +38,19 @@ private:
     void saveCompanyInfo();
     void loadVacancies();
 
+            // Вспомогательные функции для загрузки данных
+    void loadExperienceData(QComboBox *comboBox);
+    void loadWorkScheduleData(QComboBox *comboBox);
+    void loadEducStatusData(QComboBox *comboBox);
+    void loadRemotenessData(QComboBox *comboBox);  // Уже добавлена, но нужно объявить
+
     QLineEdit *companyNameEdit;
     QLabel *emailLabel;
     QTextEdit *aboutEdit;
     QTableWidget *vacanciesTable;
     int currentEmployerId;
 
-    QPushButton *
-    createActionButton(const QString &iconText, const QString &tooltip);
+    QPushButton *createActionButton(const QString &iconText, const QString &tooltip);
 };
 
 #endif  // PROFILEPAGEFOREMPLOYER_H
