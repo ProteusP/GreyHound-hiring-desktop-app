@@ -63,7 +63,7 @@ void RegisterPageForCandidate::on_PBregistrationCandidate_clicked() {
         query.bindValue(":password", hashedPassword);
         query.exec();
 
-        emit registerSuccessful();
+        emit registerSuccessful(email, 1);
     } else {
         QMessageBox::warning(this, "Ошибка", "Введите корректную почту");
     }
