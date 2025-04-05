@@ -78,11 +78,19 @@ MainWindow::MainWindow(QWidget *parent)
     );
     connect(
         registerCandidatePage, &RegisterPageForCandidate::registerSuccessful,
-        this, &MainWindow::onMainPage
+        this, [this](const QString &email, bool status) {
+            setEmail(email);
+            setStatus(status);
+            onMainPage();
+        }
     );
     connect(
         registerEmployerPage, &RegisterPageForEmployer::registerSuccessful,
-        this, &MainWindow::onMainPage
+        this, [this](const QString &email, bool status) {
+            setEmail(email);
+            setStatus(status);
+            onMainPage();
+        }
     );
     connect(
         mainPage, &MainPage::onProfilePressed, this, &MainWindow::onProfilePage
@@ -119,6 +127,7 @@ void MainWindow::onMainPage() {
     if (mainPage->getFlowLayout() != nullptr) {
         mainPage->hide();
     }
+    mainPage->setEmail(email);
     mainPage->show();
     ui->stackedWidget->setCurrentWidget(mainPage);
 }

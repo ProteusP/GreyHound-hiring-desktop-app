@@ -61,7 +61,7 @@ void RegisterPageForEmployer::on_registrationPB_employer_clicked() {
         query.bindValue(":password", hashedPassword);
         query.exec();
 
-        emit registerSuccessful();
+        emit registerSuccessful(email, 0);
     } else {
         QMessageBox::warning(this, "Ошибка", "Введите корректную почту");
     }

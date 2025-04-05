@@ -32,12 +32,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         passwordwarningdialog.h passwordwarningdialog.cpp
         registerpageforcandidate.h registerpageforcandidate.cpp registerpageforcandidate.ui
         registerpageforemployer.h registerpageforemployer.cpp registerpageforemployer.ui
-        customwidgets.h customwidgets.cpp
+
         flowlayout.h flowlayout.cpp
         mainpage.h mainpage.cpp mainpage.ui
         profilepageforcandidate.h profilepageforcandidate.cpp profilepageforcandidate.ui
         profilepageforemployer.h profilepageforemployer.cpp profilepageforemployer.ui
         resume.h resume.cpp
+        vacancycard.h vacancycard.cpp vacancycard.ui
 
 
     )

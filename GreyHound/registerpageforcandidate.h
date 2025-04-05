@@ -29,7 +29,7 @@ private:
     Ui::RegisterPageForCandidate *ui;
 
 signals:
-    void registerSuccessful();
+    void registerSuccessful(const QString &email, bool status);
     void backToRegisterStatusPagePressed();
 };
 
