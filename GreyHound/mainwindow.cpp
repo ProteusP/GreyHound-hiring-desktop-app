@@ -119,6 +119,7 @@ void MainWindow::onMainPage() {
     if (mainPage->getFlowLayout() != nullptr) {
         mainPage->hide();
     }
+    mainPage->setEmail(email);
     mainPage->show();
     ui->stackedWidget->setCurrentWidget(mainPage);
 }
