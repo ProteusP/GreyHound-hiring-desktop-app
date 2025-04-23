@@ -4,6 +4,7 @@
 #include <drogon/HttpResponse.h>
 #include <drogon/HttpTypes.h>
 #include <drogon/orm/Exception.h>
+#include <exception>
 
 using namespace api::v1;
 
@@ -73,17 +74,31 @@ void Auth::login(const HttpRequestPtr &req,
                 return;
             }
 
-            // Успешная аутентификация
-            req->session()->insert("authenticated", true);
-            req->session()->insert("user_id", row["id"].as<std::string>());
+            try{
+                auto session = req->session();
 
-            Json::Value json;
-            json["status"] = "success";
-            json["user_id"] = row["id"].as<std::string>();
+                const int SESSION_LIFE_TIME = 86400;
 
-            auto resp = HttpResponse::newHttpJsonResponse(json);
+                session->insert("authenticated", true);
+                session->insert("user_id", row);
+                session->insert("user_status", status);
 
-            callback(resp);
+                Json::Value json;
+                json["status"] = "success";
+                json["session_id"] = session->sessionId();
+
+                auto resp = HttpResponse::newHttpJsonResponse(json);
+
+
+                callback(resp);
+            }
+            catch (const std::exception &e){
+                Json::Value json{{"error", "Session creation failed"}};
+                auto resp = HttpResponse::newHttpJsonResponse(json);
+                resp->setStatusCode(drogon::k500InternalServerError);
+
+                callback(resp);
+            }
         },
         [callback](const orm::DrogonDbException &e) {
             auto resp = HttpResponse::newHttpJsonResponse(
