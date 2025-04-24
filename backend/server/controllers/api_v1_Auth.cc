@@ -78,9 +78,8 @@ void Auth::login(const HttpRequestPtr &req,
                 auto session = req->session();
 
                 const int SESSION_LIFE_TIME = 86400;
-
                 session->insert("authenticated", true);
-                session->insert("user_id", row);
+                session->insert("user_id",row["id"].as<std::string>());
                 session->insert("user_status", status);
 
                 Json::Value json;
@@ -100,7 +99,7 @@ void Auth::login(const HttpRequestPtr &req,
                 callback(resp);
             }
         },
-        [callback](const orm::DrogonDbException &e) {
+        [=, callback = std::move(callback)](const orm::DrogonDbException &e) {
             auto resp = HttpResponse::newHttpJsonResponse(
                 Json::Value{{"error", "Database error"}});
             resp->setStatusCode(k500InternalServerError);
