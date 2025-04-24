@@ -37,9 +37,9 @@ void Auth::login(const HttpRequestPtr &req,
     std::string password = (*json)["password"].asString();
 
     std::string table;
-    if (status == "candidate") {
+    if (status == CAND_STATUS) {
         table = "candidates";
-    } else if (status == "empl") {
+    } else if (status == EMPL_STATUS) {
         table = "employers";
     } else {
         auto resp = HttpResponse::newHttpJsonResponse(

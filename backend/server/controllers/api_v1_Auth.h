@@ -10,6 +10,10 @@ namespace api
 {
 namespace v1
 {
+
+    const std::string EMPL_STATUS = "empl";
+    const std::string CAND_STATUS = "candidate";
+
 class Auth : public drogon::HttpController<Auth>
 {
     void login(const HttpRequestPtr& req, std::function<void (const HttpResponsePtr &)> &&callback);

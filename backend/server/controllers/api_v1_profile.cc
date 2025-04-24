@@ -5,9 +5,7 @@
 #include "drogon/HttpTypes.h"
 #include "drogon/orm/Criteria.h"
 #include "drogon/orm/Mapper.h"
-#include <exception>
-#include <ratio>
-
+#include "api_v1_Auth.h"
 using namespace api::v1;
 
 // Add definition of your processing function here
@@ -18,7 +16,7 @@ void profile::getProfile(const HttpRequestPtr& req, std::function<void (const Ht
     auto userId = req->session()->get<std::string>("user_id");
     auto dbClient = app().getDbClient();
 
-    if (userStatus == "candidate"){
+    if (userStatus == CAND_STATUS){
         auto mapper = drogon::orm::Mapper<drogon_model::default_db::Candidates>(dbClient);
         orm::Criteria findCriteria{drogon_model::default_db::Candidates::Cols::_id,orm::CompareOperator::EQ,userId };
 
@@ -42,7 +40,7 @@ void profile::getProfile(const HttpRequestPtr& req, std::function<void (const Ht
 
         callback(resp);
     }
-    else if (userStatus == "empl"){
+    else if (userStatus == EMPL_STATUS){
         auto mapper = drogon::orm::Mapper<drogon_model::default_db::Employers>(dbClient);
         orm::Criteria findCriteria{drogon_model::default_db::Employers::Cols::_id, orm::CompareOperator::EQ, userId};
 
