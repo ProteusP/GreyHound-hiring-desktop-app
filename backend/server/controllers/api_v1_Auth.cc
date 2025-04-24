@@ -77,7 +77,6 @@ void Auth::login(const HttpRequestPtr &req,
             try{
                 auto session = req->session();
 
-                const int SESSION_LIFE_TIME = 86400;
                 session->insert("authenticated", true);
                 session->insert("user_id",row["id"].as<std::string>());
                 session->insert("user_status", status);
@@ -87,7 +86,6 @@ void Auth::login(const HttpRequestPtr &req,
                 json["session_id"] = session->sessionId();
 
                 auto resp = HttpResponse::newHttpJsonResponse(json);
-
 
                 callback(resp);
             }
