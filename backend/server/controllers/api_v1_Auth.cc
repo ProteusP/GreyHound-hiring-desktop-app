@@ -16,7 +16,7 @@ using namespace api::v1;
 void Auth::login(const HttpRequestPtr &req,
                  std::function<void(const HttpResponsePtr &)> &&callback) {
 
-  auto status = req->getParameter("status");
+  const auto &status = req->getParameter("status");
   if (status.empty()) {
     Json::Value json;
     json["error"] = "Missing 'status' parameter";
@@ -36,8 +36,8 @@ void Auth::login(const HttpRequestPtr &req,
     return;
   }
 
-  std::string email = (*json)["email"].asString();
-  std::string password = (*json)["password"].asString();
+  const std::string &email = (*json)["email"].asString();
+  const std::string &password = (*json)["password"].asString();
 
   std::string table;
   if (status == CAND_STATUS) {
@@ -56,8 +56,8 @@ void Auth::login(const HttpRequestPtr &req,
       "SELECT id, password FROM " + table + " WHERE email = ?";
   LOG_DEBUG << "Executing SQL query: " << sqlString << "with email: " << email
             << "\n";
-  auto client = app().getDbClient();
-  client->execSqlAsync(
+  const auto &dbClient = app().getDbClient();
+  dbClient->execSqlAsync(
       sqlString,
       [=, callback = std::move(callback)](const orm::Result &result) {
         if (result.empty()) {
@@ -68,7 +68,7 @@ void Auth::login(const HttpRequestPtr &req,
           return;
         }
 
-        auto row = result[0];
+        const auto &row = result[0];
         std::string dbPassword = row["password"].as<std::string>();
 
         if (password != dbPassword) {
@@ -114,7 +114,7 @@ void Auth::registerUser(
     const HttpRequestPtr &req,
     std::function<void(const HttpResponsePtr &)> &&callback) {
 
-  auto status = req->getParameter("status");
+  const auto &status = req->getParameter("status");
 
   if (status.empty()) {
     Json::Value json;
@@ -143,13 +143,13 @@ void Auth::registerUser(
     return;
   }
   Json::Value jsonResp;
-  auto email = (*jsonReq)["email"].asString();
-  auto password = (*jsonReq)["password"].asString();
+  const auto &email = (*jsonReq)["email"].asString();
+  const auto &password = (*jsonReq)["password"].asString();
 
-  const auto &client = app().getDbClient();
+  const auto &dbClient = app().getDbClient();
 
   if (status == CAND_STATUS) {
-    auto mapper = orm::Mapper<drogon_model::default_db::Candidates>(client);
+    auto mapper = orm::Mapper<drogon_model::default_db::Candidates>(dbClient);
     orm::Criteria findCriteria{
         drogon_model::default_db::Candidates::Cols::_email,
         orm::CompareOperator::EQ, email};
@@ -172,7 +172,7 @@ void Auth::registerUser(
     resp->setStatusCode(k201Created);
     callback(resp);
   } else if (status == EMPL_STATUS) {
-    auto mapper = orm::Mapper<drogon_model::default_db::Employers>(client);
+    auto mapper = orm::Mapper<drogon_model::default_db::Employers>(dbClient);
     orm::Criteria findCriteria{
         drogon_model::default_db::Employers::Cols::_email,
         orm::CompareOperator::EQ, email};
