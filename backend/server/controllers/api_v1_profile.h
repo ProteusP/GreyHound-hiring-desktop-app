@@ -15,15 +15,10 @@ class profile : public drogon::HttpController<profile> {
 
 public:
   METHOD_LIST_BEGIN
-  // use METHOD_ADD to add your custom processing function here;
-  // METHOD_ADD(profile::get, "/{2}/{1}", Get); // path is
-  // /api/v1/profile/{arg2}/{arg1} METHOD_ADD(profile::your_method_name,
-  // "/{1}/{2}/list", Get); // path is /api/v1/profile/{arg1}/{arg2}/list
-  // ADD_METHOD_TO(profile::your_method_name, "/absolute/path/{1}/{2}/list",
-  // Get); // path is /absolute/path/{arg1}/{arg2}/list
-  METHOD_ADD(profile::getProfile, "/", drogon::Get, "api::v1::checkAuthFilter");
+  METHOD_ADD(profile::getProfile, "/", drogon::Get,
+             "api::v1::checkAuthFilter"); // path is /api/v1/profile
   METHOD_ADD(profile::patchProfile, "/", drogon::Patch,
-             "api::v1::checkAuthFilter");
+             "api::v1::checkAuthFilter"); // path is /api/v1/profile
   METHOD_LIST_END
 };
 } // namespace v1
