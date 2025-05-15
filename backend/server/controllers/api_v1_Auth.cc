@@ -8,7 +8,7 @@
 #include <drogon/HttpResponse.h>
 #include <drogon/HttpTypes.h>
 #include <drogon/orm/Exception.h>
-#include <exception>
+
 
 using namespace api::v1;
 
@@ -20,7 +20,7 @@ void Auth::login(const HttpRequestPtr &req,
   if (status.empty()) {
     Json::Value json;
     json["error"] = "Missing 'status' parameter";
-    auto resp = HttpResponse::newHttpJsonResponse(json);
+    const auto resp = HttpResponse::newHttpJsonResponse(json);
     resp->setStatusCode(k400BadRequest);
     callback(resp);
     return;
@@ -29,7 +29,7 @@ void Auth::login(const HttpRequestPtr &req,
   const auto &json = req->getJsonObject();
 
   if (!json || !json->isMember("email") || !json->isMember("password")) {
-    auto resp = HttpResponse::newHttpJsonResponse(
+    const auto resp = HttpResponse::newHttpJsonResponse(
         Json::Value{{"error", "Invalid request format"}});
     resp->setStatusCode(k400BadRequest);
     callback(resp);
@@ -45,7 +45,7 @@ void Auth::login(const HttpRequestPtr &req,
   } else if (status == EMPL_STATUS) {
     table = "employers";
   } else {
-    auto resp = HttpResponse::newHttpJsonResponse(
+    const auto resp = HttpResponse::newHttpJsonResponse(
         Json::Value{{"error", "Invalid status parameter"}});
     resp->setStatusCode(k400BadRequest);
     callback(resp);
@@ -61,7 +61,7 @@ void Auth::login(const HttpRequestPtr &req,
       sqlString,
       [=, callback = std::move(callback)](const orm::Result &result) {
         if (result.empty()) {
-          auto resp = HttpResponse::newHttpJsonResponse(
+          const auto resp = HttpResponse::newHttpJsonResponse(
               Json::Value{{"error", "User not found"}});
           resp->setStatusCode(k401Unauthorized);
           callback(resp);
@@ -69,10 +69,9 @@ void Auth::login(const HttpRequestPtr &req,
         }
 
         const auto &row = result[0];
-        std::string dbPassword = row["password"].as<std::string>();
 
-        if (password != dbPassword) {
-          auto resp = HttpResponse::newHttpJsonResponse(
+        if (const auto dbPassword = row["password"].as<std::string>(); password != dbPassword) {
+          const auto resp = HttpResponse::newHttpJsonResponse(
               Json::Value{{"error", "Wrong password"}});
           resp->setStatusCode(k401Unauthorized);
           callback(resp);
@@ -80,29 +79,29 @@ void Auth::login(const HttpRequestPtr &req,
         }
 
         try {
-          auto session = req->session();
+          const auto session = req->session();
 
           session->insert("authenticated", true);
           session->insert("user_id", row["id"].as<std::string>());
           session->insert("user_status", status);
 
-          Json::Value json;
-          json["status"] = "success";
-          json["session_id"] = session->sessionId();
+          Json::Value jsonResp;
+          jsonResp["status"] = "success";
+          jsonResp["session_id"] = session->sessionId();
 
-          auto resp = HttpResponse::newHttpJsonResponse(json);
+          auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
 
           callback(resp);
-        } catch (const std::exception &e) {
-          Json::Value json{{"error", "Session creation failed"}};
-          auto resp = HttpResponse::newHttpJsonResponse(json);
+        } catch (...) {
+          const Json::Value jsonError{{"error", "Session creation failed"}};
+          const auto resp = HttpResponse::newHttpJsonResponse(jsonError);
           resp->setStatusCode(drogon::k500InternalServerError);
 
           callback(resp);
         }
       },
       [=, callback = std::move(callback)](const orm::DrogonDbException &e) {
-        auto resp = HttpResponse::newHttpJsonResponse(
+        const auto resp = HttpResponse::newHttpJsonResponse(
             Json::Value{{"error", "Database error"}});
         resp->setStatusCode(k500InternalServerError);
         callback(resp);
@@ -176,9 +175,8 @@ void Auth::registerUser(
     orm::Criteria findCriteria{
         drogon_model::default_db::Employers::Cols::_email,
         orm::CompareOperator::EQ, email};
-    auto candidates = mapper.findBy(findCriteria);
 
-    if (!candidates.empty()) {
+    if (auto candidates = mapper.findBy(findCriteria); !candidates.empty()) {
       jsonResp["error"] = "Email already exists";
       auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
       resp->setStatusCode(k409Conflict);

@@ -5,21 +5,20 @@
 
 using namespace drogon;
 
-namespace api {
-namespace v1 {
-class resources : public drogon::HttpController<resources> {
-  void getResumes(const HttpRequestPtr &req,
-                  std::function<void(const HttpResponsePtr &)> &&callback);
-  void getVacancies(const HttpRequestPtr &req,
-                    std::function<void(const HttpResponsePtr &)> &&callback);
+namespace api::v1 {
+    class resources final : public drogon::HttpController<resources> {
+        static void getResumes(const HttpRequestPtr &req,
+                               std::function<void(const HttpResponsePtr &)> &&callback);
 
-public:
-  METHOD_LIST_BEGIN
-  METHOD_ADD(resources::getResumes, "/resumes", drogon::Get,
-             "api::v1::checkAuthFilter"); // path is /api/v1/resources/resumes
-  METHOD_ADD(resources::getVacancies, "/vacancies", drogon::Get,
-             "api::v1::checkAuthFilter"); // path is /api/v1/resources/vacancies
-  METHOD_LIST_END
-};
-} // namespace v1
-} // namespace api
+        static void getVacancies(const HttpRequestPtr &req,
+                                 std::function<void(const HttpResponsePtr &)> &&callback);
+
+    public:
+        METHOD_LIST_BEGIN
+            METHOD_ADD(resources::getResumes, "/resumes", drogon::Get,
+                       "api::v1::checkAuthFilter"); // path is /api/v1/resources/resumes
+            METHOD_ADD(resources::getVacancies, "/vacancies", drogon::Get,
+                       "api::v1::checkAuthFilter"); // path is /api/v1/resources/vacancies
+        METHOD_LIST_END
+    };
+}

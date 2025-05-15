@@ -7,8 +7,6 @@
 #include "drogon/HttpTypes.h"
 #include "drogon/orm/Criteria.h"
 #include "drogon/orm/Mapper.h"
-#include "trantor/utils/Logger.h"
-#include <utility>
 using namespace api::v1;
 
 // Add definition of your processing function here
@@ -50,9 +48,9 @@ void profile::getProfile(
     orm::Criteria findCriteria{drogon_model::default_db::Employers::Cols::_id,
                                orm::CompareOperator::EQ, userId};
 
-    const auto &empls = mapper.findBy(findCriteria);
+    const auto &employers = mapper.findBy(findCriteria);
 
-    if (empls.empty()) {
+    if (employers.empty()) {
       jsonResp["error"] = "Employer not found";
 
       auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
@@ -62,7 +60,7 @@ void profile::getProfile(
       return;
     }
 
-    const auto &empl = empls.front();
+    const auto &empl = employers.front();
     jsonResp = empl.toJson();
     auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
     resp->setStatusCode(drogon::k200OK);
