@@ -17,7 +17,6 @@ const std::string Candidates::Cols::_id = "id";
 const std::string Candidates::Cols::_name = "name";
 const std::string Candidates::Cols::_surname = "surname";
 const std::string Candidates::Cols::_email = "email";
-const std::string Candidates::Cols::_password = "password";
 const std::string Candidates::Cols::_phone_num = "phone_num";
 const std::string Candidates::Cols::_resume = "resume";
 const std::string Candidates::Cols::_place_of_study = "place_of_study";
@@ -40,7 +39,6 @@ const std::vector<typename Candidates::MetaData> Candidates::metaData_={
 {"name","std::string","varchar(128)",128,0,0,1},
 {"surname","std::string","varchar(128)",128,0,0,1},
 {"email","std::string","varchar(256)",256,0,0,1},
-{"password","std::string","varchar(128)",128,0,0,1},
 {"phone_num","std::string","varchar(16)",16,0,0,0},
 {"resume","std::string","text",0,0,0,0},
 {"place_of_study","std::string","varchar(128)",128,0,0,0},
@@ -79,10 +77,6 @@ Candidates::Candidates(const Row &r, const ssize_t indexOffset) noexcept
         if(!r["email"].isNull())
         {
             email_=std::make_shared<std::string>(r["email"].as<std::string>());
-        }
-        if(!r["password"].isNull())
-        {
-            password_=std::make_shared<std::string>(r["password"].as<std::string>());
         }
         if(!r["phone_num"].isNull())
         {
@@ -140,7 +134,7 @@ Candidates::Candidates(const Row &r, const ssize_t indexOffset) noexcept
     else
     {
         size_t offset = (size_t)indexOffset;
-        if(offset + 18 > r.size())
+        if(offset + 17 > r.size())
         {
             LOG_FATAL << "Invalid SQL result for this model";
             return;
@@ -169,69 +163,64 @@ Candidates::Candidates(const Row &r, const ssize_t indexOffset) noexcept
         index = offset + 4;
         if(!r[index].isNull())
         {
-            password_=std::make_shared<std::string>(r[index].as<std::string>());
+            phoneNum_=std::make_shared<std::string>(r[index].as<std::string>());
         }
         index = offset + 5;
         if(!r[index].isNull())
         {
-            phoneNum_=std::make_shared<std::string>(r[index].as<std::string>());
+            resume_=std::make_shared<std::string>(r[index].as<std::string>());
         }
         index = offset + 6;
         if(!r[index].isNull())
         {
-            resume_=std::make_shared<std::string>(r[index].as<std::string>());
+            placeOfStudy_=std::make_shared<std::string>(r[index].as<std::string>());
         }
         index = offset + 7;
         if(!r[index].isNull())
         {
-            placeOfStudy_=std::make_shared<std::string>(r[index].as<std::string>());
+            facultyOfEduc_=std::make_shared<std::string>(r[index].as<std::string>());
         }
         index = offset + 8;
         if(!r[index].isNull())
         {
-            facultyOfEduc_=std::make_shared<std::string>(r[index].as<std::string>());
+            graduationYear_=std::make_shared<int32_t>(r[index].as<int32_t>());
         }
         index = offset + 9;
         if(!r[index].isNull())
         {
-            graduationYear_=std::make_shared<int32_t>(r[index].as<int32_t>());
+            photo_=std::make_shared<std::string>(r[index].as<std::string>());
         }
         index = offset + 10;
         if(!r[index].isNull())
         {
-            photo_=std::make_shared<std::string>(r[index].as<std::string>());
+            about_=std::make_shared<std::string>(r[index].as<std::string>());
         }
         index = offset + 11;
         if(!r[index].isNull())
         {
-            about_=std::make_shared<std::string>(r[index].as<std::string>());
+            place_=std::make_shared<std::string>(r[index].as<std::string>());
         }
         index = offset + 12;
         if(!r[index].isNull())
         {
-            place_=std::make_shared<std::string>(r[index].as<std::string>());
+            searchStatusId_=std::make_shared<int32_t>(r[index].as<int32_t>());
         }
         index = offset + 13;
         if(!r[index].isNull())
         {
-            searchStatusId_=std::make_shared<int32_t>(r[index].as<int32_t>());
+            educStatusId_=std::make_shared<int32_t>(r[index].as<int32_t>());
         }
         index = offset + 14;
         if(!r[index].isNull())
         {
-            educStatusId_=std::make_shared<int32_t>(r[index].as<int32_t>());
+            experienceStatusId_=std::make_shared<int32_t>(r[index].as<int32_t>());
         }
         index = offset + 15;
         if(!r[index].isNull())
         {
-            experienceStatusId_=std::make_shared<int32_t>(r[index].as<int32_t>());
-        }
-        index = offset + 16;
-        if(!r[index].isNull())
-        {
             workScheduleStatusId_=std::make_shared<int32_t>(r[index].as<int32_t>());
         }
-        index = offset + 17;
+        index = offset + 16;
         if(!r[index].isNull())
         {
             searchStatus_=std::make_shared<std::string>(r[index].as<std::string>());
@@ -242,7 +231,7 @@ Candidates::Candidates(const Row &r, const ssize_t indexOffset) noexcept
 
 Candidates::Candidates(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector) noexcept(false)
 {
-    if(pMasqueradingVector.size() != 18)
+    if(pMasqueradingVector.size() != 17)
     {
         LOG_ERROR << "Bad masquerading vector";
         return;
@@ -284,7 +273,7 @@ Candidates::Candidates(const Json::Value &pJson, const std::vector<std::string> 
         dirtyFlag_[4] = true;
         if(!pJson[pMasqueradingVector[4]].isNull())
         {
-            password_=std::make_shared<std::string>(pJson[pMasqueradingVector[4]].asString());
+            phoneNum_=std::make_shared<std::string>(pJson[pMasqueradingVector[4]].asString());
         }
     }
     if(!pMasqueradingVector[5].empty() && pJson.isMember(pMasqueradingVector[5]))
@@ -292,7 +281,7 @@ Candidates::Candidates(const Json::Value &pJson, const std::vector<std::string> 
         dirtyFlag_[5] = true;
         if(!pJson[pMasqueradingVector[5]].isNull())
         {
-            phoneNum_=std::make_shared<std::string>(pJson[pMasqueradingVector[5]].asString());
+            resume_=std::make_shared<std::string>(pJson[pMasqueradingVector[5]].asString());
         }
     }
     if(!pMasqueradingVector[6].empty() && pJson.isMember(pMasqueradingVector[6]))
@@ -300,7 +289,7 @@ Candidates::Candidates(const Json::Value &pJson, const std::vector<std::string> 
         dirtyFlag_[6] = true;
         if(!pJson[pMasqueradingVector[6]].isNull())
         {
-            resume_=std::make_shared<std::string>(pJson[pMasqueradingVector[6]].asString());
+            placeOfStudy_=std::make_shared<std::string>(pJson[pMasqueradingVector[6]].asString());
         }
     }
     if(!pMasqueradingVector[7].empty() && pJson.isMember(pMasqueradingVector[7]))
@@ -308,7 +297,7 @@ Candidates::Candidates(const Json::Value &pJson, const std::vector<std::string> 
         dirtyFlag_[7] = true;
         if(!pJson[pMasqueradingVector[7]].isNull())
         {
-            placeOfStudy_=std::make_shared<std::string>(pJson[pMasqueradingVector[7]].asString());
+            facultyOfEduc_=std::make_shared<std::string>(pJson[pMasqueradingVector[7]].asString());
         }
     }
     if(!pMasqueradingVector[8].empty() && pJson.isMember(pMasqueradingVector[8]))
@@ -316,7 +305,7 @@ Candidates::Candidates(const Json::Value &pJson, const std::vector<std::string> 
         dirtyFlag_[8] = true;
         if(!pJson[pMasqueradingVector[8]].isNull())
         {
-            facultyOfEduc_=std::make_shared<std::string>(pJson[pMasqueradingVector[8]].asString());
+            graduationYear_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[8]].asInt64());
         }
     }
     if(!pMasqueradingVector[9].empty() && pJson.isMember(pMasqueradingVector[9]))
@@ -324,7 +313,7 @@ Candidates::Candidates(const Json::Value &pJson, const std::vector<std::string> 
         dirtyFlag_[9] = true;
         if(!pJson[pMasqueradingVector[9]].isNull())
         {
-            graduationYear_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[9]].asInt64());
+            photo_=std::make_shared<std::string>(pJson[pMasqueradingVector[9]].asString());
         }
     }
     if(!pMasqueradingVector[10].empty() && pJson.isMember(pMasqueradingVector[10]))
@@ -332,7 +321,7 @@ Candidates::Candidates(const Json::Value &pJson, const std::vector<std::string> 
         dirtyFlag_[10] = true;
         if(!pJson[pMasqueradingVector[10]].isNull())
         {
-            photo_=std::make_shared<std::string>(pJson[pMasqueradingVector[10]].asString());
+            about_=std::make_shared<std::string>(pJson[pMasqueradingVector[10]].asString());
         }
     }
     if(!pMasqueradingVector[11].empty() && pJson.isMember(pMasqueradingVector[11]))
@@ -340,7 +329,7 @@ Candidates::Candidates(const Json::Value &pJson, const std::vector<std::string> 
         dirtyFlag_[11] = true;
         if(!pJson[pMasqueradingVector[11]].isNull())
         {
-            about_=std::make_shared<std::string>(pJson[pMasqueradingVector[11]].asString());
+            place_=std::make_shared<std::string>(pJson[pMasqueradingVector[11]].asString());
         }
     }
     if(!pMasqueradingVector[12].empty() && pJson.isMember(pMasqueradingVector[12]))
@@ -348,7 +337,7 @@ Candidates::Candidates(const Json::Value &pJson, const std::vector<std::string> 
         dirtyFlag_[12] = true;
         if(!pJson[pMasqueradingVector[12]].isNull())
         {
-            place_=std::make_shared<std::string>(pJson[pMasqueradingVector[12]].asString());
+            searchStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[12]].asInt64());
         }
     }
     if(!pMasqueradingVector[13].empty() && pJson.isMember(pMasqueradingVector[13]))
@@ -356,7 +345,7 @@ Candidates::Candidates(const Json::Value &pJson, const std::vector<std::string> 
         dirtyFlag_[13] = true;
         if(!pJson[pMasqueradingVector[13]].isNull())
         {
-            searchStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[13]].asInt64());
+            educStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[13]].asInt64());
         }
     }
     if(!pMasqueradingVector[14].empty() && pJson.isMember(pMasqueradingVector[14]))
@@ -364,7 +353,7 @@ Candidates::Candidates(const Json::Value &pJson, const std::vector<std::string> 
         dirtyFlag_[14] = true;
         if(!pJson[pMasqueradingVector[14]].isNull())
         {
-            educStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[14]].asInt64());
+            experienceStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[14]].asInt64());
         }
     }
     if(!pMasqueradingVector[15].empty() && pJson.isMember(pMasqueradingVector[15]))
@@ -372,7 +361,7 @@ Candidates::Candidates(const Json::Value &pJson, const std::vector<std::string> 
         dirtyFlag_[15] = true;
         if(!pJson[pMasqueradingVector[15]].isNull())
         {
-            experienceStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[15]].asInt64());
+            workScheduleStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[15]].asInt64());
         }
     }
     if(!pMasqueradingVector[16].empty() && pJson.isMember(pMasqueradingVector[16]))
@@ -380,15 +369,7 @@ Candidates::Candidates(const Json::Value &pJson, const std::vector<std::string> 
         dirtyFlag_[16] = true;
         if(!pJson[pMasqueradingVector[16]].isNull())
         {
-            workScheduleStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[16]].asInt64());
-        }
-    }
-    if(!pMasqueradingVector[17].empty() && pJson.isMember(pMasqueradingVector[17]))
-    {
-        dirtyFlag_[17] = true;
-        if(!pJson[pMasqueradingVector[17]].isNull())
-        {
-            searchStatus_=std::make_shared<std::string>(pJson[pMasqueradingVector[17]].asString());
+            searchStatus_=std::make_shared<std::string>(pJson[pMasqueradingVector[16]].asString());
         }
     }
 }
@@ -427,17 +408,9 @@ Candidates::Candidates(const Json::Value &pJson) noexcept(false)
             email_=std::make_shared<std::string>(pJson["email"].asString());
         }
     }
-    if(pJson.isMember("password"))
-    {
-        dirtyFlag_[4]=true;
-        if(!pJson["password"].isNull())
-        {
-            password_=std::make_shared<std::string>(pJson["password"].asString());
-        }
-    }
     if(pJson.isMember("phone_num"))
     {
-        dirtyFlag_[5]=true;
+        dirtyFlag_[4]=true;
         if(!pJson["phone_num"].isNull())
         {
             phoneNum_=std::make_shared<std::string>(pJson["phone_num"].asString());
@@ -445,7 +418,7 @@ Candidates::Candidates(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("resume"))
     {
-        dirtyFlag_[6]=true;
+        dirtyFlag_[5]=true;
         if(!pJson["resume"].isNull())
         {
             resume_=std::make_shared<std::string>(pJson["resume"].asString());
@@ -453,7 +426,7 @@ Candidates::Candidates(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("place_of_study"))
     {
-        dirtyFlag_[7]=true;
+        dirtyFlag_[6]=true;
         if(!pJson["place_of_study"].isNull())
         {
             placeOfStudy_=std::make_shared<std::string>(pJson["place_of_study"].asString());
@@ -461,7 +434,7 @@ Candidates::Candidates(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("faculty_of_educ"))
     {
-        dirtyFlag_[8]=true;
+        dirtyFlag_[7]=true;
         if(!pJson["faculty_of_educ"].isNull())
         {
             facultyOfEduc_=std::make_shared<std::string>(pJson["faculty_of_educ"].asString());
@@ -469,7 +442,7 @@ Candidates::Candidates(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("graduation_year"))
     {
-        dirtyFlag_[9]=true;
+        dirtyFlag_[8]=true;
         if(!pJson["graduation_year"].isNull())
         {
             graduationYear_=std::make_shared<int32_t>((int32_t)pJson["graduation_year"].asInt64());
@@ -477,7 +450,7 @@ Candidates::Candidates(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("photo"))
     {
-        dirtyFlag_[10]=true;
+        dirtyFlag_[9]=true;
         if(!pJson["photo"].isNull())
         {
             photo_=std::make_shared<std::string>(pJson["photo"].asString());
@@ -485,7 +458,7 @@ Candidates::Candidates(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("about"))
     {
-        dirtyFlag_[11]=true;
+        dirtyFlag_[10]=true;
         if(!pJson["about"].isNull())
         {
             about_=std::make_shared<std::string>(pJson["about"].asString());
@@ -493,7 +466,7 @@ Candidates::Candidates(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("place"))
     {
-        dirtyFlag_[12]=true;
+        dirtyFlag_[11]=true;
         if(!pJson["place"].isNull())
         {
             place_=std::make_shared<std::string>(pJson["place"].asString());
@@ -501,7 +474,7 @@ Candidates::Candidates(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("search_status_id"))
     {
-        dirtyFlag_[13]=true;
+        dirtyFlag_[12]=true;
         if(!pJson["search_status_id"].isNull())
         {
             searchStatusId_=std::make_shared<int32_t>((int32_t)pJson["search_status_id"].asInt64());
@@ -509,7 +482,7 @@ Candidates::Candidates(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("educ_status_id"))
     {
-        dirtyFlag_[14]=true;
+        dirtyFlag_[13]=true;
         if(!pJson["educ_status_id"].isNull())
         {
             educStatusId_=std::make_shared<int32_t>((int32_t)pJson["educ_status_id"].asInt64());
@@ -517,7 +490,7 @@ Candidates::Candidates(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("experience_status_id"))
     {
-        dirtyFlag_[15]=true;
+        dirtyFlag_[14]=true;
         if(!pJson["experience_status_id"].isNull())
         {
             experienceStatusId_=std::make_shared<int32_t>((int32_t)pJson["experience_status_id"].asInt64());
@@ -525,7 +498,7 @@ Candidates::Candidates(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("work_schedule_status_id"))
     {
-        dirtyFlag_[16]=true;
+        dirtyFlag_[15]=true;
         if(!pJson["work_schedule_status_id"].isNull())
         {
             workScheduleStatusId_=std::make_shared<int32_t>((int32_t)pJson["work_schedule_status_id"].asInt64());
@@ -533,7 +506,7 @@ Candidates::Candidates(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("search_status"))
     {
-        dirtyFlag_[17]=true;
+        dirtyFlag_[16]=true;
         if(!pJson["search_status"].isNull())
         {
             searchStatus_=std::make_shared<std::string>(pJson["search_status"].asString());
@@ -544,7 +517,7 @@ Candidates::Candidates(const Json::Value &pJson) noexcept(false)
 void Candidates::updateByMasqueradedJson(const Json::Value &pJson,
                                             const std::vector<std::string> &pMasqueradingVector) noexcept(false)
 {
-    if(pMasqueradingVector.size() != 18)
+    if(pMasqueradingVector.size() != 17)
     {
         LOG_ERROR << "Bad masquerading vector";
         return;
@@ -585,7 +558,7 @@ void Candidates::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[4] = true;
         if(!pJson[pMasqueradingVector[4]].isNull())
         {
-            password_=std::make_shared<std::string>(pJson[pMasqueradingVector[4]].asString());
+            phoneNum_=std::make_shared<std::string>(pJson[pMasqueradingVector[4]].asString());
         }
     }
     if(!pMasqueradingVector[5].empty() && pJson.isMember(pMasqueradingVector[5]))
@@ -593,7 +566,7 @@ void Candidates::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[5] = true;
         if(!pJson[pMasqueradingVector[5]].isNull())
         {
-            phoneNum_=std::make_shared<std::string>(pJson[pMasqueradingVector[5]].asString());
+            resume_=std::make_shared<std::string>(pJson[pMasqueradingVector[5]].asString());
         }
     }
     if(!pMasqueradingVector[6].empty() && pJson.isMember(pMasqueradingVector[6]))
@@ -601,7 +574,7 @@ void Candidates::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[6] = true;
         if(!pJson[pMasqueradingVector[6]].isNull())
         {
-            resume_=std::make_shared<std::string>(pJson[pMasqueradingVector[6]].asString());
+            placeOfStudy_=std::make_shared<std::string>(pJson[pMasqueradingVector[6]].asString());
         }
     }
     if(!pMasqueradingVector[7].empty() && pJson.isMember(pMasqueradingVector[7]))
@@ -609,7 +582,7 @@ void Candidates::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[7] = true;
         if(!pJson[pMasqueradingVector[7]].isNull())
         {
-            placeOfStudy_=std::make_shared<std::string>(pJson[pMasqueradingVector[7]].asString());
+            facultyOfEduc_=std::make_shared<std::string>(pJson[pMasqueradingVector[7]].asString());
         }
     }
     if(!pMasqueradingVector[8].empty() && pJson.isMember(pMasqueradingVector[8]))
@@ -617,7 +590,7 @@ void Candidates::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[8] = true;
         if(!pJson[pMasqueradingVector[8]].isNull())
         {
-            facultyOfEduc_=std::make_shared<std::string>(pJson[pMasqueradingVector[8]].asString());
+            graduationYear_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[8]].asInt64());
         }
     }
     if(!pMasqueradingVector[9].empty() && pJson.isMember(pMasqueradingVector[9]))
@@ -625,7 +598,7 @@ void Candidates::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[9] = true;
         if(!pJson[pMasqueradingVector[9]].isNull())
         {
-            graduationYear_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[9]].asInt64());
+            photo_=std::make_shared<std::string>(pJson[pMasqueradingVector[9]].asString());
         }
     }
     if(!pMasqueradingVector[10].empty() && pJson.isMember(pMasqueradingVector[10]))
@@ -633,7 +606,7 @@ void Candidates::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[10] = true;
         if(!pJson[pMasqueradingVector[10]].isNull())
         {
-            photo_=std::make_shared<std::string>(pJson[pMasqueradingVector[10]].asString());
+            about_=std::make_shared<std::string>(pJson[pMasqueradingVector[10]].asString());
         }
     }
     if(!pMasqueradingVector[11].empty() && pJson.isMember(pMasqueradingVector[11]))
@@ -641,7 +614,7 @@ void Candidates::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[11] = true;
         if(!pJson[pMasqueradingVector[11]].isNull())
         {
-            about_=std::make_shared<std::string>(pJson[pMasqueradingVector[11]].asString());
+            place_=std::make_shared<std::string>(pJson[pMasqueradingVector[11]].asString());
         }
     }
     if(!pMasqueradingVector[12].empty() && pJson.isMember(pMasqueradingVector[12]))
@@ -649,7 +622,7 @@ void Candidates::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[12] = true;
         if(!pJson[pMasqueradingVector[12]].isNull())
         {
-            place_=std::make_shared<std::string>(pJson[pMasqueradingVector[12]].asString());
+            searchStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[12]].asInt64());
         }
     }
     if(!pMasqueradingVector[13].empty() && pJson.isMember(pMasqueradingVector[13]))
@@ -657,7 +630,7 @@ void Candidates::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[13] = true;
         if(!pJson[pMasqueradingVector[13]].isNull())
         {
-            searchStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[13]].asInt64());
+            educStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[13]].asInt64());
         }
     }
     if(!pMasqueradingVector[14].empty() && pJson.isMember(pMasqueradingVector[14]))
@@ -665,7 +638,7 @@ void Candidates::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[14] = true;
         if(!pJson[pMasqueradingVector[14]].isNull())
         {
-            educStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[14]].asInt64());
+            experienceStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[14]].asInt64());
         }
     }
     if(!pMasqueradingVector[15].empty() && pJson.isMember(pMasqueradingVector[15]))
@@ -673,7 +646,7 @@ void Candidates::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[15] = true;
         if(!pJson[pMasqueradingVector[15]].isNull())
         {
-            experienceStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[15]].asInt64());
+            workScheduleStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[15]].asInt64());
         }
     }
     if(!pMasqueradingVector[16].empty() && pJson.isMember(pMasqueradingVector[16]))
@@ -681,15 +654,7 @@ void Candidates::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[16] = true;
         if(!pJson[pMasqueradingVector[16]].isNull())
         {
-            workScheduleStatusId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[16]].asInt64());
-        }
-    }
-    if(!pMasqueradingVector[17].empty() && pJson.isMember(pMasqueradingVector[17]))
-    {
-        dirtyFlag_[17] = true;
-        if(!pJson[pMasqueradingVector[17]].isNull())
-        {
-            searchStatus_=std::make_shared<std::string>(pJson[pMasqueradingVector[17]].asString());
+            searchStatus_=std::make_shared<std::string>(pJson[pMasqueradingVector[16]].asString());
         }
     }
 }
@@ -727,17 +692,9 @@ void Candidates::updateByJson(const Json::Value &pJson) noexcept(false)
             email_=std::make_shared<std::string>(pJson["email"].asString());
         }
     }
-    if(pJson.isMember("password"))
-    {
-        dirtyFlag_[4] = true;
-        if(!pJson["password"].isNull())
-        {
-            password_=std::make_shared<std::string>(pJson["password"].asString());
-        }
-    }
     if(pJson.isMember("phone_num"))
     {
-        dirtyFlag_[5] = true;
+        dirtyFlag_[4] = true;
         if(!pJson["phone_num"].isNull())
         {
             phoneNum_=std::make_shared<std::string>(pJson["phone_num"].asString());
@@ -745,7 +702,7 @@ void Candidates::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("resume"))
     {
-        dirtyFlag_[6] = true;
+        dirtyFlag_[5] = true;
         if(!pJson["resume"].isNull())
         {
             resume_=std::make_shared<std::string>(pJson["resume"].asString());
@@ -753,7 +710,7 @@ void Candidates::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("place_of_study"))
     {
-        dirtyFlag_[7] = true;
+        dirtyFlag_[6] = true;
         if(!pJson["place_of_study"].isNull())
         {
             placeOfStudy_=std::make_shared<std::string>(pJson["place_of_study"].asString());
@@ -761,7 +718,7 @@ void Candidates::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("faculty_of_educ"))
     {
-        dirtyFlag_[8] = true;
+        dirtyFlag_[7] = true;
         if(!pJson["faculty_of_educ"].isNull())
         {
             facultyOfEduc_=std::make_shared<std::string>(pJson["faculty_of_educ"].asString());
@@ -769,7 +726,7 @@ void Candidates::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("graduation_year"))
     {
-        dirtyFlag_[9] = true;
+        dirtyFlag_[8] = true;
         if(!pJson["graduation_year"].isNull())
         {
             graduationYear_=std::make_shared<int32_t>((int32_t)pJson["graduation_year"].asInt64());
@@ -777,7 +734,7 @@ void Candidates::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("photo"))
     {
-        dirtyFlag_[10] = true;
+        dirtyFlag_[9] = true;
         if(!pJson["photo"].isNull())
         {
             photo_=std::make_shared<std::string>(pJson["photo"].asString());
@@ -785,7 +742,7 @@ void Candidates::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("about"))
     {
-        dirtyFlag_[11] = true;
+        dirtyFlag_[10] = true;
         if(!pJson["about"].isNull())
         {
             about_=std::make_shared<std::string>(pJson["about"].asString());
@@ -793,7 +750,7 @@ void Candidates::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("place"))
     {
-        dirtyFlag_[12] = true;
+        dirtyFlag_[11] = true;
         if(!pJson["place"].isNull())
         {
             place_=std::make_shared<std::string>(pJson["place"].asString());
@@ -801,7 +758,7 @@ void Candidates::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("search_status_id"))
     {
-        dirtyFlag_[13] = true;
+        dirtyFlag_[12] = true;
         if(!pJson["search_status_id"].isNull())
         {
             searchStatusId_=std::make_shared<int32_t>((int32_t)pJson["search_status_id"].asInt64());
@@ -809,7 +766,7 @@ void Candidates::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("educ_status_id"))
     {
-        dirtyFlag_[14] = true;
+        dirtyFlag_[13] = true;
         if(!pJson["educ_status_id"].isNull())
         {
             educStatusId_=std::make_shared<int32_t>((int32_t)pJson["educ_status_id"].asInt64());
@@ -817,7 +774,7 @@ void Candidates::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("experience_status_id"))
     {
-        dirtyFlag_[15] = true;
+        dirtyFlag_[14] = true;
         if(!pJson["experience_status_id"].isNull())
         {
             experienceStatusId_=std::make_shared<int32_t>((int32_t)pJson["experience_status_id"].asInt64());
@@ -825,7 +782,7 @@ void Candidates::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("work_schedule_status_id"))
     {
-        dirtyFlag_[16] = true;
+        dirtyFlag_[15] = true;
         if(!pJson["work_schedule_status_id"].isNull())
         {
             workScheduleStatusId_=std::make_shared<int32_t>((int32_t)pJson["work_schedule_status_id"].asInt64());
@@ -833,7 +790,7 @@ void Candidates::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("search_status"))
     {
-        dirtyFlag_[17] = true;
+        dirtyFlag_[16] = true;
         if(!pJson["search_status"].isNull())
         {
             searchStatus_=std::make_shared<std::string>(pJson["search_status"].asString());
@@ -929,28 +886,6 @@ void Candidates::setEmail(std::string &&pEmail) noexcept
     dirtyFlag_[3] = true;
 }
 
-const std::string &Candidates::getValueOfPassword() const noexcept
-{
-    static const std::string defaultValue = std::string();
-    if(password_)
-        return *password_;
-    return defaultValue;
-}
-const std::shared_ptr<std::string> &Candidates::getPassword() const noexcept
-{
-    return password_;
-}
-void Candidates::setPassword(const std::string &pPassword) noexcept
-{
-    password_ = std::make_shared<std::string>(pPassword);
-    dirtyFlag_[4] = true;
-}
-void Candidates::setPassword(std::string &&pPassword) noexcept
-{
-    password_ = std::make_shared<std::string>(std::move(pPassword));
-    dirtyFlag_[4] = true;
-}
-
 const std::string &Candidates::getValueOfPhoneNum() const noexcept
 {
     static const std::string defaultValue = std::string();
@@ -965,17 +900,17 @@ const std::shared_ptr<std::string> &Candidates::getPhoneNum() const noexcept
 void Candidates::setPhoneNum(const std::string &pPhoneNum) noexcept
 {
     phoneNum_ = std::make_shared<std::string>(pPhoneNum);
-    dirtyFlag_[5] = true;
+    dirtyFlag_[4] = true;
 }
 void Candidates::setPhoneNum(std::string &&pPhoneNum) noexcept
 {
     phoneNum_ = std::make_shared<std::string>(std::move(pPhoneNum));
-    dirtyFlag_[5] = true;
+    dirtyFlag_[4] = true;
 }
 void Candidates::setPhoneNumToNull() noexcept
 {
     phoneNum_.reset();
-    dirtyFlag_[5] = true;
+    dirtyFlag_[4] = true;
 }
 
 const std::string &Candidates::getValueOfResume() const noexcept
@@ -992,17 +927,17 @@ const std::shared_ptr<std::string> &Candidates::getResume() const noexcept
 void Candidates::setResume(const std::string &pResume) noexcept
 {
     resume_ = std::make_shared<std::string>(pResume);
-    dirtyFlag_[6] = true;
+    dirtyFlag_[5] = true;
 }
 void Candidates::setResume(std::string &&pResume) noexcept
 {
     resume_ = std::make_shared<std::string>(std::move(pResume));
-    dirtyFlag_[6] = true;
+    dirtyFlag_[5] = true;
 }
 void Candidates::setResumeToNull() noexcept
 {
     resume_.reset();
-    dirtyFlag_[6] = true;
+    dirtyFlag_[5] = true;
 }
 
 const std::string &Candidates::getValueOfPlaceOfStudy() const noexcept
@@ -1019,17 +954,17 @@ const std::shared_ptr<std::string> &Candidates::getPlaceOfStudy() const noexcept
 void Candidates::setPlaceOfStudy(const std::string &pPlaceOfStudy) noexcept
 {
     placeOfStudy_ = std::make_shared<std::string>(pPlaceOfStudy);
-    dirtyFlag_[7] = true;
+    dirtyFlag_[6] = true;
 }
 void Candidates::setPlaceOfStudy(std::string &&pPlaceOfStudy) noexcept
 {
     placeOfStudy_ = std::make_shared<std::string>(std::move(pPlaceOfStudy));
-    dirtyFlag_[7] = true;
+    dirtyFlag_[6] = true;
 }
 void Candidates::setPlaceOfStudyToNull() noexcept
 {
     placeOfStudy_.reset();
-    dirtyFlag_[7] = true;
+    dirtyFlag_[6] = true;
 }
 
 const std::string &Candidates::getValueOfFacultyOfEduc() const noexcept
@@ -1046,17 +981,17 @@ const std::shared_ptr<std::string> &Candidates::getFacultyOfEduc() const noexcep
 void Candidates::setFacultyOfEduc(const std::string &pFacultyOfEduc) noexcept
 {
     facultyOfEduc_ = std::make_shared<std::string>(pFacultyOfEduc);
-    dirtyFlag_[8] = true;
+    dirtyFlag_[7] = true;
 }
 void Candidates::setFacultyOfEduc(std::string &&pFacultyOfEduc) noexcept
 {
     facultyOfEduc_ = std::make_shared<std::string>(std::move(pFacultyOfEduc));
-    dirtyFlag_[8] = true;
+    dirtyFlag_[7] = true;
 }
 void Candidates::setFacultyOfEducToNull() noexcept
 {
     facultyOfEduc_.reset();
-    dirtyFlag_[8] = true;
+    dirtyFlag_[7] = true;
 }
 
 const int32_t &Candidates::getValueOfGraduationYear() const noexcept
@@ -1073,12 +1008,12 @@ const std::shared_ptr<int32_t> &Candidates::getGraduationYear() const noexcept
 void Candidates::setGraduationYear(const int32_t &pGraduationYear) noexcept
 {
     graduationYear_ = std::make_shared<int32_t>(pGraduationYear);
-    dirtyFlag_[9] = true;
+    dirtyFlag_[8] = true;
 }
 void Candidates::setGraduationYearToNull() noexcept
 {
     graduationYear_.reset();
-    dirtyFlag_[9] = true;
+    dirtyFlag_[8] = true;
 }
 
 const std::string &Candidates::getValueOfPhoto() const noexcept
@@ -1095,17 +1030,17 @@ const std::shared_ptr<std::string> &Candidates::getPhoto() const noexcept
 void Candidates::setPhoto(const std::string &pPhoto) noexcept
 {
     photo_ = std::make_shared<std::string>(pPhoto);
-    dirtyFlag_[10] = true;
+    dirtyFlag_[9] = true;
 }
 void Candidates::setPhoto(std::string &&pPhoto) noexcept
 {
     photo_ = std::make_shared<std::string>(std::move(pPhoto));
-    dirtyFlag_[10] = true;
+    dirtyFlag_[9] = true;
 }
 void Candidates::setPhotoToNull() noexcept
 {
     photo_.reset();
-    dirtyFlag_[10] = true;
+    dirtyFlag_[9] = true;
 }
 
 const std::string &Candidates::getValueOfAbout() const noexcept
@@ -1122,17 +1057,17 @@ const std::shared_ptr<std::string> &Candidates::getAbout() const noexcept
 void Candidates::setAbout(const std::string &pAbout) noexcept
 {
     about_ = std::make_shared<std::string>(pAbout);
-    dirtyFlag_[11] = true;
+    dirtyFlag_[10] = true;
 }
 void Candidates::setAbout(std::string &&pAbout) noexcept
 {
     about_ = std::make_shared<std::string>(std::move(pAbout));
-    dirtyFlag_[11] = true;
+    dirtyFlag_[10] = true;
 }
 void Candidates::setAboutToNull() noexcept
 {
     about_.reset();
-    dirtyFlag_[11] = true;
+    dirtyFlag_[10] = true;
 }
 
 const std::string &Candidates::getValueOfPlace() const noexcept
@@ -1149,17 +1084,17 @@ const std::shared_ptr<std::string> &Candidates::getPlace() const noexcept
 void Candidates::setPlace(const std::string &pPlace) noexcept
 {
     place_ = std::make_shared<std::string>(pPlace);
-    dirtyFlag_[12] = true;
+    dirtyFlag_[11] = true;
 }
 void Candidates::setPlace(std::string &&pPlace) noexcept
 {
     place_ = std::make_shared<std::string>(std::move(pPlace));
-    dirtyFlag_[12] = true;
+    dirtyFlag_[11] = true;
 }
 void Candidates::setPlaceToNull() noexcept
 {
     place_.reset();
-    dirtyFlag_[12] = true;
+    dirtyFlag_[11] = true;
 }
 
 const int32_t &Candidates::getValueOfSearchStatusId() const noexcept
@@ -1176,12 +1111,12 @@ const std::shared_ptr<int32_t> &Candidates::getSearchStatusId() const noexcept
 void Candidates::setSearchStatusId(const int32_t &pSearchStatusId) noexcept
 {
     searchStatusId_ = std::make_shared<int32_t>(pSearchStatusId);
-    dirtyFlag_[13] = true;
+    dirtyFlag_[12] = true;
 }
 void Candidates::setSearchStatusIdToNull() noexcept
 {
     searchStatusId_.reset();
-    dirtyFlag_[13] = true;
+    dirtyFlag_[12] = true;
 }
 
 const int32_t &Candidates::getValueOfEducStatusId() const noexcept
@@ -1198,12 +1133,12 @@ const std::shared_ptr<int32_t> &Candidates::getEducStatusId() const noexcept
 void Candidates::setEducStatusId(const int32_t &pEducStatusId) noexcept
 {
     educStatusId_ = std::make_shared<int32_t>(pEducStatusId);
-    dirtyFlag_[14] = true;
+    dirtyFlag_[13] = true;
 }
 void Candidates::setEducStatusIdToNull() noexcept
 {
     educStatusId_.reset();
-    dirtyFlag_[14] = true;
+    dirtyFlag_[13] = true;
 }
 
 const int32_t &Candidates::getValueOfExperienceStatusId() const noexcept
@@ -1220,12 +1155,12 @@ const std::shared_ptr<int32_t> &Candidates::getExperienceStatusId() const noexce
 void Candidates::setExperienceStatusId(const int32_t &pExperienceStatusId) noexcept
 {
     experienceStatusId_ = std::make_shared<int32_t>(pExperienceStatusId);
-    dirtyFlag_[15] = true;
+    dirtyFlag_[14] = true;
 }
 void Candidates::setExperienceStatusIdToNull() noexcept
 {
     experienceStatusId_.reset();
-    dirtyFlag_[15] = true;
+    dirtyFlag_[14] = true;
 }
 
 const int32_t &Candidates::getValueOfWorkScheduleStatusId() const noexcept
@@ -1242,12 +1177,12 @@ const std::shared_ptr<int32_t> &Candidates::getWorkScheduleStatusId() const noex
 void Candidates::setWorkScheduleStatusId(const int32_t &pWorkScheduleStatusId) noexcept
 {
     workScheduleStatusId_ = std::make_shared<int32_t>(pWorkScheduleStatusId);
-    dirtyFlag_[16] = true;
+    dirtyFlag_[15] = true;
 }
 void Candidates::setWorkScheduleStatusIdToNull() noexcept
 {
     workScheduleStatusId_.reset();
-    dirtyFlag_[16] = true;
+    dirtyFlag_[15] = true;
 }
 
 const std::string &Candidates::getValueOfSearchStatus() const noexcept
@@ -1264,17 +1199,17 @@ const std::shared_ptr<std::string> &Candidates::getSearchStatus() const noexcept
 void Candidates::setSearchStatus(const std::string &pSearchStatus) noexcept
 {
     searchStatus_ = std::make_shared<std::string>(pSearchStatus);
-    dirtyFlag_[17] = true;
+    dirtyFlag_[16] = true;
 }
 void Candidates::setSearchStatus(std::string &&pSearchStatus) noexcept
 {
     searchStatus_ = std::make_shared<std::string>(std::move(pSearchStatus));
-    dirtyFlag_[17] = true;
+    dirtyFlag_[16] = true;
 }
 void Candidates::setSearchStatusToNull() noexcept
 {
     searchStatus_.reset();
-    dirtyFlag_[17] = true;
+    dirtyFlag_[16] = true;
 }
 
 void Candidates::updateId(const uint64_t id)
@@ -1288,7 +1223,6 @@ const std::vector<std::string> &Candidates::insertColumns() noexcept
         "name",
         "surname",
         "email",
-        "password",
         "phone_num",
         "resume",
         "place_of_study",
@@ -1343,17 +1277,6 @@ void Candidates::outputArgs(drogon::orm::internal::SqlBinder &binder) const
     }
     if(dirtyFlag_[4])
     {
-        if(getPassword())
-        {
-            binder << getValueOfPassword();
-        }
-        else
-        {
-            binder << nullptr;
-        }
-    }
-    if(dirtyFlag_[5])
-    {
         if(getPhoneNum())
         {
             binder << getValueOfPhoneNum();
@@ -1363,7 +1286,7 @@ void Candidates::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[6])
+    if(dirtyFlag_[5])
     {
         if(getResume())
         {
@@ -1374,7 +1297,7 @@ void Candidates::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[7])
+    if(dirtyFlag_[6])
     {
         if(getPlaceOfStudy())
         {
@@ -1385,7 +1308,7 @@ void Candidates::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[8])
+    if(dirtyFlag_[7])
     {
         if(getFacultyOfEduc())
         {
@@ -1396,7 +1319,7 @@ void Candidates::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[9])
+    if(dirtyFlag_[8])
     {
         if(getGraduationYear())
         {
@@ -1407,7 +1330,7 @@ void Candidates::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[10])
+    if(dirtyFlag_[9])
     {
         if(getPhoto())
         {
@@ -1418,7 +1341,7 @@ void Candidates::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[11])
+    if(dirtyFlag_[10])
     {
         if(getAbout())
         {
@@ -1429,7 +1352,7 @@ void Candidates::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[12])
+    if(dirtyFlag_[11])
     {
         if(getPlace())
         {
@@ -1440,7 +1363,7 @@ void Candidates::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[13])
+    if(dirtyFlag_[12])
     {
         if(getSearchStatusId())
         {
@@ -1451,7 +1374,7 @@ void Candidates::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[14])
+    if(dirtyFlag_[13])
     {
         if(getEducStatusId())
         {
@@ -1462,7 +1385,7 @@ void Candidates::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[15])
+    if(dirtyFlag_[14])
     {
         if(getExperienceStatusId())
         {
@@ -1473,7 +1396,7 @@ void Candidates::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[16])
+    if(dirtyFlag_[15])
     {
         if(getWorkScheduleStatusId())
         {
@@ -1484,7 +1407,7 @@ void Candidates::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[17])
+    if(dirtyFlag_[16])
     {
         if(getSearchStatus())
         {
@@ -1564,10 +1487,6 @@ const std::vector<std::string> Candidates::updateColumns() const
     {
         ret.push_back(getColumnName(16));
     }
-    if(dirtyFlag_[17])
-    {
-        ret.push_back(getColumnName(17));
-    }
     return ret;
 }
 
@@ -1608,17 +1527,6 @@ void Candidates::updateArgs(drogon::orm::internal::SqlBinder &binder) const
     }
     if(dirtyFlag_[4])
     {
-        if(getPassword())
-        {
-            binder << getValueOfPassword();
-        }
-        else
-        {
-            binder << nullptr;
-        }
-    }
-    if(dirtyFlag_[5])
-    {
         if(getPhoneNum())
         {
             binder << getValueOfPhoneNum();
@@ -1628,7 +1536,7 @@ void Candidates::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[6])
+    if(dirtyFlag_[5])
     {
         if(getResume())
         {
@@ -1639,7 +1547,7 @@ void Candidates::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[7])
+    if(dirtyFlag_[6])
     {
         if(getPlaceOfStudy())
         {
@@ -1650,7 +1558,7 @@ void Candidates::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[8])
+    if(dirtyFlag_[7])
     {
         if(getFacultyOfEduc())
         {
@@ -1661,7 +1569,7 @@ void Candidates::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[9])
+    if(dirtyFlag_[8])
     {
         if(getGraduationYear())
         {
@@ -1672,7 +1580,7 @@ void Candidates::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[10])
+    if(dirtyFlag_[9])
     {
         if(getPhoto())
         {
@@ -1683,7 +1591,7 @@ void Candidates::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[11])
+    if(dirtyFlag_[10])
     {
         if(getAbout())
         {
@@ -1694,7 +1602,7 @@ void Candidates::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[12])
+    if(dirtyFlag_[11])
     {
         if(getPlace())
         {
@@ -1705,7 +1613,7 @@ void Candidates::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[13])
+    if(dirtyFlag_[12])
     {
         if(getSearchStatusId())
         {
@@ -1716,7 +1624,7 @@ void Candidates::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[14])
+    if(dirtyFlag_[13])
     {
         if(getEducStatusId())
         {
@@ -1727,7 +1635,7 @@ void Candidates::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[15])
+    if(dirtyFlag_[14])
     {
         if(getExperienceStatusId())
         {
@@ -1738,7 +1646,7 @@ void Candidates::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[16])
+    if(dirtyFlag_[15])
     {
         if(getWorkScheduleStatusId())
         {
@@ -1749,7 +1657,7 @@ void Candidates::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[17])
+    if(dirtyFlag_[16])
     {
         if(getSearchStatus())
         {
@@ -1795,14 +1703,6 @@ Json::Value Candidates::toJson() const
     else
     {
         ret["email"]=Json::Value();
-    }
-    if(getPassword())
-    {
-        ret["password"]=getValueOfPassword();
-    }
-    else
-    {
-        ret["password"]=Json::Value();
     }
     if(getPhoneNum())
     {
@@ -1915,7 +1815,7 @@ Json::Value Candidates::toMasqueradedJson(
     const std::vector<std::string> &pMasqueradingVector) const
 {
     Json::Value ret;
-    if(pMasqueradingVector.size() == 18)
+    if(pMasqueradingVector.size() == 17)
     {
         if(!pMasqueradingVector[0].empty())
         {
@@ -1963,9 +1863,9 @@ Json::Value Candidates::toMasqueradedJson(
         }
         if(!pMasqueradingVector[4].empty())
         {
-            if(getPassword())
+            if(getPhoneNum())
             {
-                ret[pMasqueradingVector[4]]=getValueOfPassword();
+                ret[pMasqueradingVector[4]]=getValueOfPhoneNum();
             }
             else
             {
@@ -1974,9 +1874,9 @@ Json::Value Candidates::toMasqueradedJson(
         }
         if(!pMasqueradingVector[5].empty())
         {
-            if(getPhoneNum())
+            if(getResume())
             {
-                ret[pMasqueradingVector[5]]=getValueOfPhoneNum();
+                ret[pMasqueradingVector[5]]=getValueOfResume();
             }
             else
             {
@@ -1985,9 +1885,9 @@ Json::Value Candidates::toMasqueradedJson(
         }
         if(!pMasqueradingVector[6].empty())
         {
-            if(getResume())
+            if(getPlaceOfStudy())
             {
-                ret[pMasqueradingVector[6]]=getValueOfResume();
+                ret[pMasqueradingVector[6]]=getValueOfPlaceOfStudy();
             }
             else
             {
@@ -1996,9 +1896,9 @@ Json::Value Candidates::toMasqueradedJson(
         }
         if(!pMasqueradingVector[7].empty())
         {
-            if(getPlaceOfStudy())
+            if(getFacultyOfEduc())
             {
-                ret[pMasqueradingVector[7]]=getValueOfPlaceOfStudy();
+                ret[pMasqueradingVector[7]]=getValueOfFacultyOfEduc();
             }
             else
             {
@@ -2007,9 +1907,9 @@ Json::Value Candidates::toMasqueradedJson(
         }
         if(!pMasqueradingVector[8].empty())
         {
-            if(getFacultyOfEduc())
+            if(getGraduationYear())
             {
-                ret[pMasqueradingVector[8]]=getValueOfFacultyOfEduc();
+                ret[pMasqueradingVector[8]]=getValueOfGraduationYear();
             }
             else
             {
@@ -2018,9 +1918,9 @@ Json::Value Candidates::toMasqueradedJson(
         }
         if(!pMasqueradingVector[9].empty())
         {
-            if(getGraduationYear())
+            if(getPhoto())
             {
-                ret[pMasqueradingVector[9]]=getValueOfGraduationYear();
+                ret[pMasqueradingVector[9]]=getValueOfPhoto();
             }
             else
             {
@@ -2029,9 +1929,9 @@ Json::Value Candidates::toMasqueradedJson(
         }
         if(!pMasqueradingVector[10].empty())
         {
-            if(getPhoto())
+            if(getAbout())
             {
-                ret[pMasqueradingVector[10]]=getValueOfPhoto();
+                ret[pMasqueradingVector[10]]=getValueOfAbout();
             }
             else
             {
@@ -2040,9 +1940,9 @@ Json::Value Candidates::toMasqueradedJson(
         }
         if(!pMasqueradingVector[11].empty())
         {
-            if(getAbout())
+            if(getPlace())
             {
-                ret[pMasqueradingVector[11]]=getValueOfAbout();
+                ret[pMasqueradingVector[11]]=getValueOfPlace();
             }
             else
             {
@@ -2051,9 +1951,9 @@ Json::Value Candidates::toMasqueradedJson(
         }
         if(!pMasqueradingVector[12].empty())
         {
-            if(getPlace())
+            if(getSearchStatusId())
             {
-                ret[pMasqueradingVector[12]]=getValueOfPlace();
+                ret[pMasqueradingVector[12]]=getValueOfSearchStatusId();
             }
             else
             {
@@ -2062,9 +1962,9 @@ Json::Value Candidates::toMasqueradedJson(
         }
         if(!pMasqueradingVector[13].empty())
         {
-            if(getSearchStatusId())
+            if(getEducStatusId())
             {
-                ret[pMasqueradingVector[13]]=getValueOfSearchStatusId();
+                ret[pMasqueradingVector[13]]=getValueOfEducStatusId();
             }
             else
             {
@@ -2073,9 +1973,9 @@ Json::Value Candidates::toMasqueradedJson(
         }
         if(!pMasqueradingVector[14].empty())
         {
-            if(getEducStatusId())
+            if(getExperienceStatusId())
             {
-                ret[pMasqueradingVector[14]]=getValueOfEducStatusId();
+                ret[pMasqueradingVector[14]]=getValueOfExperienceStatusId();
             }
             else
             {
@@ -2084,9 +1984,9 @@ Json::Value Candidates::toMasqueradedJson(
         }
         if(!pMasqueradingVector[15].empty())
         {
-            if(getExperienceStatusId())
+            if(getWorkScheduleStatusId())
             {
-                ret[pMasqueradingVector[15]]=getValueOfExperienceStatusId();
+                ret[pMasqueradingVector[15]]=getValueOfWorkScheduleStatusId();
             }
             else
             {
@@ -2095,24 +1995,13 @@ Json::Value Candidates::toMasqueradedJson(
         }
         if(!pMasqueradingVector[16].empty())
         {
-            if(getWorkScheduleStatusId())
+            if(getSearchStatus())
             {
-                ret[pMasqueradingVector[16]]=getValueOfWorkScheduleStatusId();
+                ret[pMasqueradingVector[16]]=getValueOfSearchStatus();
             }
             else
             {
                 ret[pMasqueradingVector[16]]=Json::Value();
-            }
-        }
-        if(!pMasqueradingVector[17].empty())
-        {
-            if(getSearchStatus())
-            {
-                ret[pMasqueradingVector[17]]=getValueOfSearchStatus();
-            }
-            else
-            {
-                ret[pMasqueradingVector[17]]=Json::Value();
             }
         }
         return ret;
@@ -2149,14 +2038,6 @@ Json::Value Candidates::toMasqueradedJson(
     else
     {
         ret["email"]=Json::Value();
-    }
-    if(getPassword())
-    {
-        ret["password"]=getValueOfPassword();
-    }
-    else
-    {
-        ret["password"]=Json::Value();
     }
     if(getPhoneNum())
     {
@@ -2302,79 +2183,69 @@ bool Candidates::validateJsonForCreation(const Json::Value &pJson, std::string &
         err="The email column cannot be null";
         return false;
     }
-    if(pJson.isMember("password"))
-    {
-        if(!validJsonOfField(4, "password", pJson["password"], err, true))
-            return false;
-    }
-    else
-    {
-        err="The password column cannot be null";
-        return false;
-    }
     if(pJson.isMember("phone_num"))
     {
-        if(!validJsonOfField(5, "phone_num", pJson["phone_num"], err, true))
+        if(!validJsonOfField(4, "phone_num", pJson["phone_num"], err, true))
             return false;
     }
     if(pJson.isMember("resume"))
     {
-        if(!validJsonOfField(6, "resume", pJson["resume"], err, true))
+        if(!validJsonOfField(5, "resume", pJson["resume"], err, true))
             return false;
     }
     if(pJson.isMember("place_of_study"))
     {
-        if(!validJsonOfField(7, "place_of_study", pJson["place_of_study"], err, true))
+        if(!validJsonOfField(6, "place_of_study", pJson["place_of_study"], err, true))
             return false;
     }
     if(pJson.isMember("faculty_of_educ"))
     {
-        if(!validJsonOfField(8, "faculty_of_educ", pJson["faculty_of_educ"], err, true))
+        if(!validJsonOfField(7, "faculty_of_educ", pJson["faculty_of_educ"], err, true))
             return false;
     }
     if(pJson.isMember("graduation_year"))
     {
-        if(!validJsonOfField(9, "graduation_year", pJson["graduation_year"], err, true))
+        if(!validJsonOfField(8, "graduation_year", pJson["graduation_year"], err, true))
             return false;
     }
     if(pJson.isMember("photo"))
     {
-        if(!validJsonOfField(10, "photo", pJson["photo"], err, true))
+        if(!validJsonOfField(9, "photo", pJson["photo"], err, true))
             return false;
     }
     if(pJson.isMember("about"))
     {
-        if(!validJsonOfField(11, "about", pJson["about"], err, true))
+        if(!validJsonOfField(10, "about", pJson["about"], err, true))
             return false;
     }
     if(pJson.isMember("place"))
     {
-        if(!validJsonOfField(12, "place", pJson["place"], err, true))
+        if(!validJsonOfField(11, "place", pJson["place"], err, true))
             return false;
     }
     if(pJson.isMember("search_status_id"))
     {
-        if(!validJsonOfField(13, "search_status_id", pJson["search_status_id"], err, true))
+        if(!validJsonOfField(12, "search_status_id", pJson["search_status_id"], err, true))
             return false;
     }
     if(pJson.isMember("educ_status_id"))
     {
-        if(!validJsonOfField(14, "educ_status_id", pJson["educ_status_id"], err, true))
+        if(!validJsonOfField(13, "educ_status_id", pJson["educ_status_id"], err, true))
             return false;
     }
     if(pJson.isMember("experience_status_id"))
     {
-        if(!validJsonOfField(15, "experience_status_id", pJson["experience_status_id"], err, true))
+        if(!validJsonOfField(14, "experience_status_id", pJson["experience_status_id"], err, true))
             return false;
     }
     if(pJson.isMember("work_schedule_status_id"))
     {
-        if(!validJsonOfField(16, "work_schedule_status_id", pJson["work_schedule_status_id"], err, true))
+        if(!validJsonOfField(15, "work_schedule_status_id", pJson["work_schedule_status_id"], err, true))
             return false;
     }
     if(pJson.isMember("search_status"))
     {
-        if(!validJsonOfField(17, "search_status", pJson["search_status"], err, true))
+        if(!validJsonOfField(16, "search_status", pJson["search_status"], err, true))
             return false;
     }
     return true;
@@ -2383,7 +2254,7 @@ bool Candidates::validateMasqueradedJsonForCreation(const Json::Value &pJson,
                                                     const std::vector<std::string> &pMasqueradingVector,
                                                     std::string &err)
 {
-    if(pMasqueradingVector.size() != 18)
+    if(pMasqueradingVector.size() != 17)
     {
         err = "Bad masquerading vector";
         return false;
@@ -2443,11 +2314,6 @@ bool Candidates::validateMasqueradedJsonForCreation(const Json::Value &pJson,
               if(!validJsonOfField(4, pMasqueradingVector[4], pJson[pMasqueradingVector[4]], err, true))
                   return false;
           }
-        else
-        {
-            err="The " + pMasqueradingVector[4] + " column cannot be null";
-            return false;
-        }
       }
       if(!pMasqueradingVector[5].empty())
       {
@@ -2545,14 +2411,6 @@ bool Candidates::validateMasqueradedJsonForCreation(const Json::Value &pJson,
                   return false;
           }
       }
-      if(!pMasqueradingVector[17].empty())
-      {
-          if(pJson.isMember(pMasqueradingVector[17]))
-          {
-              if(!validJsonOfField(17, pMasqueradingVector[17], pJson[pMasqueradingVector[17]], err, true))
-                  return false;
-          }
-      }
     }
     catch(const Json::LogicError &e)
     {
@@ -2588,74 +2446,69 @@ bool Candidates::validateJsonForUpdate(const Json::Value &pJson, std::string &er
         if(!validJsonOfField(3, "email", pJson["email"], err, false))
             return false;
     }
-    if(pJson.isMember("password"))
-    {
-        if(!validJsonOfField(4, "password", pJson["password"], err, false))
-            return false;
-    }
     if(pJson.isMember("phone_num"))
     {
-        if(!validJsonOfField(5, "phone_num", pJson["phone_num"], err, false))
+        if(!validJsonOfField(4, "phone_num", pJson["phone_num"], err, false))
             return false;
     }
     if(pJson.isMember("resume"))
     {
-        if(!validJsonOfField(6, "resume", pJson["resume"], err, false))
+        if(!validJsonOfField(5, "resume", pJson["resume"], err, false))
             return false;
     }
     if(pJson.isMember("place_of_study"))
     {
-        if(!validJsonOfField(7, "place_of_study", pJson["place_of_study"], err, false))
+        if(!validJsonOfField(6, "place_of_study", pJson["place_of_study"], err, false))
             return false;
     }
     if(pJson.isMember("faculty_of_educ"))
     {
-        if(!validJsonOfField(8, "faculty_of_educ", pJson["faculty_of_educ"], err, false))
+        if(!validJsonOfField(7, "faculty_of_educ", pJson["faculty_of_educ"], err, false))
             return false;
     }
     if(pJson.isMember("graduation_year"))
     {
-        if(!validJsonOfField(9, "graduation_year", pJson["graduation_year"], err, false))
+        if(!validJsonOfField(8, "graduation_year", pJson["graduation_year"], err, false))
             return false;
     }
     if(pJson.isMember("photo"))
     {
-        if(!validJsonOfField(10, "photo", pJson["photo"], err, false))
+        if(!validJsonOfField(9, "photo", pJson["photo"], err, false))
             return false;
     }
     if(pJson.isMember("about"))
     {
-        if(!validJsonOfField(11, "about", pJson["about"], err, false))
+        if(!validJsonOfField(10, "about", pJson["about"], err, false))
             return false;
     }
     if(pJson.isMember("place"))
     {
-        if(!validJsonOfField(12, "place", pJson["place"], err, false))
+        if(!validJsonOfField(11, "place", pJson["place"], err, false))
             return false;
     }
     if(pJson.isMember("search_status_id"))
     {
-        if(!validJsonOfField(13, "search_status_id", pJson["search_status_id"], err, false))
+        if(!validJsonOfField(12, "search_status_id", pJson["search_status_id"], err, false))
             return false;
     }
     if(pJson.isMember("educ_status_id"))
     {
-        if(!validJsonOfField(14, "educ_status_id", pJson["educ_status_id"], err, false))
+        if(!validJsonOfField(13, "educ_status_id", pJson["educ_status_id"], err, false))
             return false;
     }
     if(pJson.isMember("experience_status_id"))
     {
-        if(!validJsonOfField(15, "experience_status_id", pJson["experience_status_id"], err, false))
+        if(!validJsonOfField(14, "experience_status_id", pJson["experience_status_id"], err, false))
             return false;
     }
     if(pJson.isMember("work_schedule_status_id"))
     {
-        if(!validJsonOfField(16, "work_schedule_status_id", pJson["work_schedule_status_id"], err, false))
+        if(!validJsonOfField(15, "work_schedule_status_id", pJson["work_schedule_status_id"], err, false))
             return false;
     }
     if(pJson.isMember("search_status"))
     {
-        if(!validJsonOfField(17, "search_status", pJson["search_status"], err, false))
+        if(!validJsonOfField(16, "search_status", pJson["search_status"], err, false))
             return false;
     }
     return true;
@@ -2664,7 +2517,7 @@ bool Candidates::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
                                                   const std::vector<std::string> &pMasqueradingVector,
                                                   std::string &err)
 {
-    if(pMasqueradingVector.size() != 18)
+    if(pMasqueradingVector.size() != 17)
     {
         err = "Bad masquerading vector";
         return false;
@@ -2758,11 +2611,6 @@ bool Candidates::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
       if(!pMasqueradingVector[16].empty() && pJson.isMember(pMasqueradingVector[16]))
       {
           if(!validJsonOfField(16, pMasqueradingVector[16], pJson[pMasqueradingVector[16]], err, false))
-              return false;
-      }
-      if(!pMasqueradingVector[17].empty() && pJson.isMember(pMasqueradingVector[17]))
-      {
-          if(!validJsonOfField(17, pMasqueradingVector[17], pJson[pMasqueradingVector[17]], err, false))
               return false;
       }
     }
@@ -2861,26 +2709,6 @@ bool Candidates::validJsonOfField(size_t index,
         case 4:
             if(pJson.isNull())
             {
-                err="The " + fieldName + " column cannot be null";
-                return false;
-            }
-            if(!pJson.isString())
-            {
-                err="Type error in the "+fieldName+" field";
-                return false;
-            }
-            if(pJson.isString() && std::strlen(pJson.asCString()) > 128)
-            {
-                err="String length exceeds limit for the " +
-                    fieldName +
-                    " field (the maximum value is 128)";
-                return false;
-            }
-
-            break;
-        case 5:
-            if(pJson.isNull())
-            {
                 return true;
             }
             if(!pJson.isString())
@@ -2897,6 +2725,17 @@ bool Candidates::validJsonOfField(size_t index,
             }
 
             break;
+        case 5:
+            if(pJson.isNull())
+            {
+                return true;
+            }
+            if(!pJson.isString())
+            {
+                err="Type error in the "+fieldName+" field";
+                return false;
+            }
+            break;
         case 6:
             if(pJson.isNull())
             {
@@ -2907,6 +2746,14 @@ bool Candidates::validJsonOfField(size_t index,
                 err="Type error in the "+fieldName+" field";
                 return false;
             }
+            if(pJson.isString() && std::strlen(pJson.asCString()) > 128)
+            {
+                err="String length exceeds limit for the " +
+                    fieldName +
+                    " field (the maximum value is 128)";
+                return false;
+            }
+
             break;
         case 7:
             if(pJson.isNull())
@@ -2932,6 +2779,17 @@ bool Candidates::validJsonOfField(size_t index,
             {
                 return true;
             }
+            if(!pJson.isInt())
+            {
+                err="Type error in the "+fieldName+" field";
+                return false;
+            }
+            break;
+        case 9:
+            if(pJson.isNull())
+            {
+                return true;
+            }
             if(!pJson.isString())
             {
                 err="Type error in the "+fieldName+" field";
@@ -2945,17 +2803,6 @@ bool Candidates::validJsonOfField(size_t index,
                 return false;
             }
 
-            break;
-        case 9:
-            if(pJson.isNull())
-            {
-                return true;
-            }
-            if(!pJson.isInt())
-            {
-                err="Type error in the "+fieldName+" field";
-                return false;
-            }
             break;
         case 10:
             if(pJson.isNull())
@@ -2967,14 +2814,6 @@ bool Candidates::validJsonOfField(size_t index,
                 err="Type error in the "+fieldName+" field";
                 return false;
             }
-            if(pJson.isString() && std::strlen(pJson.asCString()) > 128)
-            {
-                err="String length exceeds limit for the " +
-                    fieldName +
-                    " field (the maximum value is 128)";
-                return false;
-            }
-
             break;
         case 11:
             if(pJson.isNull())
@@ -2986,17 +2825,6 @@ bool Candidates::validJsonOfField(size_t index,
                 err="Type error in the "+fieldName+" field";
                 return false;
             }
-            break;
-        case 12:
-            if(pJson.isNull())
-            {
-                return true;
-            }
-            if(!pJson.isString())
-            {
-                err="Type error in the "+fieldName+" field";
-                return false;
-            }
             if(pJson.isString() && std::strlen(pJson.asCString()) > 128)
             {
                 err="String length exceeds limit for the " +
@@ -3005,6 +2833,17 @@ bool Candidates::validJsonOfField(size_t index,
                 return false;
             }
 
+            break;
+        case 12:
+            if(pJson.isNull())
+            {
+                return true;
+            }
+            if(!pJson.isInt())
+            {
+                err="Type error in the "+fieldName+" field";
+                return false;
+            }
             break;
         case 13:
             if(pJson.isNull())
@@ -3040,17 +2879,6 @@ bool Candidates::validJsonOfField(size_t index,
             }
             break;
         case 16:
-            if(pJson.isNull())
-            {
-                return true;
-            }
-            if(!pJson.isInt())
-            {
-                err="Type error in the "+fieldName+" field";
-                return false;
-            }
-            break;
-        case 17:
             if(pJson.isNull())
             {
                 return true;

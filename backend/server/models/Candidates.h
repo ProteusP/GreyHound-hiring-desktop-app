@@ -48,7 +48,6 @@ class Candidates
         static const std::string _name;
         static const std::string _surname;
         static const std::string _email;
-        static const std::string _password;
         static const std::string _phone_num;
         static const std::string _resume;
         static const std::string _place_of_study;
@@ -147,15 +146,6 @@ class Candidates
     ///Set the value of the column email
     void setEmail(const std::string &pEmail) noexcept;
     void setEmail(std::string &&pEmail) noexcept;
-
-    /**  For column password  */
-    ///Get the value of the column password, returns the default value if the column is null
-    const std::string &getValueOfPassword() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
-    const std::shared_ptr<std::string> &getPassword() const noexcept;
-    ///Set the value of the column password
-    void setPassword(const std::string &pPassword) noexcept;
-    void setPassword(std::string &&pPassword) noexcept;
 
     /**  For column phone_num  */
     ///Get the value of the column phone_num, returns the default value if the column is null
@@ -283,7 +273,7 @@ class Candidates
     void setSearchStatusToNull() noexcept;
 
 
-    static size_t getColumnNumber() noexcept {  return 18;  }
+    static size_t getColumnNumber() noexcept {  return 17;  }
     static const std::string &getColumnName(size_t index) noexcept(false);
 
     Json::Value toJson() const;
@@ -308,7 +298,6 @@ class Candidates
     std::shared_ptr<std::string> name_;
     std::shared_ptr<std::string> surname_;
     std::shared_ptr<std::string> email_;
-    std::shared_ptr<std::string> password_;
     std::shared_ptr<std::string> phoneNum_;
     std::shared_ptr<std::string> resume_;
     std::shared_ptr<std::string> placeOfStudy_;
@@ -333,7 +322,7 @@ class Candidates
         const bool notNull_;
     };
     static const std::vector<MetaData> metaData_;
-    bool dirtyFlag_[18]={ false };
+    bool dirtyFlag_[17]={ false };
   public:
     static const std::string &sqlForFindingByPrimaryKey()
     {
@@ -370,71 +359,66 @@ class Candidates
         }
         if(dirtyFlag_[4])
         {
-            sql += "password,";
+            sql += "phone_num,";
             ++parametersCount;
         }
         if(dirtyFlag_[5])
         {
-            sql += "phone_num,";
+            sql += "resume,";
             ++parametersCount;
         }
         if(dirtyFlag_[6])
         {
-            sql += "resume,";
+            sql += "place_of_study,";
             ++parametersCount;
         }
         if(dirtyFlag_[7])
         {
-            sql += "place_of_study,";
+            sql += "faculty_of_educ,";
             ++parametersCount;
         }
         if(dirtyFlag_[8])
         {
-            sql += "faculty_of_educ,";
+            sql += "graduation_year,";
             ++parametersCount;
         }
         if(dirtyFlag_[9])
         {
-            sql += "graduation_year,";
+            sql += "photo,";
             ++parametersCount;
         }
         if(dirtyFlag_[10])
         {
-            sql += "photo,";
-            ++parametersCount;
-        }
-        if(dirtyFlag_[11])
-        {
             sql += "about,";
             ++parametersCount;
         }
-        if(dirtyFlag_[12])
+        if(dirtyFlag_[11])
         {
             sql += "place,";
             ++parametersCount;
         }
         sql += "search_status_id,";
         ++parametersCount;
-        if(!dirtyFlag_[13])
+        if(!dirtyFlag_[12])
         {
             needSelection=true;
         }
-        if(dirtyFlag_[14])
+        if(dirtyFlag_[13])
         {
             sql += "educ_status_id,";
             ++parametersCount;
         }
-        if(dirtyFlag_[15])
+        if(dirtyFlag_[14])
         {
             sql += "experience_status_id,";
             ++parametersCount;
         }
-        if(dirtyFlag_[16])
+        if(dirtyFlag_[15])
         {
             sql += "work_schedule_status_id,";
             ++parametersCount;
         }
-        if(dirtyFlag_[17])
+        if(dirtyFlag_[16])
         {
             sql += "search_status,";
             ++parametersCount;
@@ -509,14 +493,14 @@ class Candidates
             sql.append("?,");
 
         }
+        else
+        {
+            sql +="default,";
+        }
         if(dirtyFlag_[13])
         {
             sql.append("?,");
 
-        }
-        else
-        {
-            sql +="default,";
         }
         if(dirtyFlag_[14])
         {
@@ -529,11 +513,6 @@ class Candidates
 
         }
         if(dirtyFlag_[16])
-        {
-            sql.append("?,");
-
-        }
-        if(dirtyFlag_[17])
         {
             sql.append("?,");
 
