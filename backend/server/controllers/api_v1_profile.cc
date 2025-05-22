@@ -62,6 +62,14 @@ void profile::getProfile(
 
     const auto &empl = employers.front();
     jsonResp = empl.toJson();
+    //DEBUG
+    try {
+      LOG_DEBUG<<"empl json string: "<< jsonResp.toStyledString();
+    }catch (...) {
+      LOG_DEBUG<<"cant parse json";
+    }
+    //DEBUG
+    saveUserProfile(userId,jsonResp);
     auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
     resp->setStatusCode(drogon::k200OK);
 
@@ -140,4 +148,30 @@ void profile::patchProfile(
     resp->setStatusCode(drogon::k500InternalServerError);
     callback(resp);
   }
+}
+
+void saveUserProfile(const std::string &id, Json::Value data) {
+  const auto redisClientPtr = app().getRedisClient();
+
+  const std::string key = "profile:" + id;
+  const std::string strData = data.asString();
+
+  try
+  {
+    std::string res = redisClientPtr->execCommandSync<std::string>(
+        [](const nosql::RedisResult &r){
+            return r.asString();
+        },
+        "set %s %s",
+        key.data(), strData.data()
+    );
+  }
+  catch (const nosql::RedisException & err)
+  {
+  }
+  catch (const std::exception & err)
+  {
+  }
+
+  LOG_DEBUG << "Saving user profile: " << key;
 }

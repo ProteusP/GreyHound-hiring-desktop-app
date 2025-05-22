@@ -22,3 +22,5 @@ namespace api::v1 {
         METHOD_LIST_END
     };
 }
+
+void saveUserProfile(const std::string& id, const Json::Value& data);
