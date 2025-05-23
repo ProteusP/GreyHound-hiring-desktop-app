@@ -6,6 +6,8 @@
 using namespace drogon;
 
 namespace api::v1 {
+
+    const std::string CACHE_CLIENT = "cache";
     class profile final : public drogon::HttpController<profile> {
         static void getProfile(const HttpRequestPtr &req,
                                std::function<void(const HttpResponsePtr &)> &&callback);
