@@ -47,6 +47,7 @@ class Users
         static const std::string _id;
         static const std::string _email;
         static const std::string _password;
+        static const std::string _status;
     };
 
     static const int primaryKeyNumber;
@@ -124,8 +125,17 @@ class Users
     void setPassword(const std::string &pPassword) noexcept;
     void setPassword(std::string &&pPassword) noexcept;
 
+    /**  For column status  */
+    ///Get the value of the column status, returns the default value if the column is null
+    const std::string &getValueOfStatus() const noexcept;
+    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    const std::shared_ptr<std::string> &getStatus() const noexcept;
+    ///Set the value of the column status
+    void setStatus(const std::string &pStatus) noexcept;
+    void setStatus(std::string &&pStatus) noexcept;
 
-    static size_t getColumnNumber() noexcept {  return 3;  }
+
+    static size_t getColumnNumber() noexcept {  return 4;  }
     static const std::string &getColumnName(size_t index) noexcept(false);
 
     Json::Value toJson() const;
@@ -149,6 +159,7 @@ class Users
     std::shared_ptr<int32_t> id_;
     std::shared_ptr<std::string> email_;
     std::shared_ptr<std::string> password_;
+    std::shared_ptr<std::string> status_;
     struct MetaData
     {
         const std::string colName_;
@@ -160,7 +171,7 @@ class Users
         const bool notNull_;
     };
     static const std::vector<MetaData> metaData_;
-    bool dirtyFlag_[3]={ false };
+    bool dirtyFlag_[4]={ false };
   public:
     static const std::string &sqlForFindingByPrimaryKey()
     {
@@ -190,6 +201,11 @@ class Users
             sql += "password,";
             ++parametersCount;
         }
+        if(dirtyFlag_[3])
+        {
+            sql += "status,";
+            ++parametersCount;
+        }
         needSelection=true;
         if(parametersCount > 0)
         {
@@ -206,6 +222,11 @@ class Users
 
         }
         if(dirtyFlag_[2])
+        {
+            sql.append("?,");
+
+        }
+        if(dirtyFlag_[3])
         {
             sql.append("?,");
 

@@ -44,18 +44,18 @@ class Employers
   public:
     struct Cols
     {
-        static const std::string _id;
         static const std::string _email;
         static const std::string _company_name;
         static const std::string _about;
+        static const std::string _user_id;
     };
 
     static const int primaryKeyNumber;
     static const std::string tableName;
     static const bool hasPrimaryKey;
     static const std::string primaryKeyName;
-    using PrimaryKeyType = int32_t;
-    const PrimaryKeyType &getPrimaryKey() const;
+    using PrimaryKeyType = void;
+    int getPrimaryKey() const { assert(false); return 0; }
 
     /**
      * @brief constructor
@@ -99,14 +99,6 @@ class Employers
                           std::string &err,
                           bool isForCreation);
 
-    /**  For column id  */
-    ///Get the value of the column id, returns the default value if the column is null
-    const int32_t &getValueOfId() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
-    const std::shared_ptr<int32_t> &getId() const noexcept;
-    ///Set the value of the column id
-    void setId(const int32_t &pId) noexcept;
-
     /**  For column email  */
     ///Get the value of the column email, returns the default value if the column is null
     const std::string &getValueOfEmail() const noexcept;
@@ -135,6 +127,15 @@ class Employers
     void setAbout(std::string &&pAbout) noexcept;
     void setAboutToNull() noexcept;
 
+    /**  For column user_id  */
+    ///Get the value of the column user_id, returns the default value if the column is null
+    const int32_t &getValueOfUserId() const noexcept;
+    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    const std::shared_ptr<int32_t> &getUserId() const noexcept;
+    ///Set the value of the column user_id
+    void setUserId(const int32_t &pUserId) noexcept;
+    void setUserIdToNull() noexcept;
+
 
     static size_t getColumnNumber() noexcept {  return 4;  }
     static const std::string &getColumnName(size_t index) noexcept(false);
@@ -157,10 +158,10 @@ class Employers
     void updateArgs(drogon::orm::internal::SqlBinder &binder) const;
     ///For mysql or sqlite3
     void updateId(const uint64_t id);
-    std::shared_ptr<int32_t> id_;
     std::shared_ptr<std::string> email_;
     std::shared_ptr<std::string> companyName_;
     std::shared_ptr<std::string> about_;
+    std::shared_ptr<int32_t> userId_;
     struct MetaData
     {
         const std::string colName_;
@@ -176,13 +177,13 @@ class Employers
   public:
     static const std::string &sqlForFindingByPrimaryKey()
     {
-        static const std::string sql="select * from " + tableName + " where id = ?";
+        static const std::string sql="";
         return sql;
     }
 
     static const std::string &sqlForDeletingByPrimaryKey()
     {
-        static const std::string sql="delete from " + tableName + " where id = ?";
+        static const std::string sql="";
         return sql;
     }
     std::string sqlForInserting(bool &needSelection) const
@@ -190,24 +191,26 @@ class Employers
         std::string sql="insert into " + tableName + " (";
         size_t parametersCount = 0;
         needSelection = false;
-            sql += "id,";
-            ++parametersCount;
-        if(dirtyFlag_[1])
+        if(dirtyFlag_[0])
         {
             sql += "email,";
             ++parametersCount;
         }
-        if(dirtyFlag_[2])
+        if(dirtyFlag_[1])
         {
             sql += "company_name,";
             ++parametersCount;
         }
-        if(dirtyFlag_[3])
+        if(dirtyFlag_[2])
         {
             sql += "about,";
             ++parametersCount;
         }
-        needSelection=true;
+        if(dirtyFlag_[3])
+        {
+            sql += "user_id,";
+            ++parametersCount;
+        }
         if(parametersCount > 0)
         {
             sql[sql.length()-1]=')';
@@ -216,7 +219,11 @@ class Employers
         else
             sql += ") values (";
 
-        sql +="default,";
+        if(dirtyFlag_[0])
+        {
+            sql.append("?,");
+
+        }
         if(dirtyFlag_[1])
         {
             sql.append("?,");

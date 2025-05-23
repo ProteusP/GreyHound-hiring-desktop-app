@@ -44,7 +44,6 @@ class Candidates
   public:
     struct Cols
     {
-        static const std::string _id;
         static const std::string _name;
         static const std::string _surname;
         static const std::string _email;
@@ -61,6 +60,7 @@ class Candidates
         static const std::string _experience_status_id;
         static const std::string _work_schedule_status_id;
         static const std::string _search_status;
+        static const std::string _user_id;
     };
 
     static const int primaryKeyNumber;
@@ -111,14 +111,6 @@ class Candidates
                           const Json::Value &pJson,
                           std::string &err,
                           bool isForCreation);
-
-    /**  For column id  */
-    ///Get the value of the column id, returns the default value if the column is null
-    const int32_t &getValueOfId() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
-    const std::shared_ptr<int32_t> &getId() const noexcept;
-    ///Set the value of the column id
-    void setId(const int32_t &pId) noexcept;
 
     /**  For column name  */
     ///Get the value of the column name, returns the default value if the column is null
@@ -272,6 +264,14 @@ class Candidates
     void setSearchStatus(std::string &&pSearchStatus) noexcept;
     void setSearchStatusToNull() noexcept;
 
+    /**  For column user_id  */
+    ///Get the value of the column user_id, returns the default value if the column is null
+    const int32_t &getValueOfUserId() const noexcept;
+    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    const std::shared_ptr<int32_t> &getUserId() const noexcept;
+    ///Set the value of the column user_id
+    void setUserId(const int32_t &pUserId) noexcept;
+
 
     static size_t getColumnNumber() noexcept {  return 17;  }
     static const std::string &getColumnName(size_t index) noexcept(false);
@@ -294,7 +294,6 @@ class Candidates
     void updateArgs(drogon::orm::internal::SqlBinder &binder) const;
     ///For mysql or sqlite3
     void updateId(const uint64_t id);
-    std::shared_ptr<int32_t> id_;
     std::shared_ptr<std::string> name_;
     std::shared_ptr<std::string> surname_;
     std::shared_ptr<std::string> email_;
@@ -311,6 +310,7 @@ class Candidates
     std::shared_ptr<int32_t> experienceStatusId_;
     std::shared_ptr<int32_t> workScheduleStatusId_;
     std::shared_ptr<std::string> searchStatus_;
+    std::shared_ptr<int32_t> userId_;
     struct MetaData
     {
         const std::string colName_;
@@ -326,13 +326,13 @@ class Candidates
   public:
     static const std::string &sqlForFindingByPrimaryKey()
     {
-        static const std::string sql="select * from " + tableName + " where id = ?";
+        static const std::string sql="select * from " + tableName + " where user_id = ?";
         return sql;
     }
 
     static const std::string &sqlForDeletingByPrimaryKey()
     {
-        static const std::string sql="delete from " + tableName + " where id = ?";
+        static const std::string sql="delete from " + tableName + " where user_id = ?";
         return sql;
     }
     std::string sqlForInserting(bool &needSelection) const
@@ -340,90 +340,92 @@ class Candidates
         std::string sql="insert into " + tableName + " (";
         size_t parametersCount = 0;
         needSelection = false;
-            sql += "id,";
-            ++parametersCount;
-        if(dirtyFlag_[1])
+        if(dirtyFlag_[0])
         {
             sql += "name,";
             ++parametersCount;
         }
-        if(dirtyFlag_[2])
+        if(dirtyFlag_[1])
         {
             sql += "surname,";
             ++parametersCount;
         }
-        if(dirtyFlag_[3])
+        if(dirtyFlag_[2])
         {
             sql += "email,";
             ++parametersCount;
         }
-        if(dirtyFlag_[4])
+        if(dirtyFlag_[3])
         {
             sql += "phone_num,";
             ++parametersCount;
         }
-        if(dirtyFlag_[5])
+        if(dirtyFlag_[4])
         {
             sql += "resume,";
             ++parametersCount;
         }
-        if(dirtyFlag_[6])
+        if(dirtyFlag_[5])
         {
             sql += "place_of_study,";
             ++parametersCount;
         }
-        if(dirtyFlag_[7])
+        if(dirtyFlag_[6])
         {
             sql += "faculty_of_educ,";
             ++parametersCount;
         }
-        if(dirtyFlag_[8])
+        if(dirtyFlag_[7])
         {
             sql += "graduation_year,";
             ++parametersCount;
         }
-        if(dirtyFlag_[9])
+        if(dirtyFlag_[8])
         {
             sql += "photo,";
             ++parametersCount;
         }
-        if(dirtyFlag_[10])
+        if(dirtyFlag_[9])
         {
             sql += "about,";
             ++parametersCount;
         }
-        if(dirtyFlag_[11])
+        if(dirtyFlag_[10])
         {
             sql += "place,";
             ++parametersCount;
         }
         sql += "search_status_id,";
         ++parametersCount;
-        if(!dirtyFlag_[12])
+        if(!dirtyFlag_[11])
         {
             needSelection=true;
         }
-        if(dirtyFlag_[13])
+        if(dirtyFlag_[12])
         {
             sql += "educ_status_id,";
             ++parametersCount;
         }
-        if(dirtyFlag_[14])
+        if(dirtyFlag_[13])
         {
             sql += "experience_status_id,";
             ++parametersCount;
         }
-        if(dirtyFlag_[15])
+        if(dirtyFlag_[14])
         {
             sql += "work_schedule_status_id,";
             ++parametersCount;
         }
-        if(dirtyFlag_[16])
+        if(dirtyFlag_[15])
         {
             sql += "search_status,";
             ++parametersCount;
         }
-        needSelection=true;
+        if(dirtyFlag_[16])
+        {
+            sql += "user_id,";
+            ++parametersCount;
+        }
         if(parametersCount > 0)
         {
             sql[sql.length()-1]=')';
@@ -432,7 +434,11 @@ class Candidates
         else
             sql += ") values (";
 
-        sql +="default,";
+        if(dirtyFlag_[0])
+        {
+            sql.append("?,");
+
+        }
         if(dirtyFlag_[1])
         {
             sql.append("?,");
@@ -488,14 +494,14 @@ class Candidates
             sql.append("?,");
 
         }
+        else
+        {
+            sql +="default,";
+        }
         if(dirtyFlag_[12])
         {
             sql.append("?,");
 
-        }
-        else
-        {
-            sql +="default,";
         }
         if(dirtyFlag_[13])
         {

@@ -13,19 +13,19 @@ using namespace drogon;
 using namespace drogon::orm;
 using namespace drogon_model::default_db;
 
-const std::string Employers::Cols::_id = "id";
 const std::string Employers::Cols::_email = "email";
 const std::string Employers::Cols::_company_name = "company_name";
 const std::string Employers::Cols::_about = "about";
-const std::string Employers::primaryKeyName = "id";
-const bool Employers::hasPrimaryKey = true;
+const std::string Employers::Cols::_user_id = "user_id";
+const std::string Employers::primaryKeyName = "";
+const bool Employers::hasPrimaryKey = false;
 const std::string Employers::tableName = "employers";
 
 const std::vector<typename Employers::MetaData> Employers::metaData_={
-{"id","int32_t","int",4,1,1,1},
 {"email","std::string","varchar(256)",256,0,0,1},
 {"company_name","std::string","varchar(256)",256,0,0,1},
-{"about","std::string","text",0,0,0,0}
+{"about","std::string","text",0,0,0,0},
+{"user_id","int32_t","int",4,0,0,0}
 };
 const std::string &Employers::getColumnName(size_t index) noexcept(false)
 {
@@ -36,10 +36,6 @@ Employers::Employers(const Row &r, const ssize_t indexOffset) noexcept
 {
     if(indexOffset < 0)
     {
-        if(!r["id"].isNull())
-        {
-            id_=std::make_shared<int32_t>(r["id"].as<int32_t>());
-        }
         if(!r["email"].isNull())
         {
             email_=std::make_shared<std::string>(r["email"].as<std::string>());
@@ -51,6 +47,10 @@ Employers::Employers(const Row &r, const ssize_t indexOffset) noexcept
         if(!r["about"].isNull())
         {
             about_=std::make_shared<std::string>(r["about"].as<std::string>());
+        }
+        if(!r["user_id"].isNull())
+        {
+            userId_=std::make_shared<int32_t>(r["user_id"].as<int32_t>());
         }
     }
     else
@@ -65,22 +65,22 @@ Employers::Employers(const Row &r, const ssize_t indexOffset) noexcept
         index = offset + 0;
         if(!r[index].isNull())
         {
-            id_=std::make_shared<int32_t>(r[index].as<int32_t>());
+            email_=std::make_shared<std::string>(r[index].as<std::string>());
         }
         index = offset + 1;
         if(!r[index].isNull())
         {
-            email_=std::make_shared<std::string>(r[index].as<std::string>());
+            companyName_=std::make_shared<std::string>(r[index].as<std::string>());
         }
         index = offset + 2;
         if(!r[index].isNull())
         {
-            companyName_=std::make_shared<std::string>(r[index].as<std::string>());
+            about_=std::make_shared<std::string>(r[index].as<std::string>());
         }
         index = offset + 3;
         if(!r[index].isNull())
         {
-            about_=std::make_shared<std::string>(r[index].as<std::string>());
+            userId_=std::make_shared<int32_t>(r[index].as<int32_t>());
         }
     }
 
@@ -98,7 +98,7 @@ Employers::Employers(const Json::Value &pJson, const std::vector<std::string> &p
         dirtyFlag_[0] = true;
         if(!pJson[pMasqueradingVector[0]].isNull())
         {
-            id_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[0]].asInt64());
+            email_=std::make_shared<std::string>(pJson[pMasqueradingVector[0]].asString());
         }
     }
     if(!pMasqueradingVector[1].empty() && pJson.isMember(pMasqueradingVector[1]))
@@ -106,7 +106,7 @@ Employers::Employers(const Json::Value &pJson, const std::vector<std::string> &p
         dirtyFlag_[1] = true;
         if(!pJson[pMasqueradingVector[1]].isNull())
         {
-            email_=std::make_shared<std::string>(pJson[pMasqueradingVector[1]].asString());
+            companyName_=std::make_shared<std::string>(pJson[pMasqueradingVector[1]].asString());
         }
     }
     if(!pMasqueradingVector[2].empty() && pJson.isMember(pMasqueradingVector[2]))
@@ -114,7 +114,7 @@ Employers::Employers(const Json::Value &pJson, const std::vector<std::string> &p
         dirtyFlag_[2] = true;
         if(!pJson[pMasqueradingVector[2]].isNull())
         {
-            companyName_=std::make_shared<std::string>(pJson[pMasqueradingVector[2]].asString());
+            about_=std::make_shared<std::string>(pJson[pMasqueradingVector[2]].asString());
         }
     }
     if(!pMasqueradingVector[3].empty() && pJson.isMember(pMasqueradingVector[3]))
@@ -122,24 +122,16 @@ Employers::Employers(const Json::Value &pJson, const std::vector<std::string> &p
         dirtyFlag_[3] = true;
         if(!pJson[pMasqueradingVector[3]].isNull())
         {
-            about_=std::make_shared<std::string>(pJson[pMasqueradingVector[3]].asString());
+            userId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[3]].asInt64());
         }
     }
 }
 
 Employers::Employers(const Json::Value &pJson) noexcept(false)
 {
-    if(pJson.isMember("id"))
-    {
-        dirtyFlag_[0]=true;
-        if(!pJson["id"].isNull())
-        {
-            id_=std::make_shared<int32_t>((int32_t)pJson["id"].asInt64());
-        }
-    }
     if(pJson.isMember("email"))
     {
-        dirtyFlag_[1]=true;
+        dirtyFlag_[0]=true;
         if(!pJson["email"].isNull())
         {
             email_=std::make_shared<std::string>(pJson["email"].asString());
@@ -147,7 +139,7 @@ Employers::Employers(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("company_name"))
     {
-        dirtyFlag_[2]=true;
+        dirtyFlag_[1]=true;
         if(!pJson["company_name"].isNull())
         {
             companyName_=std::make_shared<std::string>(pJson["company_name"].asString());
@@ -155,10 +147,18 @@ Employers::Employers(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("about"))
     {
-        dirtyFlag_[3]=true;
+        dirtyFlag_[2]=true;
         if(!pJson["about"].isNull())
         {
             about_=std::make_shared<std::string>(pJson["about"].asString());
+        }
+    }
+    if(pJson.isMember("user_id"))
+    {
+        dirtyFlag_[3]=true;
+        if(!pJson["user_id"].isNull())
+        {
+            userId_=std::make_shared<int32_t>((int32_t)pJson["user_id"].asInt64());
         }
     }
 }
@@ -173,9 +173,10 @@ void Employers::updateByMasqueradedJson(const Json::Value &pJson,
     }
     if(!pMasqueradingVector[0].empty() && pJson.isMember(pMasqueradingVector[0]))
     {
+        dirtyFlag_[0] = true;
         if(!pJson[pMasqueradingVector[0]].isNull())
         {
-            id_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[0]].asInt64());
+            email_=std::make_shared<std::string>(pJson[pMasqueradingVector[0]].asString());
         }
     }
     if(!pMasqueradingVector[1].empty() && pJson.isMember(pMasqueradingVector[1]))
@@ -183,7 +184,7 @@ void Employers::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[1] = true;
         if(!pJson[pMasqueradingVector[1]].isNull())
         {
-            email_=std::make_shared<std::string>(pJson[pMasqueradingVector[1]].asString());
+            companyName_=std::make_shared<std::string>(pJson[pMasqueradingVector[1]].asString());
         }
     }
     if(!pMasqueradingVector[2].empty() && pJson.isMember(pMasqueradingVector[2]))
@@ -191,7 +192,7 @@ void Employers::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[2] = true;
         if(!pJson[pMasqueradingVector[2]].isNull())
         {
-            companyName_=std::make_shared<std::string>(pJson[pMasqueradingVector[2]].asString());
+            about_=std::make_shared<std::string>(pJson[pMasqueradingVector[2]].asString());
         }
     }
     if(!pMasqueradingVector[3].empty() && pJson.isMember(pMasqueradingVector[3]))
@@ -199,23 +200,16 @@ void Employers::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[3] = true;
         if(!pJson[pMasqueradingVector[3]].isNull())
         {
-            about_=std::make_shared<std::string>(pJson[pMasqueradingVector[3]].asString());
+            userId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[3]].asInt64());
         }
     }
 }
 
 void Employers::updateByJson(const Json::Value &pJson) noexcept(false)
 {
-    if(pJson.isMember("id"))
-    {
-        if(!pJson["id"].isNull())
-        {
-            id_=std::make_shared<int32_t>((int32_t)pJson["id"].asInt64());
-        }
-    }
     if(pJson.isMember("email"))
     {
-        dirtyFlag_[1] = true;
+        dirtyFlag_[0] = true;
         if(!pJson["email"].isNull())
         {
             email_=std::make_shared<std::string>(pJson["email"].asString());
@@ -223,7 +217,7 @@ void Employers::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("company_name"))
     {
-        dirtyFlag_[2] = true;
+        dirtyFlag_[1] = true;
         if(!pJson["company_name"].isNull())
         {
             companyName_=std::make_shared<std::string>(pJson["company_name"].asString());
@@ -231,34 +225,20 @@ void Employers::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("about"))
     {
-        dirtyFlag_[3] = true;
+        dirtyFlag_[2] = true;
         if(!pJson["about"].isNull())
         {
             about_=std::make_shared<std::string>(pJson["about"].asString());
         }
     }
-}
-
-const int32_t &Employers::getValueOfId() const noexcept
-{
-    static const int32_t defaultValue = int32_t();
-    if(id_)
-        return *id_;
-    return defaultValue;
-}
-const std::shared_ptr<int32_t> &Employers::getId() const noexcept
-{
-    return id_;
-}
-void Employers::setId(const int32_t &pId) noexcept
-{
-    id_ = std::make_shared<int32_t>(pId);
-    dirtyFlag_[0] = true;
-}
-const typename Employers::PrimaryKeyType & Employers::getPrimaryKey() const
-{
-    assert(id_);
-    return *id_;
+    if(pJson.isMember("user_id"))
+    {
+        dirtyFlag_[3] = true;
+        if(!pJson["user_id"].isNull())
+        {
+            userId_=std::make_shared<int32_t>((int32_t)pJson["user_id"].asInt64());
+        }
+    }
 }
 
 const std::string &Employers::getValueOfEmail() const noexcept
@@ -275,12 +255,12 @@ const std::shared_ptr<std::string> &Employers::getEmail() const noexcept
 void Employers::setEmail(const std::string &pEmail) noexcept
 {
     email_ = std::make_shared<std::string>(pEmail);
-    dirtyFlag_[1] = true;
+    dirtyFlag_[0] = true;
 }
 void Employers::setEmail(std::string &&pEmail) noexcept
 {
     email_ = std::make_shared<std::string>(std::move(pEmail));
-    dirtyFlag_[1] = true;
+    dirtyFlag_[0] = true;
 }
 
 const std::string &Employers::getValueOfCompanyName() const noexcept
@@ -297,12 +277,12 @@ const std::shared_ptr<std::string> &Employers::getCompanyName() const noexcept
 void Employers::setCompanyName(const std::string &pCompanyName) noexcept
 {
     companyName_ = std::make_shared<std::string>(pCompanyName);
-    dirtyFlag_[2] = true;
+    dirtyFlag_[1] = true;
 }
 void Employers::setCompanyName(std::string &&pCompanyName) noexcept
 {
     companyName_ = std::make_shared<std::string>(std::move(pCompanyName));
-    dirtyFlag_[2] = true;
+    dirtyFlag_[1] = true;
 }
 
 const std::string &Employers::getValueOfAbout() const noexcept
@@ -319,22 +299,43 @@ const std::shared_ptr<std::string> &Employers::getAbout() const noexcept
 void Employers::setAbout(const std::string &pAbout) noexcept
 {
     about_ = std::make_shared<std::string>(pAbout);
-    dirtyFlag_[3] = true;
+    dirtyFlag_[2] = true;
 }
 void Employers::setAbout(std::string &&pAbout) noexcept
 {
     about_ = std::make_shared<std::string>(std::move(pAbout));
-    dirtyFlag_[3] = true;
+    dirtyFlag_[2] = true;
 }
 void Employers::setAboutToNull() noexcept
 {
     about_.reset();
+    dirtyFlag_[2] = true;
+}
+
+const int32_t &Employers::getValueOfUserId() const noexcept
+{
+    static const int32_t defaultValue = int32_t();
+    if(userId_)
+        return *userId_;
+    return defaultValue;
+}
+const std::shared_ptr<int32_t> &Employers::getUserId() const noexcept
+{
+    return userId_;
+}
+void Employers::setUserId(const int32_t &pUserId) noexcept
+{
+    userId_ = std::make_shared<int32_t>(pUserId);
+    dirtyFlag_[3] = true;
+}
+void Employers::setUserIdToNull() noexcept
+{
+    userId_.reset();
     dirtyFlag_[3] = true;
 }
 
 void Employers::updateId(const uint64_t id)
 {
-    id_ = std::make_shared<int32_t>(static_cast<int32_t>(id));
 }
 
 const std::vector<std::string> &Employers::insertColumns() noexcept
@@ -342,14 +343,15 @@ const std::vector<std::string> &Employers::insertColumns() noexcept
     static const std::vector<std::string> inCols={
         "email",
         "company_name",
-        "about"
+        "about",
+        "user_id"
     };
     return inCols;
 }
 
 void Employers::outputArgs(drogon::orm::internal::SqlBinder &binder) const
 {
-    if(dirtyFlag_[1])
+    if(dirtyFlag_[0])
     {
         if(getEmail())
         {
@@ -360,7 +362,7 @@ void Employers::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[2])
+    if(dirtyFlag_[1])
     {
         if(getCompanyName())
         {
@@ -371,11 +373,22 @@ void Employers::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[3])
+    if(dirtyFlag_[2])
     {
         if(getAbout())
         {
             binder << getValueOfAbout();
+        }
+        else
+        {
+            binder << nullptr;
+        }
+    }
+    if(dirtyFlag_[3])
+    {
+        if(getUserId())
+        {
+            binder << getValueOfUserId();
         }
         else
         {
@@ -387,6 +400,10 @@ void Employers::outputArgs(drogon::orm::internal::SqlBinder &binder) const
 const std::vector<std::string> Employers::updateColumns() const
 {
     std::vector<std::string> ret;
+    if(dirtyFlag_[0])
+    {
+        ret.push_back(getColumnName(0));
+    }
     if(dirtyFlag_[1])
     {
         ret.push_back(getColumnName(1));
@@ -404,7 +421,7 @@ const std::vector<std::string> Employers::updateColumns() const
 
 void Employers::updateArgs(drogon::orm::internal::SqlBinder &binder) const
 {
-    if(dirtyFlag_[1])
+    if(dirtyFlag_[0])
     {
         if(getEmail())
         {
@@ -415,7 +432,7 @@ void Employers::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[2])
+    if(dirtyFlag_[1])
     {
         if(getCompanyName())
         {
@@ -426,7 +443,7 @@ void Employers::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[3])
+    if(dirtyFlag_[2])
     {
         if(getAbout())
         {
@@ -437,18 +454,21 @@ void Employers::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
+    if(dirtyFlag_[3])
+    {
+        if(getUserId())
+        {
+            binder << getValueOfUserId();
+        }
+        else
+        {
+            binder << nullptr;
+        }
+    }
 }
 Json::Value Employers::toJson() const
 {
     Json::Value ret;
-    if(getId())
-    {
-        ret["id"]=getValueOfId();
-    }
-    else
-    {
-        ret["id"]=Json::Value();
-    }
     if(getEmail())
     {
         ret["email"]=getValueOfEmail();
@@ -472,6 +492,14 @@ Json::Value Employers::toJson() const
     else
     {
         ret["about"]=Json::Value();
+    }
+    if(getUserId())
+    {
+        ret["user_id"]=getValueOfUserId();
+    }
+    else
+    {
+        ret["user_id"]=Json::Value();
     }
     return ret;
 }
@@ -484,9 +512,9 @@ Json::Value Employers::toMasqueradedJson(
     {
         if(!pMasqueradingVector[0].empty())
         {
-            if(getId())
+            if(getEmail())
             {
-                ret[pMasqueradingVector[0]]=getValueOfId();
+                ret[pMasqueradingVector[0]]=getValueOfEmail();
             }
             else
             {
@@ -495,9 +523,9 @@ Json::Value Employers::toMasqueradedJson(
         }
         if(!pMasqueradingVector[1].empty())
         {
-            if(getEmail())
+            if(getCompanyName())
             {
-                ret[pMasqueradingVector[1]]=getValueOfEmail();
+                ret[pMasqueradingVector[1]]=getValueOfCompanyName();
             }
             else
             {
@@ -506,9 +534,9 @@ Json::Value Employers::toMasqueradedJson(
         }
         if(!pMasqueradingVector[2].empty())
         {
-            if(getCompanyName())
+            if(getAbout())
             {
-                ret[pMasqueradingVector[2]]=getValueOfCompanyName();
+                ret[pMasqueradingVector[2]]=getValueOfAbout();
             }
             else
             {
@@ -517,9 +545,9 @@ Json::Value Employers::toMasqueradedJson(
         }
         if(!pMasqueradingVector[3].empty())
         {
-            if(getAbout())
+            if(getUserId())
             {
-                ret[pMasqueradingVector[3]]=getValueOfAbout();
+                ret[pMasqueradingVector[3]]=getValueOfUserId();
             }
             else
             {
@@ -529,14 +557,6 @@ Json::Value Employers::toMasqueradedJson(
         return ret;
     }
     LOG_ERROR << "Masquerade failed";
-    if(getId())
-    {
-        ret["id"]=getValueOfId();
-    }
-    else
-    {
-        ret["id"]=Json::Value();
-    }
     if(getEmail())
     {
         ret["email"]=getValueOfEmail();
@@ -561,19 +581,22 @@ Json::Value Employers::toMasqueradedJson(
     {
         ret["about"]=Json::Value();
     }
+    if(getUserId())
+    {
+        ret["user_id"]=getValueOfUserId();
+    }
+    else
+    {
+        ret["user_id"]=Json::Value();
+    }
     return ret;
 }
 
 bool Employers::validateJsonForCreation(const Json::Value &pJson, std::string &err)
 {
-    if(pJson.isMember("id"))
-    {
-        if(!validJsonOfField(0, "id", pJson["id"], err, true))
-            return false;
-    }
     if(pJson.isMember("email"))
     {
-        if(!validJsonOfField(1, "email", pJson["email"], err, true))
+        if(!validJsonOfField(0, "email", pJson["email"], err, true))
             return false;
     }
     else
@@ -583,7 +606,7 @@ bool Employers::validateJsonForCreation(const Json::Value &pJson, std::string &e
     }
     if(pJson.isMember("company_name"))
     {
-        if(!validJsonOfField(2, "company_name", pJson["company_name"], err, true))
+        if(!validJsonOfField(1, "company_name", pJson["company_name"], err, true))
             return false;
     }
     else
@@ -593,7 +616,12 @@ bool Employers::validateJsonForCreation(const Json::Value &pJson, std::string &e
     }
     if(pJson.isMember("about"))
     {
-        if(!validJsonOfField(3, "about", pJson["about"], err, true))
+        if(!validJsonOfField(2, "about", pJson["about"], err, true))
+            return false;
+    }
+    if(pJson.isMember("user_id"))
+    {
+        if(!validJsonOfField(3, "user_id", pJson["user_id"], err, true))
             return false;
     }
     return true;
@@ -615,6 +643,11 @@ bool Employers::validateMasqueradedJsonForCreation(const Json::Value &pJson,
               if(!validJsonOfField(0, pMasqueradingVector[0], pJson[pMasqueradingVector[0]], err, true))
                   return false;
           }
+        else
+        {
+            err="The " + pMasqueradingVector[0] + " column cannot be null";
+            return false;
+        }
       }
       if(!pMasqueradingVector[1].empty())
       {
@@ -636,11 +669,6 @@ bool Employers::validateMasqueradedJsonForCreation(const Json::Value &pJson,
               if(!validJsonOfField(2, pMasqueradingVector[2], pJson[pMasqueradingVector[2]], err, true))
                   return false;
           }
-        else
-        {
-            err="The " + pMasqueradingVector[2] + " column cannot be null";
-            return false;
-        }
       }
       if(!pMasqueradingVector[3].empty())
       {
@@ -660,29 +688,24 @@ bool Employers::validateMasqueradedJsonForCreation(const Json::Value &pJson,
 }
 bool Employers::validateJsonForUpdate(const Json::Value &pJson, std::string &err)
 {
-    if(pJson.isMember("id"))
-    {
-        if(!validJsonOfField(0, "id", pJson["id"], err, false))
-            return false;
-    }
-    else
-    {
-        err = "The value of primary key must be set in the json object for update";
-        return false;
-    }
     if(pJson.isMember("email"))
     {
-        if(!validJsonOfField(1, "email", pJson["email"], err, false))
+        if(!validJsonOfField(0, "email", pJson["email"], err, false))
             return false;
     }
     if(pJson.isMember("company_name"))
     {
-        if(!validJsonOfField(2, "company_name", pJson["company_name"], err, false))
+        if(!validJsonOfField(1, "company_name", pJson["company_name"], err, false))
             return false;
     }
     if(pJson.isMember("about"))
     {
-        if(!validJsonOfField(3, "about", pJson["about"], err, false))
+        if(!validJsonOfField(2, "about", pJson["about"], err, false))
+            return false;
+    }
+    if(pJson.isMember("user_id"))
+    {
+        if(!validJsonOfField(3, "user_id", pJson["user_id"], err, false))
             return false;
     }
     return true;
@@ -702,11 +725,6 @@ bool Employers::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
           if(!validJsonOfField(0, pMasqueradingVector[0], pJson[pMasqueradingVector[0]], err, false))
               return false;
       }
-    else
-    {
-        err = "The value of primary key must be set in the json object for update";
-        return false;
-    }
       if(!pMasqueradingVector[1].empty() && pJson.isMember(pMasqueradingVector[1]))
       {
           if(!validJsonOfField(1, pMasqueradingVector[1], pJson[pMasqueradingVector[1]], err, false))
@@ -744,16 +762,19 @@ bool Employers::validJsonOfField(size_t index,
                 err="The " + fieldName + " column cannot be null";
                 return false;
             }
-            if(isForCreation)
-            {
-                err="The automatic primary key cannot be set";
-                return false;
-            }
-            if(!pJson.isInt())
+            if(!pJson.isString())
             {
                 err="Type error in the "+fieldName+" field";
                 return false;
             }
+            if(pJson.isString() && std::strlen(pJson.asCString()) > 256)
+            {
+                err="String length exceeds limit for the " +
+                    fieldName +
+                    " field (the maximum value is 256)";
+                return false;
+            }
+
             break;
         case 1:
             if(pJson.isNull())
@@ -778,29 +799,20 @@ bool Employers::validJsonOfField(size_t index,
         case 2:
             if(pJson.isNull())
             {
-                err="The " + fieldName + " column cannot be null";
-                return false;
+                return true;
             }
             if(!pJson.isString())
             {
                 err="Type error in the "+fieldName+" field";
                 return false;
             }
-            if(pJson.isString() && std::strlen(pJson.asCString()) > 256)
-            {
-                err="String length exceeds limit for the " +
-                    fieldName +
-                    " field (the maximum value is 256)";
-                return false;
-            }
-
             break;
         case 3:
             if(pJson.isNull())
             {
                 return true;
             }
-            if(!pJson.isString())
+            if(!pJson.isInt())
             {
                 err="Type error in the "+fieldName+" field";
                 return false;
