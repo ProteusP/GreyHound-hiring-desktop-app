@@ -54,8 +54,8 @@ class Employers
     static const std::string tableName;
     static const bool hasPrimaryKey;
     static const std::string primaryKeyName;
-    using PrimaryKeyType = void;
-    int getPrimaryKey() const { assert(false); return 0; }
+    using PrimaryKeyType = int32_t;
+    const PrimaryKeyType &getPrimaryKey() const;
 
     /**
      * @brief constructor
@@ -134,7 +134,6 @@ class Employers
     const std::shared_ptr<int32_t> &getUserId() const noexcept;
     ///Set the value of the column user_id
     void setUserId(const int32_t &pUserId) noexcept;
-    void setUserIdToNull() noexcept;
 
 
     static size_t getColumnNumber() noexcept {  return 4;  }
@@ -177,13 +176,13 @@ class Employers
   public:
     static const std::string &sqlForFindingByPrimaryKey()
     {
-        static const std::string sql="";
+        static const std::string sql="select * from " + tableName + " where user_id = ?";
         return sql;
     }
 
     static const std::string &sqlForDeletingByPrimaryKey()
     {
-        static const std::string sql="";
+        static const std::string sql="delete from " + tableName + " where user_id = ?";
         return sql;
     }
     std::string sqlForInserting(bool &needSelection) const
