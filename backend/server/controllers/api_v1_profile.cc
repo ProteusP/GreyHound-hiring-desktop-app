@@ -23,7 +23,7 @@ void profile::getProfile(
   if (userStatus == CAND_STATUS) {
     auto mapper =
         drogon::orm::Mapper<drogon_model::default_db::Candidates>(dbClient);
-    orm::Criteria findCriteria{drogon_model::default_db::Candidates::Cols::_id,
+    orm::Criteria findCriteria{drogon_model::default_db::Candidates::Cols::_user_id,
                                orm::CompareOperator::EQ, userId};
 
     const auto &candidates = mapper.findBy(findCriteria);
@@ -45,7 +45,7 @@ void profile::getProfile(
   } else if (userStatus == EMPL_STATUS) {
     auto mapper =
         drogon::orm::Mapper<drogon_model::default_db::Employers>(dbClient);
-    orm::Criteria findCriteria{drogon_model::default_db::Employers::Cols::_id,
+    orm::Criteria findCriteria{drogon_model::default_db::Employers::Cols::_user_id,
                                orm::CompareOperator::EQ, userId};
 
     const auto &employers = mapper.findBy(findCriteria);
@@ -102,15 +102,15 @@ void profile::patchProfile(
     callback(resp);
     return;
   }
-  // findOne is not noexcept :<
+  // findOne is not noexcept...
   try {
     if (userStatus == CAND_STATUS) {
       drogon::orm::Mapper<drogon_model::default_db::Candidates> mapper(
           dbClient);
       auto candidate = mapper.findOne(
-          orm::Criteria{drogon_model::default_db::Candidates::Cols::_id,
+          orm::Criteria{drogon_model::default_db::Candidates::Cols::_user_id,
                         orm::CompareOperator::EQ, userId});
-      // Does not change ID :)
+      // Does not change ID
       candidate.updateByJson(*jsonReq);
 
       mapper.update(candidate);
@@ -123,10 +123,10 @@ void profile::patchProfile(
     } else if (userStatus == EMPL_STATUS) {
       drogon::orm::Mapper<drogon_model::default_db::Employers> mapper(dbClient);
       auto employer = mapper.findOne(
-          orm::Criteria{drogon_model::default_db::Employers::Cols::_id,
+          orm::Criteria{drogon_model::default_db::Employers::Cols::_user_id,
                         orm::CompareOperator::EQ, userId});
 
-      // Does not change ID :)
+      // Does not change ID
       employer.updateByJson(*jsonReq);
 
       mapper.update(employer);
@@ -150,7 +150,7 @@ void profile::patchProfile(
   }
 }
 
-void saveUserProfile(const std::string &id, Json::Value data) {
+void saveUserProfile(const std::string &id, const Json::Value& data) {
   const auto redisClientPtr = app().getRedisClient();
 
   const std::string key = "profile:" + id;
@@ -158,7 +158,7 @@ void saveUserProfile(const std::string &id, Json::Value data) {
 
   try
   {
-    std::string res = redisClientPtr->execCommandSync<std::string>(
+    auto res = redisClientPtr->execCommandSync<std::string>(
         [](const nosql::RedisResult &r){
             return r.asString();
         },

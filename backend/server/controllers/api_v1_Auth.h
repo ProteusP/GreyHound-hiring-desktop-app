@@ -9,6 +9,7 @@ namespace api::v1 {
 
     const std::string EMPL_STATUS = "empl";
     const std::string CAND_STATUS = "candidate";
+    const std::string USERS_TABLE = "users";
 
     class Auth final : public drogon::HttpController<Auth> {
         static void login(const HttpRequestPtr &req,
