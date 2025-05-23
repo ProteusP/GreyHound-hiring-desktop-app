@@ -52,7 +52,6 @@ class Candidates
         static const std::string _place_of_study;
         static const std::string _faculty_of_educ;
         static const std::string _graduation_year;
-        static const std::string _photo;
         static const std::string _about;
         static const std::string _place;
         static const std::string _search_status_id;
@@ -188,16 +187,6 @@ class Candidates
     void setGraduationYear(const int32_t &pGraduationYear) noexcept;
     void setGraduationYearToNull() noexcept;
 
-    /**  For column photo  */
-    ///Get the value of the column photo, returns the default value if the column is null
-    const std::string &getValueOfPhoto() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
-    const std::shared_ptr<std::string> &getPhoto() const noexcept;
-    ///Set the value of the column photo
-    void setPhoto(const std::string &pPhoto) noexcept;
-    void setPhoto(std::string &&pPhoto) noexcept;
-    void setPhotoToNull() noexcept;
-
     /**  For column about  */
     ///Get the value of the column about, returns the default value if the column is null
     const std::string &getValueOfAbout() const noexcept;
@@ -273,7 +262,7 @@ class Candidates
     void setUserId(const int32_t &pUserId) noexcept;
 
 
-    static size_t getColumnNumber() noexcept {  return 17;  }
+    static size_t getColumnNumber() noexcept {  return 16;  }
     static const std::string &getColumnName(size_t index) noexcept(false);
 
     Json::Value toJson() const;
@@ -302,7 +291,6 @@ class Candidates
     std::shared_ptr<std::string> placeOfStudy_;
     std::shared_ptr<std::string> facultyOfEduc_;
     std::shared_ptr<int32_t> graduationYear_;
-    std::shared_ptr<std::string> photo_;
     std::shared_ptr<std::string> about_;
     std::shared_ptr<std::string> place_;
     std::shared_ptr<int32_t> searchStatusId_;
@@ -322,7 +310,7 @@ class Candidates
         const bool notNull_;
     };
     static const std::vector<MetaData> metaData_;
-    bool dirtyFlag_[17]={ false };
+    bool dirtyFlag_[16]={ false };
   public:
     static const std::string &sqlForFindingByPrimaryKey()
     {
@@ -382,46 +370,41 @@ class Candidates
         }
         if(dirtyFlag_[8])
         {
-            sql += "photo,";
-            ++parametersCount;
-        }
-        if(dirtyFlag_[9])
-        {
             sql += "about,";
             ++parametersCount;
         }
-        if(dirtyFlag_[10])
+        if(dirtyFlag_[9])
         {
             sql += "place,";
             ++parametersCount;
         }
         sql += "search_status_id,";
         ++parametersCount;
-        if(!dirtyFlag_[11])
+        if(!dirtyFlag_[10])
         {
             needSelection=true;
         }
-        if(dirtyFlag_[12])
+        if(dirtyFlag_[11])
         {
             sql += "educ_status_id,";
             ++parametersCount;
         }
-        if(dirtyFlag_[13])
+        if(dirtyFlag_[12])
         {
             sql += "experience_status_id,";
             ++parametersCount;
         }
-        if(dirtyFlag_[14])
+        if(dirtyFlag_[13])
         {
             sql += "work_schedule_status_id,";
             ++parametersCount;
         }
-        if(dirtyFlag_[15])
+        if(dirtyFlag_[14])
         {
             sql += "search_status,";
             ++parametersCount;
         }
-        if(dirtyFlag_[16])
+        if(dirtyFlag_[15])
         {
             sql += "user_id,";
             ++parametersCount;
@@ -489,14 +472,14 @@ class Candidates
             sql.append("?,");
 
         }
+        else
+        {
+            sql +="default,";
+        }
         if(dirtyFlag_[11])
         {
             sql.append("?,");
 
-        }
-        else
-        {
-            sql +="default,";
         }
         if(dirtyFlag_[12])
         {
@@ -514,11 +497,6 @@ class Candidates
 
         }
         if(dirtyFlag_[15])
-        {
-            sql.append("?,");
-
-        }
-        if(dirtyFlag_[16])
         {
             sql.append("?,");
 
