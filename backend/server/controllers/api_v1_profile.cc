@@ -21,37 +21,31 @@ void profile::getProfile(
   const auto &dbClient = app().getDbClient();
   const auto redisClientPtr = app().getRedisClient(CACHE_CLIENT);
 
-  try
-  {
+  try {
     LOG_DEBUG << "GET profile from redis\n";
     const std::string key = "profile:" + userId;
     auto res = redisClientPtr->execCommandSync<std::string>(
-        [](const nosql::RedisResult &r){
-            return r.asString();
-        },
-        "get %s",
-        key.c_str()
-    );
+        [](const nosql::RedisResult &r) { return r.asString(); }, "get %s",
+        key.c_str());
 
     Json::CharReaderBuilder reader;
     std::istringstream stream(res);
     std::string errs;
-    Json::parseFromStream(reader, stream,&jsonResp,&errs);
+    Json::parseFromStream(reader, stream, &jsonResp, &errs);
 
     auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
     resp->setStatusCode(k200OK);
     callback(resp);
     return;
-  }
-  catch (const nosql::RedisException & err)
-  {
+  } catch (const nosql::RedisException &err) {
   }
 
   if (userStatus == CAND_STATUS) {
     auto mapper =
         drogon::orm::Mapper<drogon_model::default_db::Candidates>(dbClient);
-    orm::Criteria findCriteria{drogon_model::default_db::Candidates::Cols::_user_id,
-                               orm::CompareOperator::EQ, userId};
+    orm::Criteria findCriteria{
+        drogon_model::default_db::Candidates::Cols::_user_id,
+        orm::CompareOperator::EQ, userId};
 
     const auto &candidates = mapper.findBy(findCriteria);
 
@@ -67,7 +61,7 @@ void profile::getProfile(
     const auto &candidate = candidates.front();
     jsonResp = candidate.toJson();
 
-    saveUserProfile(userId,jsonResp);
+    saveUserProfile(userId, jsonResp);
 
     auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
     resp->setStatusCode(drogon::k200OK);
@@ -75,8 +69,9 @@ void profile::getProfile(
   } else if (userStatus == EMPL_STATUS) {
     auto mapper =
         drogon::orm::Mapper<drogon_model::default_db::Employers>(dbClient);
-    orm::Criteria findCriteria{drogon_model::default_db::Employers::Cols::_user_id,
-                               orm::CompareOperator::EQ, userId};
+    orm::Criteria findCriteria{
+        drogon_model::default_db::Employers::Cols::_user_id,
+        orm::CompareOperator::EQ, userId};
 
     const auto &employers = mapper.findBy(findCriteria);
 
@@ -93,7 +88,7 @@ void profile::getProfile(
     const auto &empl = employers.front();
     jsonResp = empl.toJson();
 
-    saveUserProfile(userId,jsonResp);
+    saveUserProfile(userId, jsonResp);
 
     auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
     resp->setStatusCode(drogon::k200OK);
@@ -183,26 +178,23 @@ void profile::patchProfile(
   }
 }
 
-void saveUserProfile(const std::string &id, const Json::Value& data) {
+void saveUserProfile(const std::string &id, const Json::Value &data) {
   const auto redisClientPtr = app().getRedisClient("cache");
 
-  const std::string& key = "profile:" + id;
-  const std::string& strData = data.toStyledString();
+  const std::string &key = "profile:" + id;
+  const std::string &strData = data.toStyledString();
 
-  try
-  {
-    redisClientPtr->execCommandAsync([](const nosql::RedisResult &r){
-            LOG_DEBUG<<"Result of profile caching: " << r.getStringForDisplaying() << "\n";
-        },[](const std::exception &err){
-            LOG_ERROR << err.what() << "\n";
-        }, "SET %s %s", key.c_str(), strData.c_str());
-  }
-  catch (const nosql::RedisException & err)
-  {
-    LOG_ERROR<<" Redis err: "<<err.what()<<"\n";
-  }
-  catch (const std::exception & err)
-  {
-    LOG_ERROR<<err.what()<<"\n";
+  try {
+    redisClientPtr->execCommandAsync(
+        [](const nosql::RedisResult &r) {
+          LOG_DEBUG << "Result of profile caching: "
+                    << r.getStringForDisplaying() << "\n";
+        },
+        [](const std::exception &err) { LOG_ERROR << err.what() << "\n"; },
+        "SET %s %s", key.c_str(), strData.c_str());
+  } catch (const nosql::RedisException &err) {
+    LOG_ERROR << " Redis err: " << err.what() << "\n";
+  } catch (const std::exception &err) {
+    LOG_ERROR << err.what() << "\n";
   }
 }

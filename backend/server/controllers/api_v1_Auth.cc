@@ -10,7 +10,6 @@
 #include <drogon/HttpTypes.h>
 #include <drogon/orm/Exception.h>
 
-
 using namespace api::v1;
 
 // Add definition of your processing function here
@@ -30,7 +29,6 @@ void Auth::login(const HttpRequestPtr &req,
   const std::string &email = (*json)["email"].asString();
   const std::string &password = (*json)["password"].asString();
 
-
   const std::string sqlString =
       "SELECT id, password, status FROM " + USERS_TABLE + " WHERE email = ?";
   LOG_DEBUG << "Executing SQL query: " << sqlString << " with email: " << email
@@ -49,7 +47,8 @@ void Auth::login(const HttpRequestPtr &req,
 
         const auto &row = result[0];
 
-        if (const auto dbPassword = row["password"].as<std::string>(); password != dbPassword) {
+        if (const auto dbPassword = row["password"].as<std::string>();
+            password != dbPassword) {
           const auto resp = HttpResponse::newHttpJsonResponse(
               Json::Value{{"error", "Wrong password"}});
           resp->setStatusCode(k401Unauthorized);
@@ -62,7 +61,7 @@ void Auth::login(const HttpRequestPtr &req,
 
         if (status != CAND_STATUS && status != EMPL_STATUS) {
           const auto resp = HttpResponse::newHttpJsonResponse(
-            Json::Value{{"error", "unexpected user status in DB"}});
+              Json::Value{{"error", "unexpected user status in DB"}});
           LOG_DEBUG << "unexpected user status in DB\n";
           resp->setStatusCode(k500InternalServerError);
           callback(resp);
@@ -71,7 +70,8 @@ void Auth::login(const HttpRequestPtr &req,
 
         try {
           const auto session = req->session();
-          LOG_DEBUG << "Got a session: User id: "<< row["id"].as<std::string>() <<" Status: "<<status<<"\n";
+          LOG_DEBUG << "Got a session: User id: " << row["id"].as<std::string>()
+                    << " Status: " << status << "\n";
 
           session->insert("authenticated", true);
           session->insert("user_id", row["id"].as<std::string>());
@@ -85,7 +85,8 @@ void Auth::login(const HttpRequestPtr &req,
 
           callback(resp);
         } catch (...) {
-          const auto resp = HttpResponse::newHttpJsonResponse(Json::Value{{"error", "Session creation failed"}});
+          const auto resp = HttpResponse::newHttpJsonResponse(
+              Json::Value{{"error", "Session creation failed"}});
           LOG_DEBUG << "Session creation failed\n";
           resp->setStatusCode(drogon::k500InternalServerError);
           callback(resp);
@@ -139,10 +140,8 @@ void Auth::registerUser(
   const auto &dbClient = app().getDbClient();
 
   auto usersMapper = orm::Mapper<drogon_model::default_db::Users>(dbClient);
-  orm::Criteria findUserCriteria{
-    drogon_model::default_db::Users::Cols::_email,
-    orm::CompareOperator::EQ, email
-  };
+  orm::Criteria findUserCriteria{drogon_model::default_db::Users::Cols::_email,
+                                 orm::CompareOperator::EQ, email};
 
   if (auto users = usersMapper.findBy(findUserCriteria); !users.empty()) {
     jsonResp["error"] = "Email already exists!";
@@ -159,13 +158,14 @@ void Auth::registerUser(
   usersMapper.insert({user});
 
   if (status == CAND_STATUS) {
-    auto candMapper = orm::Mapper<drogon_model::default_db::Candidates>(dbClient);
+    auto candMapper =
+        orm::Mapper<drogon_model::default_db::Candidates>(dbClient);
     orm::Criteria findCandidateCriteria{
-      drogon_model::default_db::Candidates::Cols::_email,
-      orm::CompareOperator::EQ, email
-    };
+        drogon_model::default_db::Candidates::Cols::_email,
+        orm::CompareOperator::EQ, email};
 
-    if (const auto candidates = candMapper.findBy(findCandidateCriteria); (!candidates.empty())) {
+    if (const auto candidates = candMapper.findBy(findCandidateCriteria);
+        (!candidates.empty())) {
       jsonResp["error"] = "Email already exists in candidates dataset";
       auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
       resp->setStatusCode(k409Conflict);
@@ -174,8 +174,8 @@ void Auth::registerUser(
     }
 
     drogon_model::default_db::Candidates candidate;
-    const std::string& name = (*jsonReq)["name"].asString();
-    const std::string& surname = (*jsonReq)["surname"].asString();
+    const std::string &name = (*jsonReq)["name"].asString();
+    const std::string &surname = (*jsonReq)["surname"].asString();
 
     candidate.setName(name);
     candidate.setSurname(surname);
@@ -186,13 +186,14 @@ void Auth::registerUser(
   }
 
   if (status == EMPL_STATUS) {
-    auto emplMapper = orm::Mapper<drogon_model::default_db::Employers>(dbClient);
+    auto emplMapper =
+        orm::Mapper<drogon_model::default_db::Employers>(dbClient);
     orm::Criteria findEmployerCriteria{
-    drogon_model::default_db::Employers::Cols::_email,
-      orm::CompareOperator::EQ, email
-    };
+        drogon_model::default_db::Employers::Cols::_email,
+        orm::CompareOperator::EQ, email};
 
-    if (const auto employers = emplMapper.findBy(findEmployerCriteria); !employers.empty()) {
+    if (const auto employers = emplMapper.findBy(findEmployerCriteria);
+        !employers.empty()) {
       jsonResp["error"] = "Email already exists in employers dataset";
       auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
       resp->setStatusCode(k409Conflict);
@@ -202,7 +203,7 @@ void Auth::registerUser(
 
     drogon_model::default_db::Employers employer;
 
-    const std::string& companyName = (*jsonReq)["company_name"].asString();
+    const std::string &companyName = (*jsonReq)["company_name"].asString();
 
     employer.setEmail(email);
     employer.setCompanyName(companyName);
@@ -211,7 +212,7 @@ void Auth::registerUser(
     emplMapper.insert({employer});
   }
 
-  LOG_DEBUG << " Registered user. Id: "<< (*user.getId()) << "\n";
+  LOG_DEBUG << " Registered user. Id: " << (*user.getId()) << "\n";
   jsonResp["message"] = "User registered successfully";
   auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
   resp->setStatusCode(k201Created);
