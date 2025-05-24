@@ -17,14 +17,20 @@ class resources final : public drogon::HttpController<resources> {
 
   static void
   getResume(const HttpRequestPtr &req,
-            std::function<void(const HttpResponsePtr &)> &&callback);
+            std::function<void(const HttpResponsePtr &)> &&callback,
+            const std::string& userId);
 
+    static void saveResume(const HttpRequestPtr &req,
+               std::function<void(const HttpResponsePtr &)> &&callback);
 public:
   METHOD_LIST_BEGIN
   METHOD_ADD(resources::getResumes, "/resumes", drogon::Get,
              "api::v1::checkAuthFilter"); // path is /api/v1/resources/resumes
   METHOD_ADD(resources::getVacancies, "/vacancies", drogon::Get,
              "api::v1::checkAuthFilter"); // path is /api/v1/resources/vacancies
+    METHOD_ADD(resources::getResume, "/resume/{1}", drogon::Get, "api::v1::checkAuthFilter"); // path is /api/v1/resources/resume/{user_id}
+
+    METHOD_ADD(resources::saveResume, "resume", drogon::Post, "api::v1::checkAuthFilter"); // // path is /api/v1/resources/resume
   METHOD_LIST_END
 };
 } // namespace api::v1
