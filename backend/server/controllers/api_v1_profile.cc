@@ -140,8 +140,12 @@ void profile::patchProfile(
 
       mapper.update(candidate);
 
+      const auto candidateJson = candidate.toJson();
+
+      saveUserProfile(userId, candidateJson);
+
       jsonResp["message"] = "Candidate updated";
-      jsonResp["data"] = candidate.toJson();
+      jsonResp["data"] = candidateJson;
       auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
       resp->setStatusCode(drogon::k200OK);
       callback(resp);
@@ -154,10 +158,14 @@ void profile::patchProfile(
       // Does not change ID
       employer.updateByJson(*jsonReq);
 
+      const auto employerJson = employer.toJson();
+
+      saveUserProfile(userId, employerJson);
+
       mapper.update(employer);
 
       jsonResp["message"] = "Employer updated";
-      jsonResp["data"] = employer.toJson();
+      jsonResp["data"] = employerJson;
       auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
       resp->setStatusCode(drogon::k200OK);
       callback(resp);
