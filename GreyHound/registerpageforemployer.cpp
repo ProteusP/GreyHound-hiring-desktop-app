@@ -3,10 +3,17 @@
 #include "passwordwarningdialog.h"
 #include "ui_registerpageforemployer.h"
 #include "validation.h"
-
+#include <QGraphicsDropShadowEffect>
 RegisterPageForEmployer::RegisterPageForEmployer(QWidget *parent)
     : QWidget(parent), ui(new Ui::RegisterPageForEmployer) {
     ui->setupUi(this);
+
+    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
+    shadow->setBlurRadius(20);
+    shadow->setOffset(0, 4);
+    shadow->setColor(QColor(0, 0, 0, 80));
+
+    ui->widget->setGraphicsEffect(shadow);
 }
 
 RegisterPageForEmployer::~RegisterPageForEmployer() {

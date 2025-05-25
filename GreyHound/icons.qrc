@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>caret-up.png</file>
+        <file>caret-down.png</file>
+    </qresource>
+</RCC>

@@ -4,10 +4,20 @@
 #include "ui_loginpage.h"
 // #include "registerstatus.h"
 #include "validation.h"
+#include <QGraphicsDropShadowEffect>
 
 LoginWidget::LoginWidget(QWidget *parent)
     : QWidget(parent), ui(new Ui::LoginWidget) {
     ui->setupUi(this);
+
+    // Создаем эффект тени
+    QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
+    shadow->setBlurRadius(20);
+    shadow->setOffset(0, 4);
+    shadow->setColor(QColor(0, 0, 0, 80));
+
+    // Применяем к виджету
+    ui->widget->setGraphicsEffect(shadow);
 }
 
 LoginWidget::~LoginWidget() {

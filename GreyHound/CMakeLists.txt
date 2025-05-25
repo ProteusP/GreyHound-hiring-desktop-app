@@ -39,6 +39,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         profilepageforemployer.h profilepageforemployer.cpp profilepageforemployer.ui
         resume.h resume.cpp
         vacancycard.h vacancycard.cpp vacancycard.ui
+        icons.qrc
 
 
     )
