@@ -13,6 +13,11 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget {
+	background-color: white;
+}</string>
+  </property>
   <layout class="QGridLayout" name="gridLayout_3">
    <item row="2" column="1">
     <spacer name="verticalSpacer_4">
@@ -84,6 +89,7 @@
     padding: 6px 12px;
     background-color: #f9f9f9;
     font-size: 14px;
+	color: black;
 }</string>
             </property>
             <property name="placeholderText">
@@ -118,6 +124,7 @@
     padding: 6px 12px;
     background-color: #f9f9f9;
     font-size: 14px;
+	color: black;
 }</string>
             </property>
             <property name="placeholderText">
@@ -152,6 +159,7 @@
     padding: 6px 12px;
     background-color: #f9f9f9;
     font-size: 14px;
+	color: black;
 }</string>
             </property>
             <property name="placeholderText">
@@ -186,6 +194,7 @@
     padding: 6px 12px;
     background-color: #f9f9f9;
     font-size: 14px;
+	color: black;
 }</string>
             </property>
             <property name="echoMode">

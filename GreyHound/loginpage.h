@@ -25,8 +25,6 @@ private slots:
 
     void on_registerPB_clicked();
 
-    void on_exitPB_clicked();
-
 private:
     Ui::LoginWidget *ui;
 

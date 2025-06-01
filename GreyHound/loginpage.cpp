@@ -10,13 +10,10 @@ LoginWidget::LoginWidget(QWidget *parent)
     : QWidget(parent), ui(new Ui::LoginWidget) {
     ui->setupUi(this);
 
-    // Создаем эффект тени
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
     shadow->setBlurRadius(20);
     shadow->setOffset(0, 4);
     shadow->setColor(QColor(0, 0, 0, 80));
-
-    // Применяем к виджету
     ui->widget->setGraphicsEffect(shadow);
 }
 
@@ -77,18 +74,4 @@ void LoginWidget::on_loginPB_clicked() {
 
 void LoginWidget::on_registerPB_clicked() {
     emit registerPressed();
-}
-
-void LoginWidget::on_exitPB_clicked() {
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(
-        this, "Выход", "Вы точно хотите выйти?",
-        QMessageBox::Yes | QMessageBox::No
-    );
-
-    if (reply == QMessageBox::No) {
-        return;
-    }
-
-    QApplication::exit();
 }

@@ -19,7 +19,6 @@ void MainPage::showVacancyDetails(int vacancyId) {
     detailsDialog->setWindowTitle("Детали вакансии");
     detailsDialog->resize(500, 600);
 
-    // Основные стили для темной темы
     detailsDialog->setStyleSheet(R"(
         QDialog {
             background-color: #2D2D2D;

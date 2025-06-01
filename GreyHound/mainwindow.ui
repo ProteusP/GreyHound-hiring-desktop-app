@@ -6,17 +6,24 @@
    <rect>
     <x>0</x>
     <y>0</y>
-
     <width>800</width>
     <height>600</height>
-
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow {
+	background-color: #f9f9f9;
+}</string>
+  </property>
   <widget class="QWidget" name="centralwidget">
-
+   <property name="styleSheet">
+    <string notr="true">QWidget {
+	background-color: #f9f9f9;
+}</string>
+   </property>
    <widget class="QStackedWidget" name="stackedWidget">
     <property name="geometry">
      <rect>
@@ -26,10 +33,26 @@
       <height>601</height>
      </rect>
     </property>
-    <widget class="QWidget" name="page"/>
-    <widget class="QWidget" name="page_2"/>
+    <property name="styleSheet">
+     <string notr="true">QStackedWidget {
+	background-color: #f9f9f9;
+}</string>
+    </property>
+    <widget class="QWidget" name="page">
+     <property name="styleSheet">
+      <string notr="true">QWidget {
+	background-color: #f9f9f9;
+}</string>
+     </property>
+    </widget>
+    <widget class="QWidget" name="page_2">
+     <property name="styleSheet">
+      <string notr="true">QWidget {
+	background-color: #f9f9f9;
+}</string>
+     </property>
+    </widget>
    </widget>
-
   </widget>
  </widget>
  <resources/>
