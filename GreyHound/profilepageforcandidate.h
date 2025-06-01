@@ -48,15 +48,7 @@ private slots:
 
 private:
     void SetupUI();
-    QLabel *nameLabel;
-    QLabel *emailLabel;
-    QLabel *surnameLabel;
-    QLineEdit *phoneEdit;
-    QComboBox *statusCombo;
-    QLineEdit *placeEdit;
-    QLineEdit *universityEdit;
-    QLineEdit *facultyEdit;
-    QComboBox *experinceCombo;
+    Ui::ProfilePageForCandidate *ui;
 };
 
 #endif  // PROFILEPAGEFORCANDIDATE_H

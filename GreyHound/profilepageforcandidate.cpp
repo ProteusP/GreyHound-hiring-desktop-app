@@ -4,121 +4,33 @@
 #include "ui_profilepageforcandidate.h"
 
 ProfilePageForCandidate::ProfilePageForCandidate(QWidget *parent)
-    : QWidget(parent) {
+    : QWidget(parent), ui(new Ui::ProfilePageForCandidate) {
+    ui->setupUi(this);
     SetupUI();
 }
 
 ProfilePageForCandidate::~ProfilePageForCandidate() = default;
 
 void ProfilePageForCandidate::SetupUI() {
-    QHBoxLayout *mainLayout = new QHBoxLayout(this);
-    this->setLayout(mainLayout);
-
-    QScrollArea *leftScrollArea = new QScrollArea();
-    QWidget *notificationsWidget = new QWidget();
-    QVBoxLayout *notificationsLayout = new QVBoxLayout(notificationsWidget);
-    QLabel *notificationsLabel = new QLabel("Уведомления");
-
-    notificationsLayout->addWidget(notificationsLabel);
-
-    leftScrollArea->setWidget(notificationsWidget);
-    leftScrollArea->setWidgetResizable(true);
-
-    mainLayout->addWidget(leftScrollArea, 1);
-
-    QWidget *centralWidget = new QWidget();
-    QVBoxLayout *centralLayout = new QVBoxLayout(centralWidget);
-    QGroupBox *basicInfoGroup = new QGroupBox("Основная информация");
-    QFormLayout *basicInfoLayout = new QFormLayout(basicInfoGroup);
-
-    // TODO add fields from DB
-
-    nameLabel = new QLabel("Загрузка...");
-    surnameLabel = new QLabel("Загрузка...");
-    emailLabel = new QLabel("Загрузка...");
-    phoneEdit = new QLineEdit();
-    placeEdit = new QLineEdit();
-    statusCombo = new QComboBox();
-    statusCombo->addItem("Активно ищу работу", "active");
-    statusCombo->addItem("Рассматриваю предложения", "searching");
-    statusCombo->addItem("Не ищу работу", "inactive");
-
-    basicInfoLayout->addRow("Имя", nameLabel);
-    basicInfoLayout->addRow("Фамилия", surnameLabel);
-    basicInfoLayout->addRow("Email", emailLabel);
-    basicInfoLayout->addRow("Телефон", phoneEdit);
-    basicInfoLayout->addRow("Местоположение", placeEdit);
-    basicInfoLayout->addRow("Статус", statusCombo);
-
-    QGroupBox *resumeGroup = new QGroupBox("Резюме");
-    QFormLayout *resumeLayout = new QFormLayout(resumeGroup);
-
-    universityEdit = new QLineEdit();
-    facultyEdit = new QLineEdit();
-    experinceCombo = new QComboBox();
-    experinceCombo->addItem("Нет", "intern");
-    experinceCombo->addItem("1 - 3 года", "junior");
-    experinceCombo->addItem("3 - 5 лет", "middle");
-    experinceCombo->addItem("5+ лет", "senior");
-
-    resumeLayout->addRow("Учебное заведение", universityEdit);
-    resumeLayout->addRow("Факультет", facultyEdit);
-    resumeLayout->addRow("Опыт работы", experinceCombo);
-
-    resumeLayout->setContentsMargins(20, 20, 20, 20);
-    basicInfoLayout->setContentsMargins(20, 20, 20, 20);
-
-    centralLayout->addWidget(basicInfoGroup);
-    centralLayout->addSpacing(15);
-    centralLayout->addWidget(resumeGroup);
-    centralLayout->addStretch();
-
-    mainLayout->addWidget(centralWidget, 3);
-
-    QWidget *rightWidget = new QWidget();
-
-    QVBoxLayout *rightLayout = new QVBoxLayout(rightWidget);
-
-    QPushButton *homepagePB = new QPushButton("На главную");
+    ui->statusCombo->addItem("Активно ищу работу", "active");
+    ui->statusCombo->addItem("Рассматриваю предложения", "searching");
+    ui->statusCombo->addItem("Не ищу работу", "inactive");
+    ui->experinceCombo->addItem("Нет", "intern");
+    ui->experinceCombo->addItem("1 - 3 года", "junior");
+    ui->experinceCombo->addItem("3 - 5 лет", "middle");
+    ui->experinceCombo->addItem("5+ лет", "senior");
     connect(
-        homepagePB, &QPushButton::clicked, this,
+        ui->homepagePB, &QPushButton::clicked, this,
         &ProfilePageForCandidate::homeButtonClicked
     );
-
-    QPushButton *saveButton = new QPushButton("Сохранить изменения");
-
     connect(
-        saveButton, &QPushButton::clicked, this,
+        ui->saveButton, &QPushButton::clicked, this,
         &ProfilePageForCandidate::onSaveClicked
     );
-
-    QPushButton *logoutPB = new QPushButton("Выйти");
-    logoutPB->setStyleSheet(
-        "QPushButton {"
-        "   color: red;}"
-    );
     connect(
-        logoutPB, &QPushButton::clicked, this,
+        ui->logoutPB, &QPushButton::clicked, this,
         &ProfilePageForCandidate::logoutButtonClicked
     );
-
-    rightLayout->addWidget(homepagePB, 0, Qt::AlignTop);
-    rightLayout->addStretch();
-    rightLayout->addWidget(saveButton, 0, Qt::AlignBottom);
-    rightLayout->addWidget(logoutPB, 0, Qt::AlignBottom);
-    rightWidget->setContentsMargins(10, 10, 10, 10);
-
-    mainLayout->addWidget(rightWidget, 1);
-    mainLayout->setContentsMargins(0, 0, 0, 0);
-    mainLayout->setSpacing(2);
-
-    leftScrollArea->setSizePolicy(
-        QSizePolicy::Expanding, QSizePolicy::Expanding
-    );
-    centralWidget->setSizePolicy(
-        QSizePolicy::Expanding, QSizePolicy::Expanding
-    );
-    rightWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 }
 
 void ProfilePageForCandidate::updateUserData(
@@ -128,17 +40,17 @@ void ProfilePageForCandidate::updateUserData(
     const QString &phoneNum,
     const QString &place
 ) {
-    nameLabel->setText(name);
-    surnameLabel->setText(surname);
-    emailLabel->setText(email);
-    phoneEdit->setText(phoneNum);
-    placeEdit->setText(place);
+    ui->nameLabel->setText(name);
+    ui->surnameLabel->setText(surname);
+    ui->emailLabel->setText(email);
+    ui->phoneEdit->setText(phoneNum);
+    ui->placeEdit->setText(place);
 }
 
 void ProfilePageForCandidate::onSaveClicked() {
-    QString newPhone = phoneEdit->text();
-    QString newPlace = placeEdit->text();
-    QString newSearchStatus = statusCombo->currentData().toString();
+    QString newPhone = ui->phoneEdit->text();
+    QString newPlace = ui->placeEdit->text();
+    QString newSearchStatus = ui->statusCombo->currentData().toString();
     saveChangesToDB(newPhone, newPlace, newSearchStatus);
     saveResumeData();
 }
@@ -158,7 +70,7 @@ void ProfilePageForCandidate::saveChangesToDB(
         "candidates.search_status_id = search_statuses.id "
         "WHERE candidates.email = :email"
     );
-    QString email = emailLabel->text();
+    QString email = ui->emailLabel->text();
     query.bindValue(":email", email);
     query.bindValue(":phone", newPhone);
     query.bindValue(":new_place", newPlace);
@@ -180,7 +92,7 @@ void ProfilePageForCandidate::loadResumeData() {
         "SELECT place_of_study, faculty_of_educ FROM candidates WHERE email "
         "=:email"
     );
-    QString email = emailLabel->text();
+    QString email = ui->emailLabel->text();
     query.bindValue(":email", email);
     if (!query.exec() || !query.next()) {
         qDebug() << "Не удалось получить данные для резюме";
@@ -190,8 +102,8 @@ void ProfilePageForCandidate::loadResumeData() {
     QString university = query.value(0).toString();
     QString faculty = query.value(1).toString();
 
-    universityEdit->setText(university);
-    facultyEdit->setText(faculty);
+    ui->universityEdit->setText(university);
+    ui->facultyEdit->setText(faculty);
     // TODO add experience and smth else...
 }
 
@@ -203,9 +115,9 @@ void ProfilePageForCandidate::saveResumeData() {
         "=:faculty WHERE email =:email"
     );
 
-    QString email = emailLabel->text();
-    QString university = universityEdit->text();
-    QString faculty = facultyEdit->text();
+    QString email = ui->emailLabel->text();
+    QString university = ui->universityEdit->text();
+    QString faculty = ui->facultyEdit->text();
 
     query.bindValue(":email", email);
     query.bindValue(":university", university);

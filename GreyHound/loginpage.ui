@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>825</width>
+    <width>856</width>
     <height>619</height>
    </rect>
   </property>
@@ -29,8 +29,12 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QMainWindow, QWidget {
-    background-color: white;
+   <string notr="true">
+#LoginWidget {
+    background-image: url(:/back.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-origin: content;
 }</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
@@ -48,9 +52,27 @@
     </spacer>
    </item>
    <item row="1" column="1">
-    <widget class="QWidget" name="widget" native="true">
+    <widget class="QWidget" name="widgetLogin" native="true">
+     <property name="mouseTracking">
+      <bool>false</bool>
+     </property>
+     <property name="tabletTracking">
+      <bool>false</bool>
+     </property>
+     <property name="focusPolicy">
+      <enum>Qt::FocusPolicy::NoFocus</enum>
+     </property>
+     <property name="contextMenuPolicy">
+      <enum>Qt::ContextMenuPolicy::DefaultContextMenu</enum>
+     </property>
+     <property name="acceptDrops">
+      <bool>false</bool>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
      <property name="styleSheet">
-      <string notr="true">QWidget {
+      <string notr="true">#widgetLogin {
     
     border-radius: 25px;
 	background-color: rgb(249, 249, 249);

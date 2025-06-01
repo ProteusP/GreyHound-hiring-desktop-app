@@ -14,7 +14,7 @@ LoginWidget::LoginWidget(QWidget *parent)
     shadow->setBlurRadius(20);
     shadow->setOffset(0, 4);
     shadow->setColor(QColor(0, 0, 0, 80));
-    ui->widget->setGraphicsEffect(shadow);
+    ui->widgetLogin->setGraphicsEffect(shadow);
 }
 
 LoginWidget::~LoginWidget() {

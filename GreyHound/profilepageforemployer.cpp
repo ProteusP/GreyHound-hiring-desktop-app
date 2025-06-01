@@ -131,7 +131,6 @@ void ProfilePageForEmployer::updateEmployerData(
 }
 
 void ProfilePageForEmployer::loadResponses() {
-    // Очищаем текущий список кандидатов
     QLayoutItem* item;
     while ((item = candidatesLayout->takeAt(0)) != nullptr) {
         delete item->widget();

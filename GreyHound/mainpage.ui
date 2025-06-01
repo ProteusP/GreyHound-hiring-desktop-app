@@ -13,7 +13,6 @@
   <property name="font">
    <font>
     <family>Golos Text</family>
-    <pointsize>-1</pointsize>
    </font>
   </property>
   <property name="windowTitle">
@@ -147,23 +146,19 @@
          <property name="font">
           <font>
            <family>Golos Text</family>
-           <pointsize>-1</pointsize>
            <bold>false</bold>
           </font>
          </property>
          <property name="styleSheet">
           <string notr="true">QPushButton {
-    background-color: white;
-    color: #175cda;
-    font-size: 17px;
-    font-weight: 400;
-    border: 1px solid #cfd9df;
+    background-color: #007bff;
+    color: white;
+    border: none;
     border-radius: 8px;
-    padding: 4px 12px;
 }
 
 QPushButton:hover {
-    background-color: rgba(0, 0, 0, 0.05); /* лёгкое затемнение */
+    background-color: #005ecb;
 }</string>
          </property>
          <property name="text">
@@ -401,6 +396,11 @@ background-color: white;
                 </property>
                 <item>
                  <property name="text">
+                  <string>Город</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
                   <string>Москва</string>
                  </property>
                 </item>
@@ -455,6 +455,11 @@ background-color: white;
                 <property name="placeholderText">
                  <string>Компания</string>
                 </property>
+                <item>
+                 <property name="text">
+                  <string>Компания</string>
+                 </property>
+                </item>
                 <item>
                  <property name="text">
                   <string>Авито</string>
