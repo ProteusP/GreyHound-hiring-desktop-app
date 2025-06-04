@@ -12,108 +12,24 @@
 #include <qdatetime.h>
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
+#include "ui_profilepageforemployer.h"
 
-ProfilePageForEmployer::ProfilePageForEmployer(QWidget *parent)
-    : QWidget(parent) {
+
+ProfilePageForEmployer::ProfilePageForEmployer(QNetworkAccessManager* manager, QWidget *parent)
+    : QWidget(parent), ui(new Ui::ProfilePageForEmployer), networkManager(manager) {
+    ui->setupUi(this);
     SetupUI();
 }
 
 ProfilePageForEmployer::~ProfilePageForEmployer() = default;
 
 void ProfilePageForEmployer::SetupUI() {
-    QHBoxLayout *mainLayout = new QHBoxLayout(this);
-    mainLayout->setContentsMargins(5, 5, 5, 5);
-    mainLayout->setSpacing(10);
-    this->setLayout(mainLayout);
+    ui->vacanciesTable->resizeColumnsToContents();
+    connect(ui->addVacancyButton, &QPushButton::clicked, this, &ProfilePageForEmployer::onAddVacancyClicked);
+    connect(ui->homepagePB, &QPushButton::clicked, this, &ProfilePageForEmployer::homeButtonClicked);
+    connect(ui->saveButton, &QPushButton::clicked, this, &ProfilePageForEmployer::onSaveClicked);
+    connect(ui->logoutPB, &QPushButton::clicked, this, &ProfilePageForEmployer::logoutButtonClicked);
 
-    QScrollArea *leftScrollArea = new QScrollArea();
-    leftScrollArea->setWidgetResizable(true);
-    leftScrollArea->setMinimumWidth(250);
-    leftScrollArea->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
-
-    QWidget *leftContainer = new QWidget();
-    leftContainer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    QVBoxLayout *leftLayout = new QVBoxLayout(leftContainer);
-    leftLayout->setContentsMargins(0, 0, 0, 0);
-    leftLayout->setSpacing(10);
-
-    QLabel *candidatesTitle = new QLabel("Уведомления");
-    candidatesTitle->setStyleSheet(
-        "font-size: 16px;"
-        "font-weight: bold;"
-        "color: white;"
-        "padding: 5px 10px;"
-        );
-
-    QWidget *candidatesContainer = new QWidget();
-    candidatesContainer->setStyleSheet("background: #F8F9FA; border-radius: 5px;");
-    candidatesLayout = new QVBoxLayout(candidatesContainer);
-    candidatesLayout->setContentsMargins(5, 5, 5, 5);
-    candidatesLayout->setSpacing(8);
-
-    leftLayout->addWidget(candidatesTitle);
-    leftLayout->addWidget(candidatesContainer);
-    leftLayout->addStretch();
-
-    leftScrollArea->setWidget(leftContainer);
-    mainLayout->addWidget(leftScrollArea, 1);
-
-    QWidget *centralWidget = new QWidget();
-    QVBoxLayout *centralLayout = new QVBoxLayout(centralWidget);
-
-    QGroupBox *companyInfoGroup = new QGroupBox("Информация о компании");
-    QFormLayout *companyInfoLayout = new QFormLayout(companyInfoGroup);
-
-    companyNameEdit = new QLineEdit();
-    emailLabel = new QLabel("Загрузка...");
-    aboutEdit = new QTextEdit();
-
-    companyInfoLayout->addRow("Название компании", companyNameEdit);
-    companyInfoLayout->addRow("Email", emailLabel);
-    companyInfoLayout->addRow("О компании", aboutEdit);
-
-    QGroupBox *vacanciesGroup = new QGroupBox("Вакансии");
-    QVBoxLayout *vacanciesLayout = new QVBoxLayout(vacanciesGroup);
-
-    vacanciesTable = new QTableWidget();
-    vacanciesTable->setColumnCount(9);
-    vacanciesTable->setHorizontalHeaderLabels(
-        {"Название", "Зарплата", "Местоположение", "Место обучения", "Опыт кандидата", "График", "Образование", "Удаленность", "Действия"}
-        );
-    vacanciesTable->horizontalHeader()->setStretchLastSection(true);
-
-    QPushButton *addVacancyButton = new QPushButton("Добавить вакансию");
-    connect(addVacancyButton, &QPushButton::clicked, this, &ProfilePageForEmployer::onAddVacancyClicked);
-
-    vacanciesLayout->addWidget(vacanciesTable);
-    vacanciesLayout->addWidget(addVacancyButton);
-
-    centralLayout->addWidget(companyInfoGroup);
-    centralLayout->addSpacing(15);
-    centralLayout->addWidget(vacanciesGroup);
-    centralLayout->addStretch();
-
-    mainLayout->addWidget(centralWidget, 3);
-
-    QWidget *rightWidget = new QWidget();
-    QVBoxLayout *rightLayout = new QVBoxLayout(rightWidget);
-
-    QPushButton *homepagePB = new QPushButton("На главную");
-    connect(homepagePB, &QPushButton::clicked, this, &ProfilePageForEmployer::homeButtonClicked);
-
-    QPushButton *saveButton = new QPushButton("Сохранить изменения");
-    connect(saveButton, &QPushButton::clicked, this, &ProfilePageForEmployer::onSaveClicked);
-
-    QPushButton *logoutPB = new QPushButton("Выйти");
-    logoutPB->setStyleSheet("QPushButton { color: red; }");
-    connect(logoutPB, &QPushButton::clicked, this, &ProfilePageForEmployer::logoutButtonClicked);
-
-    rightLayout->addWidget(homepagePB, 0, Qt::AlignTop);
-    rightLayout->addStretch();
-    rightLayout->addWidget(saveButton, 0, Qt::AlignBottom);
-    rightLayout->addWidget(logoutPB, 0, Qt::AlignBottom);
-
-    mainLayout->addWidget(rightWidget, 1);
 }
 
 void ProfilePageForEmployer::updateEmployerData(
@@ -122,9 +38,9 @@ void ProfilePageForEmployer::updateEmployerData(
     const QString &about,
     const int ID
     ) {
-    companyNameEdit->setText(companyName);
-    emailLabel->setText(email);
-    aboutEdit->setPlainText(about);
+    ui->companyNameEdit->setText(companyName);
+    ui->emailLabel->setText(email);
+    ui->aboutEdit->setPlainText(about);
     currentEmployerId = ID;
     loadVacancies();
     loadResponses();
@@ -176,9 +92,9 @@ void ProfilePageForEmployer::saveCompanyInfo() {
         "UPDATE employers SET company_name = :name, about = :about WHERE email "
         "= :email"
     );
-    query.bindValue(":name", companyNameEdit->text());
-    query.bindValue(":about", aboutEdit->toPlainText());
-    query.bindValue(":email", emailLabel->text());
+    query.bindValue(":name", ui->companyNameEdit->text());
+    query.bindValue(":about", ui->aboutEdit->toPlainText());
+    query.bindValue(":email", ui->emailLabel->text());
 
     if (!query.exec()) {
         QMessageBox::critical(
@@ -190,7 +106,7 @@ void ProfilePageForEmployer::saveCompanyInfo() {
 }
 
 void ProfilePageForEmployer::loadVacancies() {
-    vacanciesTable->setRowCount(0);
+    ui->vacanciesTable->setRowCount(0);
 
     QSqlQuery query;
     query.prepare(
@@ -201,13 +117,13 @@ void ProfilePageForEmployer::loadVacancies() {
         " LEFT JOIN educ_statuses educ_s ON v.educ_status_id= educ_s.id"
         " WHERE e.email = :email;"
     );
-    query.bindValue(":email", emailLabel->text());
+    query.bindValue(":email", ui->emailLabel->text());
     int counter = 0;
     if (query.exec()) {
         while (query.next()) {
             qDebug() << counter << "\n";
-            int row = vacanciesTable->rowCount();
-            vacanciesTable->insertRow(row);
+            int row = ui->vacanciesTable->rowCount();
+            ui->vacanciesTable->insertRow(row);
 
             QTableWidgetItem *nameItem =
                 new QTableWidgetItem(query.value("name").toString());
@@ -247,15 +163,15 @@ void ProfilePageForEmployer::loadVacancies() {
             layout->addWidget(deleteButton);
             layout->setContentsMargins(0, 0, 0, 0);
 
-            vacanciesTable->setItem(row, 0, nameItem);
-            vacanciesTable->setItem(row, 1, salaryItem);
-            vacanciesTable->setItem(row, 2, placeItem);
-            vacanciesTable->setItem(row, 3, educPlaceItem);
-            vacanciesTable->setItem(row, 4, experienceItem);
-            vacanciesTable->setItem(row, 5, scheduleItem);
-            vacanciesTable->setItem(row, 6, educItem);
-            vacanciesTable->setItem(row, 7, remotenessItem);
-            vacanciesTable->setCellWidget(row, 8, actionWidget);
+            ui->vacanciesTable->setItem(row, 0, nameItem);
+            ui->vacanciesTable->setItem(row, 1, salaryItem);
+            ui->vacanciesTable->setItem(row, 2, placeItem);
+            ui->vacanciesTable->setItem(row, 3, educPlaceItem);
+            ui->vacanciesTable->setItem(row, 4, experienceItem);
+            ui->vacanciesTable->setItem(row, 5, scheduleItem);
+            ui->vacanciesTable->setItem(row, 6, educItem);
+            ui->vacanciesTable->setItem(row, 7, remotenessItem);
+            ui->vacanciesTable->setCellWidget(row, 8, actionWidget);
         }
     }
 }
@@ -362,10 +278,85 @@ void ProfilePageForEmployer::deleteResponse(int vacancyId, int candidateId) {
 
 void ProfilePageForEmployer::onAddVacancyClicked() {
     QDialog dialog(this);
+
+    dialog.setStyleSheet(R"(
+        QDialog {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+        }
+
+        QLineEdit, QTextEdit {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 5px 8px;
+            font-size: 14px;
+            color: black;
+        }
+        QComboBox {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 6px 12px;
+            background-color: #f9f9f9;
+            font-size: 14px;
+                color: black;
+        }
+        QComboBox QAbstractItemView {
+            background-color: white;
+            color: black;
+            selection-background-color: white;
+            selection-color: black;
+            border: 1px solid #ccc;
+            font-size: 14px;
+
+        }
+        QComboBox::down-arrow {
+
+                image: url(:/caret-down.png);
+            width: 12px;
+            height: 12px;
+        background-color: white;
+        }
+        QComboBox::drop-down {
+            subcontrol-origin: padding;
+            subcontrol-position: top right;
+            width: 24px;
+            border-left: 1px solid #ccc;
+        background-color: white;
+        }
+
+        QTextEdit {
+            padding: 6px;
+        }
+
+        QDialogButtonBox QPushButton {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 14px;
+        }
+
+        QDialogButtonBox QPushButton:hover {
+            background-color: #005ecb;
+        }
+
+        QDialogButtonBox QPushButton:disabled {
+            background-color: #ccc;
+            color: #666;
+        }
+
+        QLabel {
+            font-size: 14px;
+            color: black;
+        }
+    )");
+
     QFormLayout form(&dialog);
 
     QLineEdit *nameEdit = new QLineEdit();
-    QDoubleSpinBox *salaryEdit = new QDoubleSpinBox();
+    QLineEdit *salaryEdit = new QLineEdit();
     QComboBox *statusCombo = new QComboBox();
     QTextEdit *aboutEdit = new QTextEdit();
     QLineEdit *locationEdit = new QLineEdit();
@@ -436,6 +427,11 @@ void ProfilePageForEmployer::onAddVacancyClicked() {
         QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog
         );
     form.addRow(&buttonBox);
+    buttonBox.button(QDialogButtonBox::Ok)->setText("Сохранить");
+    buttonBox.button(QDialogButtonBox::Ok)->setIcon(QIcon());
+
+    buttonBox.button(QDialogButtonBox::Cancel)->setText("Отмена");
+    buttonBox.button(QDialogButtonBox::Cancel)->setIcon(QIcon());
 
     connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
@@ -449,7 +445,7 @@ void ProfilePageForEmployer::onAddVacancyClicked() {
             ":experience_status_id, :work_schedule_status_id, :educ_status_id, :remoteness_status_id)"
             );
         queryInsert.bindValue(":name", nameEdit->text());
-        queryInsert.bindValue(":salary", salaryEdit->value());
+        queryInsert.bindValue(":salary", salaryEdit->text().toDouble());
         queryInsert.bindValue(":status", statusCombo->currentData().toInt());
         queryInsert.bindValue(":about", aboutEdit->toPlainText());
         queryInsert.bindValue(":employer_id", currentEmployerId);

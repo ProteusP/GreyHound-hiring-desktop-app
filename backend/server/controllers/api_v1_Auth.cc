@@ -18,7 +18,9 @@ void Auth::login(const HttpRequestPtr &req,
 
   const auto &json = req->getJsonObject();
 
-  if (!json || !json->isMember("email") || !json->isMember("password")) {
+  if (!json || !json->isMember("email") || !json->isMember("password") ||
+      (*json)["email"].asString().empty() ||
+      (*json)["password"].asString().empty()) {
     const auto resp = HttpResponse::newHttpJsonResponse(
         Json::Value{{"error", "Invalid request format"}});
     resp->setStatusCode(k400BadRequest);
@@ -34,25 +36,28 @@ void Auth::login(const HttpRequestPtr &req,
   LOG_DEBUG << "Executing SQL query: " << sqlString << " with email: " << email
             << "\n";
   const auto &dbClient = app().getDbClient();
+  auto callbackPtr =
+      std::make_shared<std::function<void(const HttpResponsePtr &)>>(
+          std::move(callback));
   dbClient->execSqlAsync(
       sqlString,
-      [=, callback = std::move(callback)](const orm::Result &result) {
+      [=](const orm::Result &result) {
         if (result.empty()) {
-          const auto resp = HttpResponse::newHttpJsonResponse(
-              Json::Value{{"error", "User not found"}});
+          Json::Value json;
+          json["error"] = "User not found";
+          const auto resp = HttpResponse::newHttpJsonResponse(json);
           resp->setStatusCode(k401Unauthorized);
-          callback(resp);
+          (*callbackPtr)(resp);
           return;
         }
-
         const auto &row = result[0];
-
         if (const auto dbPassword = row["password"].as<std::string>();
             password != dbPassword) {
-          const auto resp = HttpResponse::newHttpJsonResponse(
-              Json::Value{{"error", "Wrong password"}});
+          Json::Value json;
+          json["error"] = "Wrong password";
+          const auto resp = HttpResponse::newHttpJsonResponse(json);
           resp->setStatusCode(k401Unauthorized);
-          callback(resp);
+          (*callbackPtr)(resp);
           return;
         }
 
@@ -60,11 +65,12 @@ void Auth::login(const HttpRequestPtr &req,
         LOG_DEBUG << "User status: " << status << "\n";
 
         if (status != CAND_STATUS && status != EMPL_STATUS) {
-          const auto resp = HttpResponse::newHttpJsonResponse(
-              Json::Value{{"error", "unexpected user status in DB"}});
+          Json::Value json;
+          json["error"] = "unexpected user status in DB";
+          const auto resp = HttpResponse::newHttpJsonResponse(json);
           LOG_DEBUG << "unexpected user status in DB\n";
           resp->setStatusCode(k500InternalServerError);
-          callback(resp);
+          (*callbackPtr)(resp);
           return;
         }
 
@@ -83,21 +89,23 @@ void Auth::login(const HttpRequestPtr &req,
 
           const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
 
-          callback(resp);
+          (*callbackPtr)(resp);
         } catch (...) {
-          const auto resp = HttpResponse::newHttpJsonResponse(
-              Json::Value{{"error", "Session creation failed"}});
+          Json::Value json;
+          json["error"] = "Session creation failed";
+          const auto resp = HttpResponse::newHttpJsonResponse(json);
           LOG_DEBUG << "Session creation failed\n";
           resp->setStatusCode(drogon::k500InternalServerError);
-          callback(resp);
+          (*callbackPtr)(resp);
         }
       },
-      [=, callback = std::move(callback)](const orm::DrogonDbException &e) {
-        const auto resp = HttpResponse::newHttpJsonResponse(
-            Json::Value{{"error", "Database error"}});
+      [=](const orm::DrogonDbException &e) {
+        Json::Value json;
+        json["error"] = "Database error";
+        const auto resp = HttpResponse::newHttpJsonResponse(json);
         LOG_DEBUG << "Database error\n";
         resp->setStatusCode(k500InternalServerError);
-        callback(resp);
+        (*callbackPtr)(resp);
       },
       email);
 }

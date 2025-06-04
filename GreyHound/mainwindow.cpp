@@ -1,10 +1,12 @@
 #include "mainwindow.h"
 #include <QString>
 #include "./ui_mainwindow.h"
-
+#include <QNetworkCookieJar>
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+    networkManager = new QNetworkAccessManager(this);
+    networkManager->setCookieJar(new QNetworkCookieJar(networkManager));
 
     QWidget *centralWidget = new QWidget(this);
     setCentralWidget(centralWidget);
@@ -24,13 +26,13 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << "Connected to the database successfully!";
     }
 
-    loginPage = new LoginWidget(this);
+    loginPage = new LoginWidget(networkManager, this);
     registerStatusPage = new RegisterStatus(this);
-    registerCandidatePage = new RegisterPageForCandidate(this);
-    registerEmployerPage = new RegisterPageForEmployer(this);
-    mainPage = new MainPage(this);
-    profileCandidatePage = new ProfilePageForCandidate(this);
-    profileEmployerPage = new ProfilePageForEmployer(this);
+    registerCandidatePage = new RegisterPageForCandidate(networkManager, this);
+    registerEmployerPage = new RegisterPageForEmployer(networkManager, this);
+    mainPage = new MainPage(networkManager, this);
+    profileCandidatePage = new ProfilePageForCandidate(networkManager, this);
+    profileEmployerPage = new ProfilePageForEmployer(networkManager, this);
 
     ui->stackedWidget->addWidget(loginPage);
     ui->stackedWidget->addWidget(registerStatusPage);
@@ -44,9 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(
         loginPage, &LoginWidget::loginSuccessful, this,
-        [this](const QString &email, bool status) {
-            setEmail(email);
-            setStatus(status);
+        [this]() {
             onMainPage();
         }
     );

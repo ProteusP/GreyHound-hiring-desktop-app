@@ -1,13 +1,15 @@
 #include "loginpage.h"
 #include <QRegularExpression>
-#include "hashing.h"
 #include "ui_loginpage.h"
-// #include "registerstatus.h"
-#include "validation.h"
 #include <QGraphicsDropShadowEffect>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QNetworkReply>
 
-LoginWidget::LoginWidget(QWidget *parent)
-    : QWidget(parent), ui(new Ui::LoginWidget) {
+LoginWidget::LoginWidget(QNetworkAccessManager* manager, QWidget *parent)
+    : QWidget(parent), ui(new Ui::LoginWidget), networkManager(manager) {
     ui->setupUi(this);
 
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
@@ -22,54 +24,46 @@ LoginWidget::~LoginWidget() {
 }
 
 void LoginWidget::on_loginPB_clicked() {
-    QString userMail = ui->mailLine->text();
-    QString userPassword = ui->passwordLine->text();
-    bool userIsEmployee = false;
-    QString userStatus = ui->statusComboBox->currentText();
 
-    QVector<QString> fieldInputVec = {userMail, userPassword};
-    if (fieldInputVec[0].isEmpty() || fieldInputVec[0].isEmpty()) {
-        QMessageBox::warning(
-            this, "Ошибка", "Никакое поле не должно быть пустым"
-        );
-        return;
-    }
-    if (isEmailValid(userMail)) {
-        QSqlQuery query;
-        if (userStatus == "Кандидат") {
-            query.prepare(
-                "SELECT password FROM candidates WHERE email = :email "
-            );
-            userIsEmployee = true;
-        } else {
-            query.prepare("SELECT password FROM employers WHERE email = :email"
-            );
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://0.0.0.0:80/api/v1/Auth/login"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    QJsonObject json;
+    json["email"] = ui->mailLine->text();
+    json["password"] = ui->passwordLine->text();
+    QJsonDocument doc(json);
+    QByteArray data = doc.toJson();
+    QNetworkReply* reply = networkManager->post(request, data);
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            emit loginSuccessful();
         }
-
-        query.bindValue(":email", userMail);
-        if (!query.exec()) {
-            QMessageBox::warning(
-                this, "Ошибка", "Ошибка при выполнении запроса к базе данных."
-            );
-            return;
-        }
-
-        if (query.next()) {
-            QString dbPassword = query.value(0).toString();
-
-            if (dbPassword == hashPassword(userPassword)) {
-                emit loginSuccessful(userMail, userIsEmployee);
-            } else {
-                QMessageBox::warning(this, "Упс...", "Неверный пароль.");
+        else {
+            int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+            if (statusCode == 400) {
+                QMessageBox::warning(
+                    this, "Ошибка", "Никакое поле не должно быть пустым."
+                );
             }
-        } else {
-            QMessageBox::warning(
-                this, "Упс...", "Пользователь с такой почтой не найден."
-            );
+            else if (statusCode == 401) {
+                QMessageBox::warning(
+                    this, "Упс...", "Неверный логин или пароль."
+                );
+            }
+            else if (statusCode == 500) {
+                QMessageBox::warning(
+                    this, "Упс...", "Ошибка сервера."
+                );
+            }
+            else {
+                QMessageBox::warning(
+                    this, "Упс...", "Что-то непонятное."
+                );
+            }
         }
-    } else {
-        QMessageBox::warning(this, "Ошибка", "Введите корректную почту");
-    }
+        reply->deleteLater();
+    });
+    return;
 }
 
 void LoginWidget::on_registerPB_clicked() {

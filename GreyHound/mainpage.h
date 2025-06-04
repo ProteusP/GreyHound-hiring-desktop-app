@@ -8,6 +8,7 @@
 #include <QtSql/QSqlQuery>
 #include "flowlayout.h"
 #include "ui_mainpage.h"
+#include <QNetworkAccessManager>
 
 namespace Ui {
 class MainPage;
@@ -17,7 +18,7 @@ class MainPage : public QWidget {
     Q_OBJECT
 
 public:
-    explicit MainPage(QWidget *parent = nullptr);
+    explicit MainPage(QNetworkAccessManager* manager, QWidget *parent = nullptr);
     ~MainPage();
 
     void setStatusOfCandidate(bool status_);
@@ -33,6 +34,7 @@ public:
     FlowLayout *getFlowLayout();
 
 private:
+    QNetworkAccessManager* networkManager;
     Ui::MainPage *ui;
     bool isCandidate;
     QString email;

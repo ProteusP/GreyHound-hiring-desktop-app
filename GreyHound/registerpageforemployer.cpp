@@ -1,11 +1,9 @@
 #include "registerpageforemployer.h"
-#include "hashing.h"
 #include "passwordwarningdialog.h"
 #include "ui_registerpageforemployer.h"
-#include "validation.h"
 #include <QGraphicsDropShadowEffect>
-RegisterPageForEmployer::RegisterPageForEmployer(QWidget *parent)
-    : QWidget(parent), ui(new Ui::RegisterPageForEmployer) {
+RegisterPageForEmployer::RegisterPageForEmployer(QNetworkAccessManager* manager, QWidget *parent)
+    : QWidget(parent), ui(new Ui::RegisterPageForEmployer), networkManager(manager) {
     ui->setupUi(this);
 
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
@@ -33,11 +31,11 @@ void RegisterPageForEmployer::on_registrationPB_employer_clicked() {
         return;
     }
 
-    if (!isPasswordValid(password)) {
-        PasswordWarningDialog dialog(this);
-        dialog.exec();
-        return;
-    }
+    // if (!isPasswordValid(password)) {
+    //     PasswordWarningDialog dialog(this);
+    //     dialog.exec();
+    //     return;
+    // }
 
     QSqlQuery checkQuery;
     checkQuery.prepare("SELECT COUNT(*) FROM candidates WHERE email = :email");
@@ -55,23 +53,23 @@ void RegisterPageForEmployer::on_registrationPB_employer_clicked() {
         return;
     }
 
-    QString hashedPassword = hashPassword(password);
+    // QString hashedPassword = hashPassword(password);
 
-    if (isEmailValid(email)) {
-        QSqlQuery query;
-        query.prepare(
-            "INSERT INTO employers (email, company_name, password) VALUES "
-            "(:email, :company_name, :password)"
-        );
-        query.bindValue(":email", email);
-        query.bindValue(":company_name", company_name);
-        query.bindValue(":password", hashedPassword);
-        query.exec();
+    // if (isEmailValid(email)) {
+    //     QSqlQuery query;
+    //     query.prepare(
+    //         "INSERT INTO employers (email, company_name, password) VALUES "
+    //         "(:email, :company_name, :password)"
+    //     );
+    //     query.bindValue(":email", email);
+    //     query.bindValue(":company_name", company_name);
+    //     query.bindValue(":password", hashedPassword);
+    //     query.exec();
 
-        emit registerSuccessful();
-    } else {
-        QMessageBox::warning(this, "Ошибка", "Введите корректную почту");
-    }
+    //     emit registerSuccessful();
+    // } else {
+    //     QMessageBox::warning(this, "Ошибка", "Введите корректную почту");
+    // }
 }
 
 void RegisterPageForEmployer::on_backToStatusPB_clicked() {

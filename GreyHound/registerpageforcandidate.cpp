@@ -1,11 +1,9 @@
 #include "registerpageforcandidate.h"
-#include "hashing.h"
 #include "passwordwarningdialog.h"
 #include "ui_registerpageforcandidate.h"
-#include "validation.h"
 #include <QGraphicsDropShadowEffect>
-RegisterPageForCandidate::RegisterPageForCandidate(QWidget *parent)
-    : QWidget(parent), ui(new Ui::RegisterPageForCandidate) {
+RegisterPageForCandidate::RegisterPageForCandidate(QNetworkAccessManager* manager, QWidget *parent)
+    : QWidget(parent), ui(new Ui::RegisterPageForCandidate), networkManager(manager) {
     ui->setupUi(this);
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
     shadow->setBlurRadius(20);
@@ -32,11 +30,11 @@ void RegisterPageForCandidate::on_PBregistrationCandidate_clicked() {
         return;
     }
 
-    if (!isPasswordValid(password)) {
-        PasswordWarningDialog dialog(this);
-        dialog.exec();
-        return;
-    }
+    // if (!isPasswordValid(password)) {
+    //     PasswordWarningDialog dialog(this);
+    //     dialog.exec();
+    //     return;
+    // }
 
     QSqlQuery checkQuery;
     checkQuery.prepare("SELECT COUNT(*) FROM candidates WHERE email = :email");
@@ -54,24 +52,24 @@ void RegisterPageForCandidate::on_PBregistrationCandidate_clicked() {
         return;
     }
 
-    QString hashedPassword = hashPassword(password);
+    // QString hashedPassword = hashPassword(password);
 
-    if (isEmailValid(email)) {
-        QSqlQuery query;
-        query.prepare(
-            "INSERT INTO candidates (name, surname, email, password) VALUES "
-            "(:name, :surname, :email, :password)"
-        );
-        query.bindValue(":name", name);
-        query.bindValue(":surname", surname);
-        query.bindValue(":email", email);
-        query.bindValue(":password", hashedPassword);
-        query.exec();
+    // if (isEmailValid(email)) {
+    //     QSqlQuery query;
+    //     query.prepare(
+    //         "INSERT INTO candidates (name, surname, email, password) VALUES "
+    //         "(:name, :surname, :email, :password)"
+    //     );
+    //     query.bindValue(":name", name);
+    //     query.bindValue(":surname", surname);
+    //     query.bindValue(":email", email);
+    //     query.bindValue(":password", hashedPassword);
+    //     query.exec();
 
-        emit registerSuccessful();
-    } else {
-        QMessageBox::warning(this, "Ошибка", "Введите корректную почту");
-    }
+    //     emit registerSuccessful();
+    // } else {
+    //     QMessageBox::warning(this, "Ошибка", "Введите корректную почту");
+    // }
 }
 
 void RegisterPageForCandidate::on_backToStatusPB_clicked() {

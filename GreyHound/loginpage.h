@@ -8,7 +8,7 @@
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
-
+#include <QNetworkAccessManager>
 namespace Ui {
 class LoginWidget;
 }
@@ -17,7 +17,7 @@ class LoginWidget : public QWidget {
     Q_OBJECT
 
 public:
-    explicit LoginWidget(QWidget *parent = nullptr);
+    explicit LoginWidget(QNetworkAccessManager* manager, QWidget *parent = nullptr);
     ~LoginWidget();
 
 private slots:
@@ -26,10 +26,11 @@ private slots:
     void on_registerPB_clicked();
 
 private:
+    QNetworkAccessManager* networkManager;
     Ui::LoginWidget *ui;
 
 signals:
-    void loginSuccessful(const QString &email, bool status);
+    void loginSuccessful();
     void registerPressed();
 };
 

@@ -9,12 +9,16 @@
 #include <QTextEdit>
 #include <QWidget>
 #include <QComboBox>
+#include <QNetworkAccessManager>
 
+namespace Ui {
+class ProfilePageForEmployer;
+}
 class ProfilePageForEmployer : public QWidget {
     Q_OBJECT
 
 public:
-    explicit ProfilePageForEmployer(QWidget *parent = nullptr);
+    explicit ProfilePageForEmployer(QNetworkAccessManager* manager, QWidget *parent = nullptr);
     ~ProfilePageForEmployer();
 
 
@@ -50,22 +54,17 @@ private:
     void SetupUI();
     void saveCompanyInfo();
     void loadVacancies();
-
-            // Вспомогательные функции для загрузки данных
     void loadExperienceData(QComboBox *comboBox);
     void loadWorkScheduleData(QComboBox *comboBox);
     void loadEducStatusData(QComboBox *comboBox);
-    void loadRemotenessData(QComboBox *comboBox);  // Уже добавлена, но нужно объявить
+    void loadRemotenessData(QComboBox *comboBox);
     void loadResponses();
     void deleteResponse(int vacancyId, int candidateId);
-    QLineEdit *companyNameEdit;
-    QLabel *emailLabel;
-    QTextEdit *aboutEdit;
-    QTableWidget *vacanciesTable;
-    QVBoxLayout *candidatesLayout;
     int currentEmployerId;
+    QNetworkAccessManager* networkManager;
+    Ui::ProfilePageForEmployer *ui;
+    QVBoxLayout *candidatesLayout;
 
     QPushButton *createActionButton(const QString &iconText, const QString &tooltip);
 };
-
 #endif  // PROFILEPAGEFOREMPLOYER_H

@@ -9,6 +9,7 @@
 #include "registerpageforcandidate.h"
 #include "registerpageforemployer.h"
 #include "registerstatus.h"
+#include <QNetworkAccessManager>
 
 QT_BEGIN_NAMESPACE
 
@@ -53,6 +54,7 @@ private slots:
 
 private:
     bool isemployee;
+    QNetworkAccessManager* networkManager;
     Ui::MainWindow *ui;
     QSqlDatabase db;
     QString email;

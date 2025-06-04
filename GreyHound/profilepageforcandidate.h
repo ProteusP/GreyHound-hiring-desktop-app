@@ -13,6 +13,7 @@
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
+#include <QNetworkAccessManager>
 #include "resume.h"
 
 namespace Ui {
@@ -23,7 +24,7 @@ class ProfilePageForCandidate : public QWidget {
     Q_OBJECT
 
 public:
-    explicit ProfilePageForCandidate(QWidget *parent = nullptr);
+    explicit ProfilePageForCandidate(QNetworkAccessManager* manager, QWidget *parent = nullptr);
     ~ProfilePageForCandidate();
     void updateUserData(
         const QString &name,
@@ -48,6 +49,7 @@ private slots:
 
 private:
     void SetupUI();
+    QNetworkAccessManager* networkManager;
     Ui::ProfilePageForCandidate *ui;
 };
 

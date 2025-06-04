@@ -8,7 +8,7 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QWidget>
-
+#include <QNetworkAccessManager>
 namespace Ui {
 class RegisterPageForEmployer;
 }
@@ -17,7 +17,7 @@ class RegisterPageForEmployer : public QWidget {
     Q_OBJECT
 
 public:
-    explicit RegisterPageForEmployer(QWidget *parent = nullptr);
+    explicit RegisterPageForEmployer(QNetworkAccessManager* manager, QWidget *parent = nullptr);
     ~RegisterPageForEmployer();
 
 private slots:
@@ -27,6 +27,7 @@ private slots:
 
 private:
     Ui::RegisterPageForEmployer *ui;
+    QNetworkAccessManager* networkManager;
 
 signals:
     void registerSuccessful();

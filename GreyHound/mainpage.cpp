@@ -1,8 +1,8 @@
 #include "mainpage.h"
 #include "vacancycard.h"
 
-MainPage::MainPage(QWidget *parent)
-    : QWidget(parent), ui(new Ui::MainPage), flow_layout(nullptr) {
+MainPage::MainPage(QNetworkAccessManager* manager, QWidget *parent)
+    : QWidget(parent), ui(new Ui::MainPage), flow_layout(nullptr), networkManager(manager) {
     ui->setupUi(this);
 }
 
@@ -35,7 +35,6 @@ void MainPage::showVacancyDetails(int vacancyId) {
     QVBoxLayout *contentLayout = new QVBoxLayout(scrollContent);
     scrollContent->setStyleSheet("background-color: #2D2D2D;");
 
-            // Запрос данных
     QSqlQuery query;
     query.prepare("SELECT v.*, e.company_name, exp.name as experience, "
         "ws.name as work_schedule, ed.name as education "
@@ -67,7 +66,6 @@ void MainPage::showVacancyDetails(int vacancyId) {
             "color: #E0E0E0;"
             "margin: 4px 0 12px 0;";
 
-                // 1. Блок заголовка
         QFrame *headerFrame = new QFrame();
         headerFrame->setStyleSheet(sectionStyle);
         QVBoxLayout *headerLayout = new QVBoxLayout(headerFrame);
@@ -82,7 +80,6 @@ void MainPage::showVacancyDetails(int vacancyId) {
         headerLayout->addWidget(companyLabel);
         contentLayout->addWidget(headerFrame);
 
-                // 2. Блок основной информации
         QFrame *infoFrame = new QFrame();
         infoFrame->setStyleSheet(sectionStyle);
         QVBoxLayout *infoLayout = new QVBoxLayout(infoFrame);

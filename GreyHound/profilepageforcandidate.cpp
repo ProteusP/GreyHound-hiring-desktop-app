@@ -3,8 +3,8 @@
 #include <QMessageBox>
 #include "ui_profilepageforcandidate.h"
 
-ProfilePageForCandidate::ProfilePageForCandidate(QWidget *parent)
-    : QWidget(parent), ui(new Ui::ProfilePageForCandidate) {
+ProfilePageForCandidate::ProfilePageForCandidate(QNetworkAccessManager* manager, QWidget *parent)
+    : QWidget(parent), ui(new Ui::ProfilePageForCandidate), networkManager(manager) {
     ui->setupUi(this);
     SetupUI();
 }

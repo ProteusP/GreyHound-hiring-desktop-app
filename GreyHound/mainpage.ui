@@ -93,20 +93,23 @@
          <property name="font">
           <font>
            <family>Golos Text Medium</family>
-           <pointsize>25</pointsize>
-           <bold>false</bold>
+           <pointsize>-1</pointsize>
+           <bold>true</bold>
           </font>
          </property>
          <property name="styleSheet">
           <string notr="true">QLabel {
-	color: black;
+	    font-weight: bold;
+    font-size: 24px;
+    color: #212529;
+    letter-spacing: 1px;
 }</string>
          </property>
          <property name="text">
           <string>GreyHound</string>
          </property>
          <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignCenter</set>
+          <set>Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop</set>
          </property>
         </widget>
        </item>
