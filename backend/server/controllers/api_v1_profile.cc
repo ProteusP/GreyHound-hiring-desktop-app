@@ -15,12 +15,10 @@ void profile::getProfile(
     std::function<void(const HttpResponsePtr &)> &&callback) {
   const auto &session = req->session();
   Json::Value jsonResp;
-
   const auto &userStatus = session->get<std::string>("user_status");
   const auto &userId = session->get<std::string>("user_id");
   const auto &dbClient = app().getDbClient();
   const auto redisClientPtr = app().getRedisClient(CACHE_CLIENT);
-
   try {
     LOG_DEBUG << "GET profile from redis\n";
     const std::string key = "profile:" + userId;
@@ -39,7 +37,6 @@ void profile::getProfile(
     return;
   } catch (const nosql::RedisException &err) {
   }
-
   if (userStatus == CAND_STATUS) {
     auto mapper =
         drogon::orm::Mapper<drogon_model::default_db::Candidates>(dbClient);
@@ -48,19 +45,18 @@ void profile::getProfile(
         orm::CompareOperator::EQ, userId};
 
     const auto &candidates = mapper.findBy(findCriteria);
-
     if (candidates.empty()) {
       jsonResp["error"] = "Candidate not found";
+      LOG_DEBUG << "USER ID: "<< userId << '\n';
       auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
       resp->setStatusCode(drogon::k404NotFound);
 
       callback(resp);
       return;
     }
-
     const auto &candidate = candidates.front();
     jsonResp = candidate.toJson();
-
+    jsonResp["status"] = "candidate";
     saveUserProfile(userId, jsonResp);
 
     auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
@@ -77,7 +73,7 @@ void profile::getProfile(
 
     if (employers.empty()) {
       jsonResp["error"] = "Employer not found";
-
+      LOG_DEBUG << "COMPANY_USER ID: "<< userId << '\n';
       auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
       resp->setStatusCode(k404NotFound);
 
@@ -87,6 +83,7 @@ void profile::getProfile(
 
     const auto &empl = employers.front();
     jsonResp = empl.toJson();
+    jsonResp["status"] = "employer";
 
     saveUserProfile(userId, jsonResp);
 

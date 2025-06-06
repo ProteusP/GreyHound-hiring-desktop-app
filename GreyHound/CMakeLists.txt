@@ -38,6 +38,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         resume.h resume.cpp
         vacancycard.h vacancycard.cpp vacancycard.ui
         icons.qrc
+        hashing.h hashing.cpp
+        validation.h validation.cpp
 
 
     )

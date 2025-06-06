@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QNetworkAccessManager>
 #include "loginpage.h"
 #include "mainpage.h"
 #include "profilepageforcandidate.h"
@@ -9,7 +10,6 @@
 #include "registerpageforcandidate.h"
 #include "registerpageforemployer.h"
 #include "registerstatus.h"
-#include <QNetworkAccessManager>
 
 QT_BEGIN_NAMESPACE
 
@@ -54,7 +54,7 @@ private slots:
 
 private:
     bool isemployee;
-    QNetworkAccessManager* networkManager;
+    QNetworkAccessManager *networkManager;
     Ui::MainWindow *ui;
     QSqlDatabase db;
     QString email;

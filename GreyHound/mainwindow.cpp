@@ -1,7 +1,14 @@
 #include "mainwindow.h"
-#include <QString>
-#include "./ui_mainwindow.h"
 #include <QNetworkCookieJar>
+#include <QString>
+#include <QDebug>
+#include "./ui_mainwindow.h"
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
@@ -44,12 +51,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->stackedWidget->setCurrentWidget(loginPage);
 
-    connect(
-        loginPage, &LoginWidget::loginSuccessful, this,
-        [this]() {
-            onMainPage();
-        }
-    );
+    connect(loginPage, &LoginWidget::loginSuccessful, this, [this]() {
+        onMainPage();
+    });
     connect(
         loginPage, &LoginWidget::registerPressed, this,
         &MainWindow::onRegisterStatusPage
@@ -78,7 +82,7 @@ MainWindow::MainWindow(QWidget *parent)
     );
     connect(
         registerCandidatePage, &RegisterPageForCandidate::registerSuccessful,
-        this, &MainWindow::onMainPage
+        this, [this]() { onBackToLoginPage(); }
     );
     connect(
         registerEmployerPage, &RegisterPageForEmployer::registerSuccessful,
@@ -147,59 +151,48 @@ void MainWindow::onBackToRegisterStatusPage() {
 }
 
 void MainWindow::loadProfileData() {
-    QString email = getEmail();
-    QSqlQuery query;
-    if (isemployee) {
-        qDebug() << " im in candidat loading...";
-        query.prepare(
-            "SELECT name,surname,phone_num, place FROM candidates WHERE email "
-            "= "
-            ":email"
-        );
-
-        query.bindValue(":email", email);
-        if (!query.exec() || !query.next()) {
-            qDebug() << "Ошибка загрузки данных: " << query.lastError().text();
-            return;
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://0.0.0.0:80/api/v1/profile/"));
+    request.setRawHeader("Accept", "application/json");
+    QNetworkReply *reply = networkManager->get(request);
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        QByteArray responseInfo = reply->readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(responseInfo);
+        QJsonObject obj = doc.object();
+        if (reply->error() == QNetworkReply::NoError) {
+            if (obj["status"].toString() == "candidate") {
+                profileCandidatePage->updateUserData(
+                 obj["name"].toString(), obj["email"].toString(), obj["surname"].toString(),
+                 obj["phone_num"].toString(), obj["place"].toString(), obj["search_status_id"].toString(),
+                 obj["faculty_of_educ"].toString(), obj["place_of_study"].toString(), obj["experience_status_id"].toString()
+                );
+                ui->stackedWidget->setCurrentWidget(profileCandidatePage);
+            }
+            else {
+                profileEmployerPage->updateEmployerData(obj["email"].toString(),
+                                                        obj["company_name"].toString(), obj["about"].toString());
+                ui->stackedWidget->setCurrentWidget(profileEmployerPage);
+            }
         }
-
-        QString name = query.value(0).toString();
-        QString surname = query.value(1).toString();
-        QString phoneNum = query.value(2).toString();
-        QString place = query.value(3).toString();
-        qDebug() << name << " " << surname << " " << phoneNum << " " << place
-                 << " " << email;
-        profileCandidatePage->updateUserData(
-            name, email, surname, phoneNum, place
-        );
-        profileCandidatePage->loadResumeData();
-
-    } else {
-        qDebug() << "im in employer loading...";
-        query.prepare(
-            "SELECT id, company_name, about FROM employers WHERE email ="
-            ":email"
-        );
-        query.bindValue(":email", email);
-        if (!query.exec() || !query.next()) {
-            qDebug() << "Ошибка загрузки данных: " << query.lastError().text();
-            return;
+        else {
+            int statusCode =
+                reply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
+                    .toInt();
+            if (statusCode == 404) {
+                QMessageBox::warning(this, "Упс...", "Ты не найден в нашей базе(");
+            }
+            else if (statusCode == 400) {
+                QMessageBox::warning(this, "Упс...", "Статус не определён");
+            }
+            else {
+                QMessageBox::warning(this, "Упс...", "Что-то непонятное");
+            }
         }
-
-        int ID = query.value(0).toInt();
-        QString companyName = query.value(1).toString();
-        QString about = query.value(2).toString();
-
-        qDebug() << ID << " " << companyName << " " << about;
-        profileEmployerPage->updateEmployerData(companyName, email, about, ID);
-    }
+        reply->deleteLater();
+    });
+    return;
 }
 
 void MainWindow::onProfilePage() {
     loadProfileData();
-    if (isemployee) {
-        ui->stackedWidget->setCurrentWidget(profileCandidatePage);
-    } else {
-        ui->stackedWidget->setCurrentWidget(profileEmployerPage);
-    }
 }

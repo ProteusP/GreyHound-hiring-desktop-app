@@ -1,9 +1,22 @@
 #include "registerpageforemployer.h"
+#include <QGraphicsDropShadowEffect>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include "hashing.h"
 #include "passwordwarningdialog.h"
 #include "ui_registerpageforemployer.h"
-#include <QGraphicsDropShadowEffect>
-RegisterPageForEmployer::RegisterPageForEmployer(QNetworkAccessManager* manager, QWidget *parent)
-    : QWidget(parent), ui(new Ui::RegisterPageForEmployer), networkManager(manager) {
+#include "validation.h"
+
+RegisterPageForEmployer::RegisterPageForEmployer(
+    QNetworkAccessManager *manager,
+    QWidget *parent
+)
+    : QWidget(parent),
+      ui(new Ui::RegisterPageForEmployer),
+      networkManager(manager) {
     ui->setupUi(this);
 
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
@@ -22,6 +35,7 @@ void RegisterPageForEmployer::on_registrationPB_employer_clicked() {
     QString company_name = ui->registrationLineEditCompanyNameEmployer->text();
     QString email = ui->registrationLineEditEmailEmployer->text();
     QString password = ui->registrationLineEditPasswordEmployer->text();
+    QString hashedPassword = hashPassword(password);
 
     std::vector<QString> fieldInputVec = {company_name, email, password};
     if (fieldInputVec[0].isEmpty() || fieldInputVec[0].isEmpty()) {
@@ -31,45 +45,47 @@ void RegisterPageForEmployer::on_registrationPB_employer_clicked() {
         return;
     }
 
-    // if (!isPasswordValid(password)) {
-    //     PasswordWarningDialog dialog(this);
-    //     dialog.exec();
-    //     return;
-    // }
-
-    QSqlQuery checkQuery;
-    checkQuery.prepare("SELECT COUNT(*) FROM candidates WHERE email = :email");
-    checkQuery.bindValue(":email", email);
-
-    if (!checkQuery.exec()) {
-        QMessageBox::warning(
-            this, "Ошибка", "Ошибка при выполнении запроса к базе данных."
-        );
+    if (!isPasswordValid(password)) {
+        PasswordWarningDialog dialog(this);
+        dialog.exec();
+        return;
+    }
+    if (!isEmailValid(email)) {
+        QMessageBox::warning(this, "Ошибка", "Введите корректную почту");
         return;
     }
 
-    if (checkQuery.next() && checkQuery.value(0).toInt() > 0) {
-        QMessageBox::warning(this, "Ошибка", "Этот email уже зарегистрирован.");
-        return;
-    }
-
-    // QString hashedPassword = hashPassword(password);
-
-    // if (isEmailValid(email)) {
-    //     QSqlQuery query;
-    //     query.prepare(
-    //         "INSERT INTO employers (email, company_name, password) VALUES "
-    //         "(:email, :company_name, :password)"
-    //     );
-    //     query.bindValue(":email", email);
-    //     query.bindValue(":company_name", company_name);
-    //     query.bindValue(":password", hashedPassword);
-    //     query.exec();
-
-    //     emit registerSuccessful();
-    // } else {
-    //     QMessageBox::warning(this, "Ошибка", "Введите корректную почту");
-    // }
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://0.0.0.0:80/api/v1/Auth/register"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    QJsonObject json;
+    json["status"] = "empl";
+    json["company_name"] = company_name;
+    json["email"] = email;
+    json["password"] = hashedPassword;
+    QJsonDocument doc(json);
+    QByteArray data = doc.toJson();
+    QNetworkReply *reply = networkManager->post(request, data);
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            emit registerSuccessful();
+        } else {
+            int statusCode =
+                reply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
+                    .toInt();
+            if (statusCode == 409) {
+                QMessageBox::warning(
+                    this, "Ошибка", "Этот email уже зарегистрирован."
+                );
+            } else if (statusCode == 400) {
+                QMessageBox::warning(this, "Упс...", "Ошибка сервера.");
+            } else {
+                QMessageBox::warning(this, "Упс...", "Что-то непонятное...");
+            }
+        }
+        reply->deleteLater();
+    });
+    return;
 }
 
 void RegisterPageForEmployer::on_backToStatusPB_clicked() {

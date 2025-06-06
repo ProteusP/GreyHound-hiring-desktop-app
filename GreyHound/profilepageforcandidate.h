@@ -6,6 +6,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QNetworkAccessManager>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QString>
@@ -13,7 +14,6 @@
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
-#include <QNetworkAccessManager>
 #include "resume.h"
 
 namespace Ui {
@@ -24,14 +24,21 @@ class ProfilePageForCandidate : public QWidget {
     Q_OBJECT
 
 public:
-    explicit ProfilePageForCandidate(QNetworkAccessManager* manager, QWidget *parent = nullptr);
+    explicit ProfilePageForCandidate(
+        QNetworkAccessManager *manager,
+        QWidget *parent = nullptr
+    );
     ~ProfilePageForCandidate();
     void updateUserData(
         const QString &name,
         const QString &email,
         const QString &surname,
         const QString &phoneNum,
-        const QString &place
+        const QString &place,
+        const QString &search_status_id,
+        const QString &faculty_of_educ,
+        const QString &place_of_study,
+        const QString &experience_status_id
     );
     void saveChangesToDB(
         const QString &newPhone,
@@ -49,7 +56,7 @@ private slots:
 
 private:
     void SetupUI();
-    QNetworkAccessManager* networkManager;
+    QNetworkAccessManager *networkManager;
     Ui::ProfilePageForCandidate *ui;
 };
 

@@ -2,13 +2,13 @@
 #define MAINPAGE_H
 
 #include <QDebug>
+#include <QNetworkAccessManager>
 #include <QWidget>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
 #include "flowlayout.h"
 #include "ui_mainpage.h"
-#include <QNetworkAccessManager>
 
 namespace Ui {
 class MainPage;
@@ -18,7 +18,10 @@ class MainPage : public QWidget {
     Q_OBJECT
 
 public:
-    explicit MainPage(QNetworkAccessManager* manager, QWidget *parent = nullptr);
+    explicit MainPage(
+        QNetworkAccessManager *manager,
+        QWidget *parent = nullptr
+    );
     ~MainPage();
 
     void setStatusOfCandidate(bool status_);
@@ -34,15 +37,18 @@ public:
     FlowLayout *getFlowLayout();
 
 private:
-    QNetworkAccessManager* networkManager;
+    QNetworkAccessManager *networkManager;
     Ui::MainPage *ui;
     bool isCandidate;
     QString email;
     FlowLayout *flow_layout;
-    void addFormField(QLayout *layout, const QString &fieldName,
-                      const QString &fieldValue,
-                      const QString &fieldStyle = "",
-                      const QString &valueStyle = "");
+    void addFormField(
+        QLayout *layout,
+        const QString &fieldName,
+        const QString &fieldValue,
+        const QString &fieldStyle = "",
+        const QString &valueStyle = ""
+    );
 
 private slots:
     void on_profilePB_3_clicked();

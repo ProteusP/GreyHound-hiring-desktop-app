@@ -4,11 +4,12 @@
 #include <QDebug>
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QNetworkAccessManager>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QWidget>
-#include <QNetworkAccessManager>
+
 namespace Ui {
 class RegisterPageForEmployer;
 }
@@ -17,7 +18,10 @@ class RegisterPageForEmployer : public QWidget {
     Q_OBJECT
 
 public:
-    explicit RegisterPageForEmployer(QNetworkAccessManager* manager, QWidget *parent = nullptr);
+    explicit RegisterPageForEmployer(
+        QNetworkAccessManager *manager,
+        QWidget *parent = nullptr
+    );
     ~RegisterPageForEmployer();
 
 private slots:
@@ -27,7 +31,7 @@ private slots:
 
 private:
     Ui::RegisterPageForEmployer *ui;
-    QNetworkAccessManager* networkManager;
+    QNetworkAccessManager *networkManager;
 
 signals:
     void registerSuccessful();

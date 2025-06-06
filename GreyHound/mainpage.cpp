@@ -1,8 +1,11 @@
 #include "mainpage.h"
 #include "vacancycard.h"
 
-MainPage::MainPage(QNetworkAccessManager* manager, QWidget *parent)
-    : QWidget(parent), ui(new Ui::MainPage), flow_layout(nullptr), networkManager(manager) {
+MainPage::MainPage(QNetworkAccessManager *manager, QWidget *parent)
+    : QWidget(parent),
+      ui(new Ui::MainPage),
+      flow_layout(nullptr),
+      networkManager(manager) {
     ui->setupUi(this);
 }
 
@@ -36,33 +39,39 @@ void MainPage::showVacancyDetails(int vacancyId) {
     scrollContent->setStyleSheet("background-color: #2D2D2D;");
 
     QSqlQuery query;
-    query.prepare("SELECT v.*, e.company_name, exp.name as experience, "
+    query.prepare(
+        "SELECT v.*, e.company_name, exp.name as experience, "
         "ws.name as work_schedule, ed.name as education "
         "FROM vacancies v "
         "JOIN employers e ON v.employer_id = e.id "
         "LEFT JOIN experience exp ON v.experience_status_id = exp.id "
         "LEFT JOIN work_schedule ws ON v.work_schedule_status_id = ws.id "
         "LEFT JOIN educ_statuses ed ON v.educ_status_id = ed.id "
-        "WHERE v.id = :vacancyId");
+        "WHERE v.id = :vacancyId"
+    );
     query.bindValue(":vacancyId", vacancyId);
 
     if (query.exec() && query.next()) {
         // Стили
-        QString sectionStyle = "background-color: #383838;"
+        QString sectionStyle =
+            "background-color: #383838;"
             "border-radius: 6px;"
             "padding: 12px;"
             "margin-bottom: 10px;";
 
-        QString titleStyle = "font-size: 18px;"
+        QString titleStyle =
+            "font-size: 18px;"
             "font-weight: bold;"
             "color: #BB86FC;"
             "margin-bottom: 8px;";
 
-        QString fieldStyle = "font-size: 14px;"
+        QString fieldStyle =
+            "font-size: 14px;"
             "color: #BB86FC;"
             "margin: 4px 0;";
 
-        QString valueStyle = "font-size: 14px;"
+        QString valueStyle =
+            "font-size: 14px;"
             "color: #E0E0E0;"
             "margin: 4px 0 12px 0;";
 
@@ -73,7 +82,8 @@ void MainPage::showVacancyDetails(int vacancyId) {
         QLabel *titleLabel = new QLabel(query.value("name").toString());
         titleLabel->setStyleSheet(titleStyle);
 
-        QLabel *companyLabel = new QLabel(query.value("company_name").toString());
+        QLabel *companyLabel =
+            new QLabel(query.value("company_name").toString());
         companyLabel->setStyleSheet("font-size: 15px; color: #E0E0E0;");
 
         headerLayout->addWidget(titleLabel);
@@ -84,32 +94,49 @@ void MainPage::showVacancyDetails(int vacancyId) {
         infoFrame->setStyleSheet(sectionStyle);
         QVBoxLayout *infoLayout = new QVBoxLayout(infoFrame);
 
-        QString salary = query.value("salary").isNull() ? "не указана"
-                                                        : QString("%1 руб.").arg(query.value("salary").toString());
+        QString salary =
+            query.value("salary").isNull()
+                ? "не указана"
+                : QString("%1 руб.").arg(query.value("salary").toString());
 
         addFormField(infoLayout, "Зарплата:", salary, fieldStyle, valueStyle);
-        addFormField(infoLayout, "График работы:", query.value("work_schedule").toString(), fieldStyle, valueStyle);
-        addFormField(infoLayout, "Опыт:", query.value("experience").toString(), fieldStyle, valueStyle);
+        addFormField(
+            infoLayout,
+            "График работы:", query.value("work_schedule").toString(),
+            fieldStyle, valueStyle
+        );
+        addFormField(
+            infoLayout, "Опыт:", query.value("experience").toString(),
+            fieldStyle, valueStyle
+        );
 
         contentLayout->addWidget(infoFrame);
 
-                // 3. Блок требований
+        // 3. Блок требований
         QFrame *requirementsFrame = new QFrame();
         requirementsFrame->setStyleSheet(sectionStyle);
         QVBoxLayout *reqLayout = new QVBoxLayout(requirementsFrame);
 
-        addFormField(reqLayout, "Образование:", query.value("education").toString(), fieldStyle, valueStyle);
-        addFormField(reqLayout, "Местоположение:", query.value("place").toString(), fieldStyle, valueStyle);
+        addFormField(
+            reqLayout, "Образование:", query.value("education").toString(),
+            fieldStyle, valueStyle
+        );
+        addFormField(
+            reqLayout, "Местоположение:", query.value("place").toString(),
+            fieldStyle, valueStyle
+        );
 
         contentLayout->addWidget(requirementsFrame);
 
-                // 4. Блок описания
+        // 4. Блок описания
         QFrame *descFrame = new QFrame();
         descFrame->setStyleSheet(sectionStyle);
         QVBoxLayout *descLayout = new QVBoxLayout(descFrame);
 
         QLabel *descTitle = new QLabel("Описание вакансии");
-        descTitle->setStyleSheet("font-size: 15px; color: #BB86FC; margin-bottom: 8px;");
+        descTitle->setStyleSheet(
+            "font-size: 15px; color: #BB86FC; margin-bottom: 8px;"
+        );
 
         QLabel *descContent = new QLabel(query.value("about").toString());
         descContent->setStyleSheet("font-size: 14px; color: #E0E0E0;");
@@ -119,7 +146,7 @@ void MainPage::showVacancyDetails(int vacancyId) {
         descLayout->addWidget(descContent);
         contentLayout->addWidget(descFrame);
 
-                // Кнопка отклика
+        // Кнопка отклика
         QPushButton *respondButton = new QPushButton("Откликнуться");
         respondButton->setStyleSheet(R"(
             QPushButton {
@@ -151,80 +178,93 @@ void MainPage::showVacancyDetails(int vacancyId) {
     detailsDialog->exec();
 }
 
-
 void MainPage::respondToVacancy(int vacancyId) {
     // 1. Проверяем авторизацию пользователя
-    if(!isCandidate) {
-        QMessageBox::warning(this, "Ошибка", "Только кандидаты могут откликаться на вакансии");
+    if (!isCandidate) {
+        QMessageBox::warning(
+            this, "Ошибка", "Только кандидаты могут откликаться на вакансии"
+        );
         return;
     }
 
-    int candidateId = getCurrentCandidateId(); // Нужно реализовать этот метод
-    if(candidateId == -1) {
-        QMessageBox::warning(this, "Ошибка", "Не удалось определить ваш профиль");
+    int candidateId = getCurrentCandidateId();  // Нужно реализовать этот метод
+    if (candidateId == -1) {
+        QMessageBox::warning(
+            this, "Ошибка", "Не удалось определить ваш профиль"
+        );
         return;
     }
 
     QSqlQuery checkQuery;
-    checkQuery.prepare("SELECT COUNT(*) FROM responces "
-        "WHERE candidate_id = ? AND vacancy_id = ?");
+    checkQuery.prepare(
+        "SELECT COUNT(*) FROM responces "
+        "WHERE candidate_id = ? AND vacancy_id = ?"
+    );
     checkQuery.addBindValue(candidateId);
     checkQuery.addBindValue(vacancyId);
 
-    if(!checkQuery.exec()) {
-        QMessageBox::critical(this, "Ошибка",
-                              "Ошибка проверки откликов: " +
-                                  checkQuery.lastError().text());
+    if (!checkQuery.exec()) {
+        QMessageBox::critical(
+            this, "Ошибка",
+            "Ошибка проверки откликов: " + checkQuery.lastError().text()
+        );
         return;
     }
 
-    if(checkQuery.next() && checkQuery.value(0).toInt() > 0) {
-        QMessageBox::information(this, "Информация",
-                                 "Вы уже откликались на эту вакансию");
+    if (checkQuery.next() && checkQuery.value(0).toInt() > 0) {
+        QMessageBox::information(
+            this, "Информация", "Вы уже откликались на эту вакансию"
+        );
         return;
     }
 
     QSqlQuery insertQuery;
-    insertQuery.prepare("INSERT INTO responces "
+    insertQuery.prepare(
+        "INSERT INTO responces "
         "(candidate_id, vacancy_id, status, created_at) "
-        "VALUES (?, ?, 'pending', CURRENT_TIMESTAMP)");
+        "VALUES (?, ?, 'pending', CURRENT_TIMESTAMP)"
+    );
     insertQuery.addBindValue(candidateId);
     insertQuery.addBindValue(vacancyId);
 
-    if(!insertQuery.exec()) {
-        QMessageBox::critical(this, "Ошибка",
-                              "Не удалось сохранить отклик: " +
-                                  insertQuery.lastError().text());
+    if (!insertQuery.exec()) {
+        QMessageBox::critical(
+            this, "Ошибка",
+            "Не удалось сохранить отклик: " + insertQuery.lastError().text()
+        );
         return;
     }
 
-    QMessageBox::information(this, "Успех",
-                             "Ваш отклик успешно отправлен!\n"
-                             "Работодатель получит уведомление.");
+    QMessageBox::information(
+        this, "Успех",
+        "Ваш отклик успешно отправлен!\n"
+        "Работодатель получит уведомление."
+    );
 }
 
-
-int MainPage::getCurrentCandidateId()
-{
+int MainPage::getCurrentCandidateId() {
     QSqlQuery query;
     query.prepare("SELECT id FROM candidates WHERE email = ?");
-    query.addBindValue(email); // currentUserId нужно получить из сессии
+    query.addBindValue(email);  // currentUserId нужно получить из сессии
 
-    if(query.exec() && query.next()) {
+    if (query.exec() && query.next()) {
         return query.value(0).toInt();
     }
     return -1;
 }
 
-
-void MainPage::addFormField(QLayout *layout, const QString &fieldName,
-                            const QString &fieldValue,
-                            const QString &fieldStyle,
-                            const QString &valueStyle) {
+void MainPage::addFormField(
+    QLayout *layout,
+    const QString &fieldName,
+    const QString &fieldValue,
+    const QString &fieldStyle,
+    const QString &valueStyle
+) {
     QLabel *fieldLabel = new QLabel(fieldName);
     fieldLabel->setStyleSheet(fieldStyle);
 
-    QLabel *valueLabel = new QLabel(fieldValue.isEmpty() ? "не указано" : fieldValue);
+    QLabel *valueLabel =
+        new QLabel(fieldValue.isEmpty() ? "не указано" : fieldValue);
     valueLabel->setStyleSheet(valueStyle);
     valueLabel->setWordWrap(true);
 
@@ -236,8 +276,8 @@ void MainPage::show() {
     flow_layout = new FlowLayout();
     QSqlQuery query;
 
-    const int CARD_WIDTH = 250;  // Фиксированная ширина
-    const int CARD_HEIGHT = 180; // Фиксированная высота
+    const int CARD_WIDTH = 250;   // Фиксированная ширина
+    const int CARD_HEIGHT = 180;  // Фиксированная высота
     if (!isCandidate) {
         if (!query.exec("SELECT * FROM `candidates`")) {
             qDebug() << "Ошибка при выполнении запроса:"
@@ -257,23 +297,29 @@ void MainPage::show() {
             }
         }
     } else {
-        QSqlQuery query("SELECT v.*, e.company_name FROM vacancies v "
+        QSqlQuery query(
+            "SELECT v.*, e.company_name FROM vacancies v "
             "JOIN employers e ON v.employer_id = e.id "
-            "WHERE v.status = 1");
+            "WHERE v.status = 1"
+        );
         while (query.next()) {
             QString title = query.value("name").toString();
             QString company = query.value("company_name").toString();
             QString salary = query.value("salary").toString();
             QString experience = query.value("experience_status_id").toString();
-            QString description = QString("Зарплата: %1\nОпыт: %2")
-                                      .arg(salary.isEmpty() ? "не указана" : salary)
-                                      .arg(experience.isEmpty() ? "не указан" : experience);
+            QString description =
+                QString("Зарплата: %1\nОпыт: %2")
+                    .arg(salary.isEmpty() ? "не указана" : salary)
+                    .arg(experience.isEmpty() ? "не указан" : experience);
 
             VacancyCard *card = new VacancyCard(title, company, description);
             card->setFixedSize(CARD_WIDTH, CARD_HEIGHT);
             card->setVacancyId(query.value("id").toInt());
 
-            connect(card, &VacancyCard::detailsRequested, this, &MainPage::showVacancyDetails);
+            connect(
+                card, &VacancyCard::detailsRequested, this,
+                &MainPage::showVacancyDetails
+            );
             flow_layout->addWidget(card);
         }
     }

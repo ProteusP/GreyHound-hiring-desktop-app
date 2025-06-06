@@ -1,18 +1,26 @@
 #include "vacancycard.h"
 
-VacancyCard::VacancyCard(const QString &title, const QString &company, const QString &description, QWidget *parent)
+VacancyCard::VacancyCard(
+    const QString &title,
+    const QString &company,
+    const QString &description,
+    QWidget *parent
+)
     : QFrame(parent) {
     this->setFrameShape(QFrame::StyledPanel);
     this->setFrameShadow(QFrame::Raised);
-    this->setStyleSheet("VacancyCard {"
+    this->setStyleSheet(
+        "VacancyCard {"
         "background: white;"
         "border-radius: 8px;"
         "padding: 10px;"
         "border: 1px solid #ddd;"
-        "}");
+        "}"
+    );
 
     titleLabel = new QLabel(title);
-    titleLabel->setStyleSheet("color: #555; font-weight: bold; font-size: 14px;");
+    titleLabel->setStyleSheet("color: #555; font-weight: bold; font-size: 14px;"
+    );
 
     companyLabel = new QLabel(company);
     companyLabel->setStyleSheet("color: #555; font-size: 12px;");
@@ -29,14 +37,16 @@ VacancyCard::VacancyCard(const QString &title, const QString &company, const QSt
     descLabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
     detailsButton = new QPushButton("Подробнее");
-    detailsButton->setStyleSheet("QPushButton {"
+    detailsButton->setStyleSheet(
+        "QPushButton {"
         "background: #4285f4;"
         "color: white;"
         "border: none;"
         "padding: 5px 10px;"
         "border-radius: 4px;"
         "font-size: 12px;"
-        "}");
+        "}"
+    );
 
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->addWidget(titleLabel);
@@ -53,7 +63,6 @@ VacancyCard::VacancyCard(const QString &title, const QString &company, const QSt
 void VacancyCard::setFixedSize(int width, int height) {
     QFrame::setFixedSize(width, height);
 }
-
 
 void VacancyCard::setVacancyId(int id) {
     vacancyId = id;

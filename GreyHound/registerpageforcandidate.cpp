@@ -2,6 +2,13 @@
 #include "passwordwarningdialog.h"
 #include "ui_registerpageforcandidate.h"
 #include <QGraphicsDropShadowEffect>
+#include "validation.h"
+#include "hashing.h"
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QJsonObject>
+#include <QJsonDocument>
+#include <QNetworkReply>
 RegisterPageForCandidate::RegisterPageForCandidate(QNetworkAccessManager* manager, QWidget *parent)
     : QWidget(parent), ui(new Ui::RegisterPageForCandidate), networkManager(manager) {
     ui->setupUi(this);
@@ -21,6 +28,7 @@ void RegisterPageForCandidate::on_PBregistrationCandidate_clicked() {
     QString surname = ui->registrationLineSurnameCandidate->text();
     QString email = ui->registrationLineEmailCandidate->text();
     QString password = ui->registrationLinePasswordCandidate->text();
+    QString hashedPassword = hashPassword(password);
 
     std::vector<QString> fieldInputVec = {name, surname, email, password};
     if (fieldInputVec[0].isEmpty() || fieldInputVec[0].isEmpty()) {
@@ -30,46 +38,47 @@ void RegisterPageForCandidate::on_PBregistrationCandidate_clicked() {
         return;
     }
 
-    // if (!isPasswordValid(password)) {
-    //     PasswordWarningDialog dialog(this);
-    //     dialog.exec();
-    //     return;
-    // }
-
-    QSqlQuery checkQuery;
-    checkQuery.prepare("SELECT COUNT(*) FROM candidates WHERE email = :email");
-    checkQuery.bindValue(":email", email);
-
-    if (!checkQuery.exec()) {
-        QMessageBox::warning(
-            this, "Ошибка", "Ошибка при выполнении запроса к базе данных."
-        );
+    if (!isPasswordValid(password)) {
+        PasswordWarningDialog dialog(this);
+        dialog.exec();
+        return;
+    }
+    if (!isEmailValid(email)) {
+        QMessageBox::warning(this, "Ошибка", "Введите корректную почту");
         return;
     }
 
-    if (checkQuery.next() && checkQuery.value(0).toInt() > 0) {
-        QMessageBox::warning(this, "Ошибка", "Этот email уже зарегистрирован.");
-        return;
-    }
-
-    // QString hashedPassword = hashPassword(password);
-
-    // if (isEmailValid(email)) {
-    //     QSqlQuery query;
-    //     query.prepare(
-    //         "INSERT INTO candidates (name, surname, email, password) VALUES "
-    //         "(:name, :surname, :email, :password)"
-    //     );
-    //     query.bindValue(":name", name);
-    //     query.bindValue(":surname", surname);
-    //     query.bindValue(":email", email);
-    //     query.bindValue(":password", hashedPassword);
-    //     query.exec();
-
-    //     emit registerSuccessful();
-    // } else {
-    //     QMessageBox::warning(this, "Ошибка", "Введите корректную почту");
-    // }
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://0.0.0.0:80/api/v1/Auth/register"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    QJsonObject json;
+    json["status"] = "candidate";
+    json["name"] = name;
+    json["surname"] = surname;
+    json["email"] = email;
+    json["password"] = hashedPassword;
+    QJsonDocument doc(json);
+    QByteArray data = doc.toJson();
+    QNetworkReply* reply = networkManager->post(request, data);
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            emit registerSuccessful();
+        }
+        else {
+            int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+            if (statusCode == 409) {
+                QMessageBox::warning(this, "Ошибка", "Этот email уже зарегистрирован.");
+            }
+            else if (statusCode == 400) {
+                QMessageBox::warning(this, "Упс...", "Ошибка сервера.");
+            }
+            else {
+                QMessageBox::warning(this, "Упс...", "Что-то непонятное...");
+            }
+        }
+        reply->deleteLater();
+    });
+    return;
 }
 
 void RegisterPageForCandidate::on_backToStatusPB_clicked() {

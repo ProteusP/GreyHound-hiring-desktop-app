@@ -113,30 +113,30 @@ void Auth::login(const HttpRequestPtr &req,
 void Auth::registerUser(
     const HttpRequestPtr &req,
     std::function<void(const HttpResponsePtr &)> &&callback) {
-  const auto &status = req->getParameter("status");
-
-  if (status.empty()) {
+  const auto &jsonReq = req->getJsonObject();
+  if (!jsonReq || !jsonReq->isMember("status") || (*jsonReq)["status"].asString().empty()) {
     Json::Value json;
     json["error"] = "Missing 'status' parameter";
-    auto resp = HttpResponse::newHttpJsonResponse(json);
+    const auto resp = HttpResponse::newHttpJsonResponse(json);
     resp->setStatusCode(k400BadRequest);
     callback(resp);
     return;
   }
-
-  const auto &jsonReq = req->getJsonObject();
 
   if (!jsonReq) {
-    Json::Value json{{"error", "Missing JSON body"}};
-    auto resp = HttpResponse::newHttpJsonResponse(json);
+    Json::Value json;
+    json["error"] = "Missing JSON body";
+    const auto resp = HttpResponse::newHttpJsonResponse(json);
     resp->setStatusCode(k400BadRequest);
     callback(resp);
     return;
   }
 
-  if (!(*jsonReq)["email"].isString() || !(*jsonReq)["password"].isString()) {
-    Json::Value json{{"error", "Invalid JSON body"}};
-    auto resp = HttpResponse::newHttpJsonResponse(json);
+  if (!jsonReq->isMember("email") || !jsonReq->isMember("password")
+      || !(*jsonReq)["email"].isString() || !(*jsonReq)["password"].isString()) {
+    Json::Value json;
+    json["error"] = "Invalid JSON body";
+    const auto resp = HttpResponse::newHttpJsonResponse(json);
     resp->setStatusCode(k400BadRequest);
     callback(resp);
     return;
@@ -162,10 +162,10 @@ void Auth::registerUser(
   drogon_model::default_db::Users user;
   user.setEmail(email);
   user.setPassword(password);
-  user.setStatus(status);
+  user.setStatus((*jsonReq)["status"].asString());
   usersMapper.insert({user});
 
-  if (status == CAND_STATUS) {
+  if ((*jsonReq)["status"].asString() == CAND_STATUS) {
     auto candMapper =
         orm::Mapper<drogon_model::default_db::Candidates>(dbClient);
     orm::Criteria findCandidateCriteria{
@@ -193,7 +193,7 @@ void Auth::registerUser(
     candMapper.insert({candidate});
   }
 
-  if (status == EMPL_STATUS) {
+  if ((*jsonReq)["status"].asString() == EMPL_STATUS) {
     auto emplMapper =
         orm::Mapper<drogon_model::default_db::Employers>(dbClient);
     orm::Criteria findEmployerCriteria{

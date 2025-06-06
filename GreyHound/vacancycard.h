@@ -14,10 +14,10 @@ public:
         const QString &company,
         const QString &description,
         QWidget *parent = nullptr
-        );
+    );
 
     void setFixedSize(int width, int height);
-    void setVacancyId(int id);// Переопределяем для внутренней настройки
+    void setVacancyId(int id);  // Переопределяем для внутренней настройки
 
 signals:
     void detailsRequested(int vacancyId);
@@ -30,4 +30,4 @@ private:
     QPushButton *detailsButton;
 };
 
-#endif // VACANCYCARD_H
+#endif  // VACANCYCARD_H

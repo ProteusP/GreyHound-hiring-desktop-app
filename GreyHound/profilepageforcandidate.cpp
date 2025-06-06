@@ -3,8 +3,13 @@
 #include <QMessageBox>
 #include "ui_profilepageforcandidate.h"
 
-ProfilePageForCandidate::ProfilePageForCandidate(QNetworkAccessManager* manager, QWidget *parent)
-    : QWidget(parent), ui(new Ui::ProfilePageForCandidate), networkManager(manager) {
+ProfilePageForCandidate::ProfilePageForCandidate(
+    QNetworkAccessManager *manager,
+    QWidget *parent
+)
+    : QWidget(parent),
+      ui(new Ui::ProfilePageForCandidate),
+      networkManager(manager) {
     ui->setupUi(this);
     SetupUI();
 }
@@ -38,13 +43,31 @@ void ProfilePageForCandidate::updateUserData(
     const QString &email,
     const QString &surname,
     const QString &phoneNum,
-    const QString &place
+    const QString &place,
+    const QString &search_status_id,
+    const QString &faculty_of_educ,
+    const QString &place_of_study,
+    const QString &experience_status_id
 ) {
-    ui->nameLabel->setText(name);
-    ui->surnameLabel->setText(surname);
-    ui->emailLabel->setText(email);
+    ui->nameEdit->setText(name);
+    ui->surnameEdit->setText(surname);
+    ui->emailEdit->setText(email);
     ui->phoneEdit->setText(phoneNum);
     ui->placeEdit->setText(place);
+    for (int i = 0; i < ui->statusCombo->count(); ++i) {
+        if (ui->statusCombo->itemData(i).toString() == search_status_id) {
+            ui->statusCombo->setCurrentIndex(i);
+            break;
+        }
+    }
+    ui->universityEdit->setText(place_of_study);
+    ui->facultyEdit->setText(faculty_of_educ);
+    for (int i = 0; i < ui->experinceCombo->count(); ++i) {
+        if (ui->experinceCombo->itemData(i).toString() == experience_status_id) {
+            ui->experinceCombo->setCurrentIndex(i);
+            break;
+        }
+    }
 }
 
 void ProfilePageForCandidate::onSaveClicked() {

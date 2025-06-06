@@ -4,11 +4,12 @@
 #include <QDebug>
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QNetworkAccessManager>
 #include <QWidget>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
-#include <QNetworkAccessManager>
+
 namespace Ui {
 class LoginWidget;
 }
@@ -17,7 +18,10 @@ class LoginWidget : public QWidget {
     Q_OBJECT
 
 public:
-    explicit LoginWidget(QNetworkAccessManager* manager, QWidget *parent = nullptr);
+    explicit LoginWidget(
+        QNetworkAccessManager *manager,
+        QWidget *parent = nullptr
+    );
     ~LoginWidget();
 
 private slots:
@@ -26,7 +30,7 @@ private slots:
     void on_registerPB_clicked();
 
 private:
-    QNetworkAccessManager* networkManager;
+    QNetworkAccessManager *networkManager;
     Ui::LoginWidget *ui;
 
 signals:

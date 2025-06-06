@@ -1,41 +1,44 @@
 #ifndef PROFILEPAGEFOREMPLOYER_H
 #define PROFILEPAGEFOREMPLOYER_H
 
+#include <QComboBox>
 #include <QLabel>
 #include <QLineEdit>
+#include <QNetworkAccessManager>
 #include <QPushButton>
 #include <QTableWidget>
-#include <QVBoxLayout>
 #include <QTextEdit>
+#include <QVBoxLayout>
 #include <QWidget>
-#include <QComboBox>
-#include <QNetworkAccessManager>
 
 namespace Ui {
 class ProfilePageForEmployer;
 }
+
 class ProfilePageForEmployer : public QWidget {
     Q_OBJECT
 
 public:
-    explicit ProfilePageForEmployer(QNetworkAccessManager* manager, QWidget *parent = nullptr);
+    explicit ProfilePageForEmployer(
+        QNetworkAccessManager *manager,
+        QWidget *parent = nullptr
+    );
     ~ProfilePageForEmployer();
-
 
     void updateEmployerData(
         const QString &companyName,
         const QString &email,
-        const QString &about,
-        const int ID
-        );
+        const QString &about
+    );
 
-    void addCandidateWidget(QVBoxLayout *layout,
-                            const QString &name,
-                            const QString &position,
-                            const QString &date,
-                            int vacancyId,
-                            int candidateId);
-
+    void addCandidateWidget(
+        QVBoxLayout *layout,
+        const QString &name,
+        const QString &position,
+        const QString &date,
+        int vacancyId,
+        int candidateId
+    );
 
     void acceptCandidate(int candidateId, int vacancyId);
     void rejectCandidate(int candidateId, int vacancyId);
@@ -61,10 +64,11 @@ private:
     void loadResponses();
     void deleteResponse(int vacancyId, int candidateId);
     int currentEmployerId;
-    QNetworkAccessManager* networkManager;
+    QNetworkAccessManager *networkManager;
     Ui::ProfilePageForEmployer *ui;
     QVBoxLayout *candidatesLayout;
 
-    QPushButton *createActionButton(const QString &iconText, const QString &tooltip);
+    QPushButton *
+    createActionButton(const QString &iconText, const QString &tooltip);
 };
 #endif  // PROFILEPAGEFOREMPLOYER_H

@@ -1,17 +1,14 @@
 #include "registerstatus.h"
-#include "ui_registerstatus.h"
 #include <QGraphicsDropShadowEffect>
+#include "ui_registerstatus.h"
 
 RegisterStatus::RegisterStatus(QWidget *parent)
     : QWidget(parent), ui(new Ui::RegisterStatus) {
     ui->setupUi(this);
-    // Создаем эффект тени
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
     shadow->setBlurRadius(20);
     shadow->setOffset(0, 4);
     shadow->setColor(QColor(0, 0, 0, 50));
-
-    // Применяем к виджету
     ui->widget->setGraphicsEffect(shadow);
 }
 
