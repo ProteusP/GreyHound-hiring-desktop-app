@@ -1,0 +1,13 @@
+#build && IDE
+.clangd
+.idea
+backend/compile_commands.json
+backend/server/build
+compile_commands.json
+
+#test data
+test_cand.txt
+test_empl.txt
+
+#CMakeLists (in team)
+backend/server/CMakeLists.txt
