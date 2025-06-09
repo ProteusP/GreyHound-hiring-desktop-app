@@ -20,8 +20,10 @@ class resources final : public drogon::HttpController<resources> {
             std::function<void(const HttpResponsePtr &)> &&callback,
             const std::string& userId);
 
-  static void saveResume(const HttpRequestPtr &req,
-              std::function<void(const HttpResponsePtr &)> &&callback);
+    static void saveResume(const HttpRequestPtr &req,
+               std::function<void(const HttpResponsePtr &)> &&callback);
+static void getCandidateCards(
+    const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
 
 public:
   METHOD_LIST_BEGIN
@@ -31,7 +33,9 @@ public:
              "api::v1::checkAuthFilter"); // path is /api/v1/resources/vacancies
     METHOD_ADD(resources::getResume, "/resume/{1}", drogon::Get, "api::v1::checkAuthFilter"); // path is /api/v1/resources/resume/{user_id}
 
-    METHOD_ADD(resources::saveResume, "resume", drogon::Post, "api::v1::checkAuthFilter"); // // path is /api/v1/resources/resume
+    METHOD_ADD(resources::saveResume, "resume", drogon::Post, "api::v1::checkAuthFilter"); // path is /api/v1/resources/resume
+
+    METHOD_ADD(resources::getCandidateCards, "/candidateCards", drogon::Get); // path is /api/v1/resources/candidateCards/?page=..?pageSize=..
   METHOD_LIST_END
 };
 } // namespace api::v1

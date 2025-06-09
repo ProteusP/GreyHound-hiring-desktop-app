@@ -156,3 +156,109 @@ void resources::saveResume(const HttpRequestPtr &req,
   resp->setBody("Resume saved!");
   callback(resp);
 }
+
+void resources::getCandidateCards(
+    const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
+
+  //starts from 1
+  int page = 1;
+  int pageSize = 20;
+
+  const auto& pageStr = req->getParameter("page");
+  const auto& pageSizeStr = req->getParameter("pageSize");
+
+  if (!pageStr.empty()) page =std::stoi(pageStr);
+  if (!pageSizeStr.empty()) pageSize = std::stoi(pageSizeStr);
+
+  if (page < 1) page = 1;
+  if (pageSize < 1)  pageSize = 1;
+  if (pageSize > 20) pageSize = 20;
+
+  const int offset = (page - 1) * pageSize;
+  // not noexcept!!!
+  const auto& dbClient = app().getDbClient();
+
+  // TODO
+  // No position in our DB now
+  dbClient ->execSqlAsync(
+    "SELECT user_id, place_of_study, faculty_of_educ, experience_status_id FROM candidates LIMIT ? OFFSET ?",
+    [callback, dbClient, page, pageSize](const drogon::orm::Result& candidatesResult) mutable {
+
+      std::vector<int> candidateIds;
+      for (const auto& row : candidatesResult) {
+        candidateIds.push_back(row["user_id"].as<int>());
+      }
+
+      if (candidateIds.empty()) {
+        Json::Value jsonResp;
+        jsonResp["candidates"] = Json::arrayValue;
+        jsonResp["page"] = page;
+        jsonResp["pageSize"] = pageSize;
+        jsonResp["count"] = 0;
+        const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+        callback(resp);
+        return;
+      }
+        std::string placeholders;
+
+      for (size_t i = 0; i < candidateIds.size() -1; ++i) {
+        placeholders.append(std::to_string(candidateIds[i]) + ",");
+      }
+      placeholders.append(std::to_string(candidateIds.back()));
+
+
+        const std::string sql = "SELECT cs.user_id, exp.name "
+                          "FROM candidates cs "
+                          "JOIN experience exp ON cs.experience_status_id = exp.id "
+                          "WHERE cs.user_id IN (" + placeholders + ")";
+
+        dbClient->execSqlAsync(
+          sql,
+          [callback, candidatesResult, candidateIds, page, pageSize](const drogon::orm::Result& expResult) mutable {
+            std::unordered_map<int, std::string> candidateExp;
+            for (const auto& row : expResult) {
+              int cid = row["user_id"].as<int>();
+              const auto exp = row["name"].as<std::string>();
+              candidateExp[cid] = exp;
+            }
+
+            Json::Value jsonResp;
+            Json::Value candidatesJson(Json::arrayValue);
+
+            for (const auto& row : candidatesResult) {
+              const int cid = row["user_id"].as<int>();
+              Json::Value candidateJson;
+              candidateJson["id"] = cid;
+              const auto studyInfo = row["place_of_study"].as<std::string>() + " "+row["faculty_of_educ"].as<std::string>();
+              candidateJson["study_info"] = studyInfo;
+              candidateJson["experience"] = candidateExp[cid];
+
+              candidatesJson.append(candidateJson);
+            }
+
+            jsonResp["candidates"] = candidatesJson;
+            jsonResp["page"] = page;
+            jsonResp["pageSize"] = pageSize;
+            jsonResp["count"] = static_cast<int>(candidateIds.size());
+
+            const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            callback(resp);
+          }
+          ,[callback](const drogon::orm::DrogonDbException& e) {
+            Json::Value jsonResp;
+            jsonResp["error"] = "Database error on experience query";
+            const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            resp->setStatusCode(HttpStatusCode::k500InternalServerError);
+            callback(resp);
+          });
+
+    },
+    [callback](const drogon::orm::DrogonDbException& e) {
+      Json::Value jsonResp;
+      jsonResp["error"] = "Database error on query";
+      const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+      resp->setStatusCode(HttpStatusCode::k500InternalServerError);
+      callback(resp);
+    },
+    pageSize, offset);
+}
