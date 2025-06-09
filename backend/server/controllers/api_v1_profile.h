@@ -20,9 +20,8 @@ class profile final : public drogon::HttpController<profile> {
 public:
   METHOD_LIST_BEGIN
   METHOD_ADD(profile::getProfile, "/", drogon::Get,
-             "api::v1::checkAuthFilter"); // path is /api/v1/profile
-  METHOD_ADD(profile::patchProfile, "/", drogon::Patch,
-             "api::v1::checkAuthFilter"); // path is /api/v1/profile
+             "api::v1::checkAuthFilter"); // path is /api/v1/profile/
+  METHOD_ADD(profile::patchProfile, "/", drogon::Patch, "api::v1::checkAuthFilter"); // path is /api/v1/profile/
   METHOD_LIST_END
 };
 } // namespace api::v1

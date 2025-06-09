@@ -50,9 +50,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->stackedWidget->addWidget(profileEmployerPage);
 
     ui->stackedWidget->setCurrentWidget(loginPage);
-
-    connect(loginPage, &LoginWidget::loginSuccessful, this, [this]() {
-        onMainPage();
+    connect(loginPage, &LoginWidget::loginSuccessful, this, [this](bool isemployee) {
+        onMainPage(isemployee);
     });
     connect(
         loginPage, &LoginWidget::registerPressed, this,
@@ -86,18 +85,18 @@ MainWindow::MainWindow(QWidget *parent)
     );
     connect(
         registerEmployerPage, &RegisterPageForEmployer::registerSuccessful,
-        this, &MainWindow::onMainPage
+        this, [this]() { onBackToLoginPage(); }
     );
     connect(
         mainPage, &MainPage::onProfilePressed, this, &MainWindow::onProfilePage
     );
     connect(
         profileCandidatePage, &ProfilePageForCandidate::homeButtonClicked, this,
-        &MainWindow::onMainPage
+        [this]() { onMainPage(true); }
     );
     connect(
         profileEmployerPage, &ProfilePageForEmployer::homeButtonClicked, this,
-        &MainWindow::onMainPage
+        [this]() { onMainPage(false); }
     );
     connect(
         profileEmployerPage, &ProfilePageForEmployer::logoutButtonClicked, this,
@@ -118,12 +117,11 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::onMainPage() {
+void MainWindow::onMainPage(bool isemployee) {
     mainPage->setStatusOfCandidate(isemployee);
     if (mainPage->getFlowLayout() != nullptr) {
         mainPage->hide();
     }
-    mainPage->setEmail(email);
     mainPage->show();
     ui->stackedWidget->setCurrentWidget(mainPage);
 }
@@ -137,12 +135,10 @@ void MainWindow::onBackToLoginPage() {
 }
 
 void MainWindow::onStatusCandidatePage() {
-    this->isemployee = true;
     ui->stackedWidget->setCurrentWidget(registerCandidatePage);
 }
 
 void MainWindow::onStatusEmployerPage() {
-    this->isemployee = false;
     ui->stackedWidget->setCurrentWidget(registerEmployerPage);
 }
 
@@ -152,7 +148,7 @@ void MainWindow::onBackToRegisterStatusPage() {
 
 void MainWindow::loadProfileData() {
     QNetworkRequest request;
-    request.setUrl(QUrl("http://0.0.0.0:80/api/v1/profile/"));
+    request.setUrl(QUrl("http://localhost:80/api/v1/profile/"));
     request.setRawHeader("Accept", "application/json");
     QNetworkReply *reply = networkManager->get(request);
     connect(reply, &QNetworkReply::finished, this, [=]() {
@@ -160,17 +156,18 @@ void MainWindow::loadProfileData() {
         QJsonDocument doc = QJsonDocument::fromJson(responseInfo);
         QJsonObject obj = doc.object();
         if (reply->error() == QNetworkReply::NoError) {
+            qDebug() << obj["status"].toString() << '\n';
             if (obj["status"].toString() == "candidate") {
-                profileCandidatePage->updateUserData(
+                profileCandidatePage->setCandidateData(
                  obj["name"].toString(), obj["email"].toString(), obj["surname"].toString(),
-                 obj["phone_num"].toString(), obj["place"].toString(), obj["search_status_id"].toString(),
-                 obj["faculty_of_educ"].toString(), obj["place_of_study"].toString(), obj["experience_status_id"].toString()
+                    obj["phone_num"].toString(), obj["place"].toString(), obj["search_status_id"].toInt(),
+                 obj["faculty_of_educ"].toString(), obj["place_of_study"].toString(), obj["experience_status_id"].toInt()
                 );
                 ui->stackedWidget->setCurrentWidget(profileCandidatePage);
             }
-            else {
-                profileEmployerPage->updateEmployerData(obj["email"].toString(),
-                                                        obj["company_name"].toString(), obj["about"].toString());
+            else if (obj["status"].toString() == "empl") {
+                profileEmployerPage->setEmployerData(obj["company_name"].toString(),
+                                                        obj["email"].toString(), obj["about"].toString());
                 ui->stackedWidget->setCurrentWidget(profileEmployerPage);
             }
         }

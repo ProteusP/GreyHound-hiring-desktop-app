@@ -19,24 +19,25 @@ void profile::getProfile(
   const auto &userId = session->get<std::string>("user_id");
   const auto &dbClient = app().getDbClient();
   const auto redisClientPtr = app().getRedisClient(CACHE_CLIENT);
-  try {
-    LOG_DEBUG << "GET profile from redis\n";
-    const std::string key = "profile:" + userId;
-    auto res = redisClientPtr->execCommandSync<std::string>(
-        [](const nosql::RedisResult &r) { return r.asString(); }, "get %s",
-        key.c_str());
+  LOG_DEBUG << "Попытка зайти в профиль с аккаунта:" << userId << '\n';
+  // try {
+  //   LOG_DEBUG << "GET profile from redis\n";
+  //   const std::string key = "profile:" + userId;
+  //   auto res = redisClientPtr->execCommandSync<std::string>(
+  //       [](const nosql::RedisResult &r) { return r.asString(); }, "get %s",
+  //       key.c_str());
 
-    Json::CharReaderBuilder reader;
-    std::istringstream stream(res);
-    std::string errs;
-    Json::parseFromStream(reader, stream, &jsonResp, &errs);
+  //   Json::CharReaderBuilder reader;
+  //   std::istringstream stream(res);
+  //   std::string errs;
+  //   Json::parseFromStream(reader, stream, &jsonResp, &errs);
 
-    auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
-    resp->setStatusCode(k200OK);
-    callback(resp);
-    return;
-  } catch (const nosql::RedisException &err) {
-  }
+  //   auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+  //   resp->setStatusCode(k200OK);
+  //   callback(resp);
+  //   return;
+  // } catch (const nosql::RedisException &err) {
+  // }
   if (userStatus == CAND_STATUS) {
     auto mapper =
         drogon::orm::Mapper<drogon_model::default_db::Candidates>(dbClient);
@@ -83,7 +84,7 @@ void profile::getProfile(
 
     const auto &empl = employers.front();
     jsonResp = empl.toJson();
-    jsonResp["status"] = "employer";
+    jsonResp["status"] = "empl";
 
     saveUserProfile(userId, jsonResp);
 
@@ -104,6 +105,7 @@ void profile::getProfile(
 void profile::patchProfile(
     const HttpRequestPtr &req,
     std::function<void(const HttpResponsePtr &)> &&callback) {
+  LOG_DEBUG << "Зашли сюда\n";
   const auto &session = req->session();
   Json::Value jsonResp;
 
@@ -129,13 +131,9 @@ void profile::patchProfile(
                         orm::CompareOperator::EQ, userId});
       // Does not change ID
       candidate.updateByJson(*jsonReq);
-
       mapper.update(candidate);
-
       const auto candidateJson = candidate.toJson();
-
       saveUserProfile(userId, candidateJson);
-
       jsonResp["message"] = "Candidate updated";
       jsonResp["data"] = candidateJson;
       auto resp = HttpResponse::newHttpJsonResponse(jsonResp);

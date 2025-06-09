@@ -56,7 +56,7 @@ void RegisterPageForEmployer::on_registrationPB_employer_clicked() {
     }
 
     QNetworkRequest request;
-    request.setUrl(QUrl("http://0.0.0.0:80/api/v1/Auth/register"));
+    request.setUrl(QUrl("http://localhost:80/api/v1/Auth/register"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QJsonObject json;
     json["status"] = "empl";

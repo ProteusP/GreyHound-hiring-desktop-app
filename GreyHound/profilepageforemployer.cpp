@@ -12,6 +12,11 @@
 #include <QVBoxLayout>
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include "ui_profilepageforemployer.h"
 
 ProfilePageForEmployer::ProfilePageForEmployer(
@@ -47,16 +52,16 @@ void ProfilePageForEmployer::SetupUI() {
     );
 }
 
-void ProfilePageForEmployer::updateEmployerData(
+void ProfilePageForEmployer::setEmployerData(
     const QString &companyName,
     const QString &email,
     const QString &about
 ) {
     ui->companyNameEdit->setText(companyName);
-    ui->emailLabel->setText(email);
+    ui->emailEdit->setText(email);
     ui->aboutEdit->setPlainText(about);
-    loadVacancies();
-    loadResponses();
+    // loadVacancies();
+    // loadResponses();
 }
 
 void ProfilePageForEmployer::loadResponses() {
@@ -104,22 +109,39 @@ void ProfilePageForEmployer::onSaveClicked() {
 }
 
 void ProfilePageForEmployer::saveCompanyInfo() {
-    QSqlQuery query;
-    query.prepare(
-        "UPDATE employers SET company_name = :name, about = :about WHERE email "
-        "= :email"
-    );
-    query.bindValue(":name", ui->companyNameEdit->text());
-    query.bindValue(":about", ui->aboutEdit->toPlainText());
-    query.bindValue(":email", ui->emailLabel->text());
-
-    if (!query.exec()) {
-        QMessageBox::critical(
-            this, "Ошибка", "Ошибка сохранения: " + query.lastError().text()
-        );
-    } else {
-        QMessageBox::information(this, "Успех", "Данные компании обновлены!");
-    }
+    QString newName = ui->companyNameEdit->text();
+    QString newAbout = ui->aboutEdit->toPlainText();
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:80/api/v1/profile/"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    QJsonObject json;
+    json["company_name"] = newName;
+    json["about"] = newAbout;
+    QByteArray data = QJsonDocument(json).toJson();
+    QNetworkReply *reply = networkManager->sendCustomRequest(request, "PATCH", data);
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            QMessageBox::information(this, "Успех", "Данные сохранены!");
+        }
+        else {
+            int statusCode =
+                reply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
+                    .toInt();
+            if (statusCode == 400) {
+                QMessageBox::warning(
+                    this, "Ошибка", "По пути на сервер данные потерялись( просим прощения"
+                    );
+            } else if (statusCode == 500) {
+                QMessageBox::warning(
+                    this, "Упс...", "Ошибка сервера."
+                    );
+            } else {
+                QMessageBox::warning(this, "Упс...", "Что-то непонятное.");
+            }
+        }
+        reply->deleteLater();
+    });
+    // saveResumeData();
 }
 
 void ProfilePageForEmployer::loadVacancies() {

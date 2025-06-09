@@ -34,7 +34,7 @@ private:
     Ui::LoginWidget *ui;
 
 signals:
-    void loginSuccessful();
+    void loginSuccessful(bool isemployee = false);
     void registerPressed();
 };
 

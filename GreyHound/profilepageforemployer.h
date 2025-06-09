@@ -25,7 +25,7 @@ public:
     );
     ~ProfilePageForEmployer();
 
-    void updateEmployerData(
+    void setEmployerData(
         const QString &companyName,
         const QString &email,
         const QString &about

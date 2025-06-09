@@ -2,6 +2,11 @@
 #include <QGroupBox>
 #include <QMessageBox>
 #include "ui_profilepageforcandidate.h"
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 
 ProfilePageForCandidate::ProfilePageForCandidate(
     QNetworkAccessManager *manager,
@@ -17,13 +22,13 @@ ProfilePageForCandidate::ProfilePageForCandidate(
 ProfilePageForCandidate::~ProfilePageForCandidate() = default;
 
 void ProfilePageForCandidate::SetupUI() {
-    ui->statusCombo->addItem("Активно ищу работу", "active");
-    ui->statusCombo->addItem("Рассматриваю предложения", "searching");
-    ui->statusCombo->addItem("Не ищу работу", "inactive");
-    ui->experinceCombo->addItem("Нет", "intern");
-    ui->experinceCombo->addItem("1 - 3 года", "junior");
-    ui->experinceCombo->addItem("3 - 5 лет", "middle");
-    ui->experinceCombo->addItem("5+ лет", "senior");
+    ui->statusCombo->addItem("Активно ищу работу", "1");
+    ui->statusCombo->addItem("Рассматриваю предложения", "2");
+    ui->statusCombo->addItem("Не ищу работу", "3");
+    ui->experinceCombo->addItem("Нет", "1");
+    ui->experinceCombo->addItem("1 - 3 года", "2");
+    ui->experinceCombo->addItem("3 - 5 лет", "3");
+    ui->experinceCombo->addItem("5+ лет", "4");
     connect(
         ui->homepagePB, &QPushButton::clicked, this,
         &ProfilePageForCandidate::homeButtonClicked
@@ -38,76 +43,74 @@ void ProfilePageForCandidate::SetupUI() {
     );
 }
 
-void ProfilePageForCandidate::updateUserData(
+void ProfilePageForCandidate::setCandidateData(
     const QString &name,
     const QString &email,
     const QString &surname,
     const QString &phoneNum,
     const QString &place,
-    const QString &search_status_id,
+    const qint16 &search_status_id,
     const QString &faculty_of_educ,
     const QString &place_of_study,
-    const QString &experience_status_id
+    const qint16 &experience_status_id
 ) {
     ui->nameEdit->setText(name);
     ui->surnameEdit->setText(surname);
     ui->emailEdit->setText(email);
     ui->phoneEdit->setText(phoneNum);
     ui->placeEdit->setText(place);
-    for (int i = 0; i < ui->statusCombo->count(); ++i) {
-        if (ui->statusCombo->itemData(i).toString() == search_status_id) {
-            ui->statusCombo->setCurrentIndex(i);
-            break;
-        }
-    }
+    // qDebug() << search_status_id << "<- серч статус, эксп статус -> " << experience_status_id << '\n';
+    ui->statusCombo->setCurrentIndex(search_status_id - 1);
     ui->universityEdit->setText(place_of_study);
     ui->facultyEdit->setText(faculty_of_educ);
-    for (int i = 0; i < ui->experinceCombo->count(); ++i) {
-        if (ui->experinceCombo->itemData(i).toString() == experience_status_id) {
-            ui->experinceCombo->setCurrentIndex(i);
-            break;
-        }
-    }
+    ui->experinceCombo->setCurrentIndex(experience_status_id - 1);
 }
 
 void ProfilePageForCandidate::onSaveClicked() {
+
     QString newPhone = ui->phoneEdit->text();
     QString newPlace = ui->placeEdit->text();
-    QString newSearchStatus = ui->statusCombo->currentData().toString();
-    saveChangesToDB(newPhone, newPlace, newSearchStatus);
-    saveResumeData();
+    qint16 newSearchStatus = ui->statusCombo->currentData().toInt();
+    QString newUniversity = ui->universityEdit->text();
+    QString newFaculty = ui->facultyEdit->text();
+    qint16 newExperience = ui->experinceCombo->currentData().toInt();
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:80/api/v1/profile/"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    QJsonObject json;
+    json["phone_num"] = newPhone;
+    json["place"] = newPlace;
+    json["search_status_id"] = newSearchStatus;
+    json["place_of_study"] = newUniversity;
+    json["faculty_of_educ"] = newFaculty;
+    json["experience_status_id"] = newExperience;
+    QByteArray data = QJsonDocument(json).toJson();
+    QNetworkReply *reply = networkManager->sendCustomRequest(request, "PATCH", data);
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            QMessageBox::information(this, "Успех", "Данные сохранены!");
+        }
+        else {
+            int statusCode =
+                reply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
+                    .toInt();
+            if (statusCode == 400) {
+                QMessageBox::warning(
+                    this, "Ошибка", "По пути на сервер данные потерялись( просим прощения"
+                    );
+            } else if (statusCode == 500) {
+                QMessageBox::warning(
+                    this, "Упс...", "Ошибка сервера."
+                    );
+            } else {
+                QMessageBox::warning(this, "Упс...", "Что-то непонятное.");
+            }
+        }
+        reply->deleteLater();
+    });
+    // saveResumeData();
 }
 
-void ProfilePageForCandidate::saveChangesToDB(
-    const QString &newPhone,
-    const QString &newPlace,
-    const QString &newSearchStatus
-) {
-    QSqlQuery query;
-    query.prepare(
-        "UPDATE candidates "
-        "JOIN search_statuses ON search_statuses.name = :new_search_status "
-        "SET "
-        "candidates.phone_num = :phone, "
-        "candidates.place = :new_place, "
-        "candidates.search_status_id = search_statuses.id "
-        "WHERE candidates.email = :email"
-    );
-    QString email = ui->emailLabel->text();
-    query.bindValue(":email", email);
-    query.bindValue(":phone", newPhone);
-    query.bindValue(":new_place", newPlace);
-    query.bindValue(":new_search_status", newSearchStatus);
-
-    if (!query.exec()) {
-        QMessageBox::critical(
-            this, "Ошибка",
-            "Не удалось обновить данные: " + query.lastError().text()
-        );
-    } else {
-        QMessageBox::information(this, "Успех", "Данные сохранены!");
-    }
-}
 
 void ProfilePageForCandidate::loadResumeData() {
     QSqlQuery query;

@@ -17,6 +17,7 @@ void checkAuthFilter::doFilter(const HttpRequestPtr &req,
                          FilterChainCallback &&fccb)
 {
     auto session = req->session();
+    LOG_DEBUG << "Filter checkAuthFilter: request to " << req->getPath();
     /*We would need to add a constant for the field in the session */
     if (!session || !session->find("authenticated") || !session->get<bool>("authenticated")){
         Json::Value json;

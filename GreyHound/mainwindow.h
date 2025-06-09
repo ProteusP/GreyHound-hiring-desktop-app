@@ -34,16 +34,8 @@ public:
         email = email_;
     }
 
-    void setStatus(bool status_) {
-        isemployee = status_;
-    }
-
-    bool get_status() const noexcept {
-        return isemployee;
-    }
-
 private slots:
-    void onMainPage();
+    void onMainPage(bool isemployee);
     void onRegisterStatusPage();
     void onBackToLoginPage();
     void onStatusCandidatePage();
@@ -53,7 +45,6 @@ private slots:
     void loadProfileData();
 
 private:
-    bool isemployee;
     QNetworkAccessManager *networkManager;
     Ui::MainWindow *ui;
     QSqlDatabase db;

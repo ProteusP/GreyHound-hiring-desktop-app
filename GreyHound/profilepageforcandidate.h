@@ -29,16 +29,16 @@ public:
         QWidget *parent = nullptr
     );
     ~ProfilePageForCandidate();
-    void updateUserData(
+    void setCandidateData(
         const QString &name,
         const QString &email,
         const QString &surname,
         const QString &phoneNum,
         const QString &place,
-        const QString &search_status_id,
+        const qint16 &search_status_id,
         const QString &faculty_of_educ,
         const QString &place_of_study,
-        const QString &experience_status_id
+        const qint16 &experience_status_id
     );
     void saveChangesToDB(
         const QString &newPhone,

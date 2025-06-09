@@ -28,7 +28,7 @@ void LoginWidget::on_loginPB_clicked() {
     QString email = ui->mailLine->text();
     QString hashingPassword = hashPassword(ui->passwordLine->text());
     QNetworkRequest request;
-    request.setUrl(QUrl("http://0.0.0.0:80/api/v1/Auth/login"));
+    request.setUrl(QUrl("http://localhost:80/api/v1/Auth/login"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QJsonObject json;
     json["email"] = email;
@@ -38,7 +38,10 @@ void LoginWidget::on_loginPB_clicked() {
     QNetworkReply *reply = networkManager->post(request, data);
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() == QNetworkReply::NoError) {
-            emit loginSuccessful();
+            QByteArray responseInfo = reply->readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(responseInfo);
+            QJsonObject obj = doc.object();
+            emit loginSuccessful(obj["status_user"] == "candidate");
         } else {
             int statusCode =
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute)

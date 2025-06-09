@@ -86,6 +86,7 @@ void Auth::login(const HttpRequestPtr &req,
           Json::Value jsonResp;
           jsonResp["status"] = "success";
           jsonResp["session_id"] = session->sessionId();
+          jsonResp["status_user"] = status;
 
           const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
 

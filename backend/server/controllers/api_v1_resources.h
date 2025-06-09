@@ -20,8 +20,9 @@ class resources final : public drogon::HttpController<resources> {
             std::function<void(const HttpResponsePtr &)> &&callback,
             const std::string& userId);
 
-    static void saveResume(const HttpRequestPtr &req,
-               std::function<void(const HttpResponsePtr &)> &&callback);
+  static void saveResume(const HttpRequestPtr &req,
+              std::function<void(const HttpResponsePtr &)> &&callback);
+
 public:
   METHOD_LIST_BEGIN
   METHOD_ADD(resources::getResumes, "/resumes", drogon::Get,
