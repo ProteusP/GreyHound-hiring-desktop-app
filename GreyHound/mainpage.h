@@ -24,9 +24,9 @@ public:
     );
     ~MainPage();
 
-    void setStatusOfCandidate(bool status_);
+    void show(bool iseemployee);
 
-    void show();
+    void setStatusOfCandidate(bool status_);
 
     void hide();
 
@@ -34,11 +34,12 @@ public:
 
     int getCurrentCandidateId();
 
+    QWidget *createCandidatesPage(int numberPage);
+
     FlowLayout *getFlowLayout();
 
 private:
     QNetworkAccessManager *networkManager;
-    Ui::MainPage *ui;
     bool isCandidate;
     QString email;
     FlowLayout *flow_layout;
@@ -49,11 +50,18 @@ private:
         const QString &fieldStyle = "",
         const QString &valueStyle = ""
     );
+    QMap<int, QWidget *> pageCache;
+    int currentPage;
+    Ui::MainPage *ui;
 
 private slots:
     void on_profilePB_3_clicked();
     void showVacancyDetails(int vacancyId);
     void respondToVacancy(int vacancyId);
+
+    void on_pushButtonNext_clicked();
+
+    void on_pushButtonPrev_clicked();
 
 signals:
     void onProfilePressed();

@@ -195,6 +195,7 @@ void resources::getCandidateCards(
         jsonResp["page"] = page;
         jsonResp["pageSize"] = pageSize;
         jsonResp["count"] = 0;
+        
         const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
         callback(resp);
         return;
@@ -207,50 +208,53 @@ void resources::getCandidateCards(
       placeholders.append(std::to_string(candidateIds.back()));
 
 
-        const std::string sql = "SELECT cs.user_id, exp.name "
-                          "FROM candidates cs "
-                          "JOIN experience exp ON cs.experience_status_id = exp.id "
-                          "WHERE cs.user_id IN (" + placeholders + ")";
+      const std::string sql = "SELECT cs.user_id, exp.name "
+                        "FROM candidates cs "
+                        "JOIN experience exp ON cs.experience_status_id = exp.id "
+                        "WHERE cs.user_id IN (" + placeholders + ")";
 
-        dbClient->execSqlAsync(
-          sql,
-          [callback, candidatesResult, candidateIds, page, pageSize](const drogon::orm::Result& expResult) mutable {
-            std::unordered_map<int, std::string> candidateExp;
-            for (const auto& row : expResult) {
-              int cid = row["user_id"].as<int>();
-              const auto exp = row["name"].as<std::string>();
-              candidateExp[cid] = exp;
-            }
+      dbClient->execSqlAsync(
+        sql,
+        [callback, candidatesResult, candidateIds, page, pageSize](const drogon::orm::Result& expResult) mutable {
+          std::unordered_map<int, std::string> candidateExp;
+          for (const auto& row : expResult) {
+            int cid = row["user_id"].as<int>();
+            const auto exp = row["name"].as<std::string>();
 
-            Json::Value jsonResp;
-            Json::Value candidatesJson(Json::arrayValue);
-
-            for (const auto& row : candidatesResult) {
-              const int cid = row["user_id"].as<int>();
-              Json::Value candidateJson;
-              candidateJson["id"] = cid;
-              const auto studyInfo = row["place_of_study"].as<std::string>() + " "+row["faculty_of_educ"].as<std::string>();
-              candidateJson["study_info"] = studyInfo;
-              candidateJson["experience"] = candidateExp[cid];
-
-              candidatesJson.append(candidateJson);
-            }
-
-            jsonResp["candidates"] = candidatesJson;
-            jsonResp["page"] = page;
-            jsonResp["pageSize"] = pageSize;
-            jsonResp["count"] = static_cast<int>(candidateIds.size());
-
-            const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
-            callback(resp);
+            candidateExp[cid] = exp;
           }
-          ,[callback](const drogon::orm::DrogonDbException& e) {
-            Json::Value jsonResp;
-            jsonResp["error"] = "Database error on experience query";
-            const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
-            resp->setStatusCode(HttpStatusCode::k500InternalServerError);
-            callback(resp);
-          });
+
+          Json::Value jsonResp;
+          Json::Value candidatesJson(Json::arrayValue);
+
+          for (const auto& row : candidatesResult) {
+            const int cid = row["user_id"].as<int>();
+            Json::Value candidateJson;
+            candidateJson["id"] = cid;
+            const auto placeOfStudy = row["place_of_study"].as<std::string>();
+            const auto facultyOfEducation = row["faculty_of_educ"].as<std::string>();
+            candidateJson["place"] = placeOfStudy;
+            candidateJson["faculty"] = facultyOfEducation;
+            candidateJson["experience"] = candidateExp[cid];
+            candidateJson["user_id"] = cid;
+            candidatesJson.append(candidateJson);
+          }
+
+          jsonResp["candidates"] = candidatesJson;
+          jsonResp["page"] = page;
+          jsonResp["pageSize"] = pageSize;
+          jsonResp["count"] = static_cast<int>(candidateIds.size());
+
+          const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+          callback(resp);
+        }
+        ,[callback](const drogon::orm::DrogonDbException& e) {
+          Json::Value jsonResp;
+          jsonResp["error"] = "Database error on experience query";
+          const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+          resp->setStatusCode(HttpStatusCode::k500InternalServerError);
+          callback(resp);
+        });
 
     },
     [callback](const drogon::orm::DrogonDbException& e) {

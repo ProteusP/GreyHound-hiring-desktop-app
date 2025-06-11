@@ -40,6 +40,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         icons.qrc
         hashing.h hashing.cpp
         validation.h validation.cpp
+        candidatecard.h candidatecard.cpp
+        candidatedetailswindow.h candidatedetailswindow.cpp candidatedetailswindow.ui
 
 
     )

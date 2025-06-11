@@ -2,6 +2,8 @@
     <qresource prefix="/">
         <file>caret-up.png</file>
         <file>caret-down.png</file>
+        <file>caret-left.png</file>
+        <file>caret-right.png</file>
         <file>back.png</file>
     </qresource>
 </RCC>

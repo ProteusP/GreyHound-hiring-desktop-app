@@ -54,6 +54,8 @@ signals:
 private slots:
     void onSaveClicked();
 
+    void on_resumeButton_clicked();
+
 private:
     void SetupUI();
     QNetworkAccessManager *networkManager;

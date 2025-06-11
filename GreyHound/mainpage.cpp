@@ -1,11 +1,19 @@
 #include "mainpage.h"
+#include <QDebug>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include "candidatecard.h"
 #include "vacancycard.h"
 
 MainPage::MainPage(QNetworkAccessManager *manager, QWidget *parent)
     : QWidget(parent),
       ui(new Ui::MainPage),
       flow_layout(nullptr),
-      networkManager(manager) {
+      networkManager(manager),
+      currentPage(1) {
     ui->setupUi(this);
 }
 
@@ -272,63 +280,75 @@ void MainPage::addFormField(
     layout->addWidget(valueLabel);
 }
 
-void MainPage::show() {
-    flow_layout = new FlowLayout();
-    QSqlQuery query;
+void MainPage::show(bool isemployee) {
+    if (!isemployee) {
+        int page = currentPage;
 
-    const int CARD_WIDTH = 250;   // Фиксированная ширина
-    const int CARD_HEIGHT = 180;  // Фиксированная высота
-    if (!isCandidate) {
-        if (!query.exec("SELECT * FROM `candidates`")) {
-            qDebug() << "Ошибка при выполнении запроса:"
-                     << query.lastError().text();
-            delete flow_layout;
+        if (!pageCache.contains(page)) {
+            QWidget *newPage = createCandidatesPage(page);
+            ui->vacanciesPage->addWidget(newPage);
+            pageCache[page] = newPage;
+        }
+
+        ui->vacanciesPage->setCurrentWidget(pageCache[page]);
+    } else {
+        QWidget *newPage = new QWidget();
+        ui->vacanciesPage->setCurrentWidget(newPage);
+    }
+}
+
+QWidget *MainPage::createCandidatesPage(int numberPage) {
+    QWidget *page = new QWidget;
+    QWidget *vacancyContainer = new QWidget(page);
+    FlowLayout *flowLayout = new FlowLayout(vacancyContainer);
+
+    // for (int i = 0; i < 20; ++i) {
+    //     QString univer = "НИУ ВШЭ СПб, ПМИ " + QString::number(currentPage);
+    //     QString exp = "20 лет";
+    //     flowLayout->addWidget(new candidateCard(univer, exp));
+    // }
+    QNetworkRequest request;
+    QUrl url("http://localhost:80/api/v1/resources/candidateCards");
+    QUrlQuery query;
+    query.addQueryItem("page", QString::number(currentPage));
+    query.addQueryItem("pageSize", "20");
+    url.setQuery(query);
+    request.setUrl(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    QNetworkReply *reply = networkManager->get(request);
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            QMessageBox::warning(this, "Упс...", "Ошибка сервера.");
+            reply->deleteLater();
             return;
         }
-        while (query.next()) {
-            int search_status = query.value(13).toInt();
-            if (search_status != 3) {
-                QString name = query.value("name").toString();
-                QString surname = query.value("surname").toString();
-                QString phone_number = query.value("phone_num").toString();
-                flow_layout->addWidget(
-                    new VacancyCard(name, surname, phone_number)
-                );
-            }
-        }
-    } else {
-        QSqlQuery query(
-            "SELECT v.*, e.company_name FROM vacancies v "
-            "JOIN employers e ON v.employer_id = e.id "
-            "WHERE v.status = 1"
-        );
-        while (query.next()) {
-            QString title = query.value("name").toString();
-            QString company = query.value("company_name").toString();
-            QString salary = query.value("salary").toString();
-            QString experience = query.value("experience_status_id").toString();
-            QString description =
-                QString("Зарплата: %1\nОпыт: %2")
-                    .arg(salary.isEmpty() ? "не указана" : salary)
-                    .arg(experience.isEmpty() ? "не указан" : experience);
 
-            VacancyCard *card = new VacancyCard(title, company, description);
-            card->setFixedSize(CARD_WIDTH, CARD_HEIGHT);
-            card->setVacancyId(query.value("id").toInt());
+        QByteArray responseData = reply->readAll();
+        QJsonDocument jsonDoc = QJsonDocument::fromJson(responseData);
+        QJsonObject jsonObj = jsonDoc.object();
+        QJsonArray candidates = jsonObj["candidates"].toArray();
 
-            connect(
-                card, &VacancyCard::detailsRequested, this,
-                &MainPage::showVacancyDetails
+        for (const QJsonValue &val : candidates) {
+            QJsonObject obj = val.toObject();
+            QString place = obj["place"].toString();
+            QString faculty = obj["faculty"].toString();
+            QString experience = obj["experience"].toString();
+            int user_id = obj["user_id"].toInt();
+            candidateCard *card = new candidateCard(
+                networkManager, place, faculty, experience, user_id
             );
-            flow_layout->addWidget(card);
+            flowLayout->addWidget(card);
         }
-    }
-    // fix it later (gle6a6y)
-    QLayout *oldLayout = ui->groupBoxVacancies_3->layout();
-    if (oldLayout) {
-        delete oldLayout;
-    }
-    ui->groupBoxVacancies_3->setLayout(flow_layout);
+        reply->deleteLater();
+    });
+
+    vacancyContainer->setLayout(flowLayout);
+
+    QVBoxLayout *pageLayout = new QVBoxLayout(page);
+    pageLayout->addWidget(vacancyContainer);
+    page->setLayout(pageLayout);
+
+    return page;
 }
 
 void MainPage::hide() {
@@ -353,4 +373,21 @@ void MainPage::setEmail(QString email_) {
 
 void MainPage::on_profilePB_3_clicked() {
     emit onProfilePressed();
+}
+
+void MainPage::on_pushButtonNext_clicked() {
+    ui->pageNumber->setText(QString::number(++currentPage));
+    if (!pageCache.contains(currentPage)) {
+        QWidget *newPage = createCandidatesPage(currentPage);
+        ui->vacanciesPage->addWidget(newPage);
+        pageCache[currentPage] = newPage;
+    }
+    ui->vacanciesPage->setCurrentWidget(pageCache[currentPage]);
+}
+
+void MainPage::on_pushButtonPrev_clicked() {
+    if (currentPage > 1) {
+        ui->pageNumber->setText(QString::number(--currentPage));
+        ui->vacanciesPage->setCurrentWidget(pageCache[currentPage]);
+    }
 }

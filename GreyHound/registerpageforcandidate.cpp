@@ -1,16 +1,22 @@
 #include "registerpageforcandidate.h"
+#include <QGraphicsDropShadowEffect>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include "hashing.h"
 #include "passwordwarningdialog.h"
 #include "ui_registerpageforcandidate.h"
-#include <QGraphicsDropShadowEffect>
 #include "validation.h"
-#include "hashing.h"
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QJsonObject>
-#include <QJsonDocument>
-#include <QNetworkReply>
-RegisterPageForCandidate::RegisterPageForCandidate(QNetworkAccessManager* manager, QWidget *parent)
-    : QWidget(parent), ui(new Ui::RegisterPageForCandidate), networkManager(manager) {
+
+RegisterPageForCandidate::RegisterPageForCandidate(
+    QNetworkAccessManager *manager,
+    QWidget *parent
+)
+    : QWidget(parent),
+      ui(new Ui::RegisterPageForCandidate),
+      networkManager(manager) {
     ui->setupUi(this);
     QGraphicsDropShadowEffect *shadow = new QGraphicsDropShadowEffect();
     shadow->setBlurRadius(20);
@@ -59,20 +65,21 @@ void RegisterPageForCandidate::on_PBregistrationCandidate_clicked() {
     json["password"] = hashedPassword;
     QJsonDocument doc(json);
     QByteArray data = doc.toJson();
-    QNetworkReply* reply = networkManager->post(request, data);
+    QNetworkReply *reply = networkManager->post(request, data);
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() == QNetworkReply::NoError) {
             emit registerSuccessful();
-        }
-        else {
-            int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        } else {
+            int statusCode =
+                reply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
+                    .toInt();
             if (statusCode == 409) {
-                QMessageBox::warning(this, "Ошибка", "Этот email уже зарегистрирован.");
-            }
-            else if (statusCode == 400) {
+                QMessageBox::warning(
+                    this, "Ошибка", "Этот email уже зарегистрирован."
+                );
+            } else if (statusCode == 400) {
                 QMessageBox::warning(this, "Упс...", "Ошибка сервера.");
-            }
-            else {
+            } else {
                 QMessageBox::warning(this, "Упс...", "Что-то непонятное...");
             }
         }

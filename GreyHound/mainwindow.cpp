@@ -1,13 +1,13 @@
 #include "mainwindow.h"
-#include <QNetworkCookieJar>
-#include <QString>
 #include <QDebug>
-#include "./ui_mainwindow.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkAccessManager>
+#include <QNetworkCookieJar>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QString>
+#include "./ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -50,9 +50,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->stackedWidget->addWidget(profileEmployerPage);
 
     ui->stackedWidget->setCurrentWidget(loginPage);
-    connect(loginPage, &LoginWidget::loginSuccessful, this, [this](bool isemployee) {
-        onMainPage(isemployee);
-    });
+    connect(
+        loginPage, &LoginWidget::loginSuccessful, this,
+        [this](bool isemployee) { onMainPage(isemployee); }
+    );
     connect(
         loginPage, &LoginWidget::registerPressed, this,
         &MainWindow::onRegisterStatusPage
@@ -118,11 +119,12 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::onMainPage(bool isemployee) {
-    mainPage->setStatusOfCandidate(isemployee);
+    mainPage->setStatusOfCandidate(isemployee
+    );  // надо будет убрать, тк не пригождится
     if (mainPage->getFlowLayout() != nullptr) {
         mainPage->hide();
     }
-    mainPage->show();
+    mainPage->show(isemployee);
     ui->stackedWidget->setCurrentWidget(mainPage);
 }
 
@@ -159,29 +161,32 @@ void MainWindow::loadProfileData() {
             qDebug() << obj["status"].toString() << '\n';
             if (obj["status"].toString() == "candidate") {
                 profileCandidatePage->setCandidateData(
-                 obj["name"].toString(), obj["email"].toString(), obj["surname"].toString(),
-                    obj["phone_num"].toString(), obj["place"].toString(), obj["search_status_id"].toInt(),
-                 obj["faculty_of_educ"].toString(), obj["place_of_study"].toString(), obj["experience_status_id"].toInt()
+                    obj["name"].toString(), obj["email"].toString(),
+                    obj["surname"].toString(), obj["phone_num"].toString(),
+                    obj["place"].toString(), obj["search_status_id"].toInt(),
+                    obj["faculty_of_educ"].toString(),
+                    obj["place_of_study"].toString(),
+                    obj["experience_status_id"].toInt()
                 );
                 ui->stackedWidget->setCurrentWidget(profileCandidatePage);
-            }
-            else if (obj["status"].toString() == "empl") {
-                profileEmployerPage->setEmployerData(obj["company_name"].toString(),
-                                                        obj["email"].toString(), obj["about"].toString());
+            } else if (obj["status"].toString() == "empl") {
+                profileEmployerPage->setEmployerData(
+                    obj["company_name"].toString(), obj["email"].toString(),
+                    obj["about"].toString()
+                );
                 ui->stackedWidget->setCurrentWidget(profileEmployerPage);
             }
-        }
-        else {
+        } else {
             int statusCode =
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
                     .toInt();
             if (statusCode == 404) {
-                QMessageBox::warning(this, "Упс...", "Ты не найден в нашей базе(");
-            }
-            else if (statusCode == 400) {
+                QMessageBox::warning(
+                    this, "Упс...", "Ты не найден в нашей базе("
+                );
+            } else if (statusCode == 400) {
                 QMessageBox::warning(this, "Упс...", "Статус не определён");
-            }
-            else {
+            } else {
                 QMessageBox::warning(this, "Упс...", "Что-то непонятное");
             }
         }

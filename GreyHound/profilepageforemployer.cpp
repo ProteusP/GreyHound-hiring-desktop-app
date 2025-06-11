@@ -6,17 +6,17 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QJsonDocument>
+#include <QJsonObject>
 #include <QMessageBox>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 #include <QPushButton>
 #include <QScrollArea>
 #include <QVBoxLayout>
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
 #include "ui_profilepageforemployer.h"
 
 ProfilePageForEmployer::ProfilePageForEmployer(
@@ -118,23 +118,22 @@ void ProfilePageForEmployer::saveCompanyInfo() {
     json["company_name"] = newName;
     json["about"] = newAbout;
     QByteArray data = QJsonDocument(json).toJson();
-    QNetworkReply *reply = networkManager->sendCustomRequest(request, "PATCH", data);
+    QNetworkReply *reply =
+        networkManager->sendCustomRequest(request, "PATCH", data);
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() == QNetworkReply::NoError) {
             QMessageBox::information(this, "Успех", "Данные сохранены!");
-        }
-        else {
+        } else {
             int statusCode =
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
                     .toInt();
             if (statusCode == 400) {
                 QMessageBox::warning(
-                    this, "Ошибка", "По пути на сервер данные потерялись( просим прощения"
-                    );
+                    this, "Ошибка",
+                    "По пути на сервер данные потерялись( просим прощения"
+                );
             } else if (statusCode == 500) {
-                QMessageBox::warning(
-                    this, "Упс...", "Ошибка сервера."
-                    );
+                QMessageBox::warning(this, "Упс...", "Ошибка сервера.");
             } else {
                 QMessageBox::warning(this, "Упс...", "Что-то непонятное.");
             }

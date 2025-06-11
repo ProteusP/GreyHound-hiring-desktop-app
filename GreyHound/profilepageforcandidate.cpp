@@ -1,12 +1,16 @@
 #include "profilepageforcandidate.h"
+#include <QFile>
+#include <QFileDialog>
 #include <QGroupBox>
-#include <QMessageBox>
-#include "ui_profilepageforcandidate.h"
+#include <QHttpMultiPart>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QUrlQuery>
+#include "ui_profilepageforcandidate.h"
 
 ProfilePageForCandidate::ProfilePageForCandidate(
     QNetworkAccessManager *manager,
@@ -59,7 +63,8 @@ void ProfilePageForCandidate::setCandidateData(
     ui->emailEdit->setText(email);
     ui->phoneEdit->setText(phoneNum);
     ui->placeEdit->setText(place);
-    // qDebug() << search_status_id << "<- серч статус, эксп статус -> " << experience_status_id << '\n';
+    // qDebug() << search_status_id << "<- серч статус, эксп статус -> " <<
+    // experience_status_id << '\n';
     ui->statusCombo->setCurrentIndex(search_status_id - 1);
     ui->universityEdit->setText(place_of_study);
     ui->facultyEdit->setText(faculty_of_educ);
@@ -67,7 +72,6 @@ void ProfilePageForCandidate::setCandidateData(
 }
 
 void ProfilePageForCandidate::onSaveClicked() {
-
     QString newPhone = ui->phoneEdit->text();
     QString newPlace = ui->placeEdit->text();
     qint16 newSearchStatus = ui->statusCombo->currentData().toInt();
@@ -85,23 +89,22 @@ void ProfilePageForCandidate::onSaveClicked() {
     json["faculty_of_educ"] = newFaculty;
     json["experience_status_id"] = newExperience;
     QByteArray data = QJsonDocument(json).toJson();
-    QNetworkReply *reply = networkManager->sendCustomRequest(request, "PATCH", data);
+    QNetworkReply *reply =
+        networkManager->sendCustomRequest(request, "PATCH", data);
     connect(reply, &QNetworkReply::finished, this, [=]() {
         if (reply->error() == QNetworkReply::NoError) {
             QMessageBox::information(this, "Успех", "Данные сохранены!");
-        }
-        else {
+        } else {
             int statusCode =
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
                     .toInt();
             if (statusCode == 400) {
                 QMessageBox::warning(
-                    this, "Ошибка", "По пути на сервер данные потерялись( просим прощения"
-                    );
+                    this, "Ошибка",
+                    "По пути на сервер данные потерялись( просим прощения"
+                );
             } else if (statusCode == 500) {
-                QMessageBox::warning(
-                    this, "Упс...", "Ошибка сервера."
-                    );
+                QMessageBox::warning(this, "Упс...", "Ошибка сервера.");
             } else {
                 QMessageBox::warning(this, "Упс...", "Что-то непонятное.");
             }
@@ -110,7 +113,6 @@ void ProfilePageForCandidate::onSaveClicked() {
     });
     // saveResumeData();
 }
-
 
 void ProfilePageForCandidate::loadResumeData() {
     QSqlQuery query;
@@ -154,5 +156,42 @@ void ProfilePageForCandidate::saveResumeData() {
             this, "Ошибка",
             "Ошибка сохранения резюме: " + query.lastError().text()
         );
+    }
+}
+
+void ProfilePageForCandidate::on_resumeButton_clicked() {
+    QString filePath = QFileDialog::getOpenFileName(this, "Выберите файл");
+    if (!filePath.isEmpty()) {
+        QFile *file = new QFile(filePath);
+        if (!file->open(QIODevice::ReadOnly)) {
+            qDebug() << "Ошибка открытия файла:" << file->errorString();
+            delete file;
+            return;
+        }
+        QHttpMultiPart *multiPart =
+            new QHttpMultiPart(QHttpMultiPart::FormDataType);
+        QHttpPart filePart;
+        filePart.setHeader(
+            QNetworkRequest::ContentDispositionHeader,
+            QString("form-data; name=\"file\"; filename=\"%1\"")
+                .arg(QFileInfo(filePath).fileName())
+        );
+        filePart.setBodyDevice(file);
+        file->setParent(multiPart);
+        multiPart->append(filePart);
+        QNetworkRequest request;
+        QUrl url("http://localhost:80/api/v1/resources/resume");
+        request.setUrl(url);
+        QNetworkAccessManager manager;
+        QNetworkReply *reply = networkManager->post(request, multiPart);
+        multiPart->setParent(reply);
+        connect(reply, &QNetworkReply::finished, this, [=]() {
+            if (reply->error() == QNetworkReply::NoError) {
+                QMessageBox::information(this, "Успех", "Данные сохранены!");
+            } else {
+                QMessageBox::warning(this, "Упс...", "Ошибка сервера.");
+            }
+            reply->deleteLater();
+        });
     }
 }
