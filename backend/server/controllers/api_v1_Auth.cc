@@ -2,6 +2,8 @@
 #include "Candidates.h"
 #include "Employers.h"
 #include "Users.h"
+#include "drogon/nosql/RedisException.h"
+#include "drogon/nosql/RedisResult.h"
 #include "drogon/orm/Criteria.h"
 #include "drogon/orm/Mapper.h"
 #include "trantor/utils/Logger.h"
@@ -9,6 +11,9 @@
 #include <drogon/HttpResponse.h>
 #include <drogon/HttpTypes.h>
 #include <drogon/orm/Exception.h>
+#include <exception>
+
+#include "api_v1_profile.h"
 
 using namespace api::v1;
 
@@ -232,6 +237,27 @@ void
   Auth::logout(const HttpRequestPtr &req,
                std::function<void(const HttpResponsePtr &)> &&callback) {
   const auto session = req->getSession();
+
+  // deleting profile cache:
+  const std::string &key = "profile:" + session->get<std::string>("user_id");
+  LOG_DEBUG << "KEY is: "<<key<<"\n";
+  const auto redisClientPtr = app().getRedisClient(CACHE_CLIENT);
+  try {
+  redisClientPtr->execCommandAsync(
+      [](const nosql::RedisResult& r){
+          LOG_DEBUG << "Result of deleting cache: "<< r.getStringForDisplaying()<<"\n";
+      },
+      [](const std::exception &err){
+          LOG_ERROR << err.what()<<'\n';
+      },
+      "DEL %s", key.c_str());
+  }catch (const nosql::RedisException& err){
+      LOG_ERROR << "Redis err: "<<err.what()<<"\n";
+  }catch (const std::exception& err){
+      LOG_ERROR << err.what() << "\n";
+  }
+
+  //deleting session
   session->clear();
 
   const auto resp = HttpResponse::newHttpResponse();
