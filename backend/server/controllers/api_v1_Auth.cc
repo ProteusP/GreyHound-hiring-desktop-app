@@ -227,3 +227,15 @@ void Auth::registerUser(
   resp->setStatusCode(k201Created);
   callback(resp);
 }
+
+void
+  Auth::logout(const HttpRequestPtr &req,
+               std::function<void(const HttpResponsePtr &)> &&callback) {
+  const auto session = req->getSession();
+  session->clear();
+
+  const auto resp = HttpResponse::newHttpResponse();
+  resp->setStatusCode(k200OK);
+  resp->addHeader("Set-Cookie", "JSESSIONID=deleted; Path=/; HttpOnly; Max-Age=0");
+  callback(resp);
+}

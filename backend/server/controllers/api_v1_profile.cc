@@ -16,6 +16,7 @@ void profile::getProfile(
   const auto &session = req->session();
   Json::Value jsonResp;
   const auto &userStatus = session->get<std::string>("user_status");
+  LOG_DEBUG << "user status in session: " << userStatus;
   const auto &userId = session->get<std::string>("user_id");
   const auto &dbClient = app().getDbClient();
   const auto redisClientPtr = app().getRedisClient(CACHE_CLIENT);
@@ -105,7 +106,6 @@ void profile::getProfile(
 void profile::patchProfile(
     const HttpRequestPtr &req,
     std::function<void(const HttpResponsePtr &)> &&callback) {
-  LOG_DEBUG << "Зашли сюда\n";
   const auto &session = req->session();
   Json::Value jsonResp;
 
