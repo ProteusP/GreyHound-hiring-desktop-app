@@ -9,6 +9,8 @@
 #include "drogon/HttpResponse.h"
 #include "drogon/HttpTypes.h"
 #include "drogon/orm/Criteria.h"
+#include "drogon/orm/DbClient.h"
+#include "drogon/orm/Exception.h"
 #include "drogon/orm/Mapper.h"
 #include "trantor/utils/Logger.h"
 
@@ -314,6 +316,7 @@ void resources::createVacancy(
     }
 
     //TODO: make this ASYNC
+    // TODO: make vacId string by def
     void resources::deleteVacancy(
         const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback, const int vacId
     ){
@@ -340,6 +343,7 @@ void resources::createVacancy(
 
     }
 
+    // works SYNC
     void resources::getEmplVacancies(
         const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback
     ){
@@ -369,4 +373,47 @@ void resources::createVacancy(
         const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
         resp->setStatusCode(HttpStatusCode::k200OK);
         callback(resp);
+    }
+
+void resources::updateVacancy(
+        const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback, const int vacId
+    ){
+        const auto& jsonReq = req->getJsonObject();
+        Json::Value jsonResp;
+        const auto& session  = req->session();
+
+        if (!jsonReq){
+            jsonResp["error"] = "No data to patch!";
+            const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            resp->setStatusCode(HttpStatusCode::k400BadRequest);
+            callback(resp);
+            return;
+        }
+
+        //findOne is not noexcept!
+        // it should throw if there are != 1 vacancy w this ID
+        try{
+        const auto& dbClient = app().getDbClient();
+        const auto criteria = orm::Criteria(drogon_model::default_db::Vacancies::Cols::_id, orm::CompareOperator::EQ, std::to_string(vacId));
+        orm::Mapper<drogon_model::default_db::Vacancies> mapper(dbClient);
+
+        auto vac = mapper.findOne(criteria);
+
+        //does not cahnge ID! But may change empl id... (fixed)
+        vac.updateByJson(*jsonReq);
+        const int emplId = std::stoi(session->get<std::string>("user_id"));
+        vac.setEmployerId(emplId);
+        mapper.update(vac);
+        jsonResp["message"] = "Vacancy has been updated";
+        const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+        resp->setStatusCode(drogon::k200OK);
+        callback(resp);
+
+        }catch(const orm::DrogonDbException& err){
+            jsonResp["error"] = err.base().what();
+            LOG_ERROR << err.base().what();
+            const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            resp->setStatusCode(HttpStatusCode::k500InternalServerError);
+            callback(resp);
+        }
     }
