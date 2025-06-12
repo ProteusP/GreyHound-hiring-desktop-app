@@ -1,10 +1,14 @@
 #include "api_v1_resources.h"
 
+#include <exception>
 #include <fstream>
 
 #include "Candidates.h"
 #include "Vacancies.h"
+#include "drogon/HttpResponse.h"
+#include "drogon/HttpTypes.h"
 #include "drogon/orm/Mapper.h"
+#include "trantor/utils/Logger.h"
 
 using namespace api::v1;
 
@@ -195,7 +199,7 @@ void resources::getCandidateCards(
         jsonResp["page"] = page;
         jsonResp["pageSize"] = pageSize;
         jsonResp["count"] = 0;
-        
+
         const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
         callback(resp);
         return;
@@ -266,3 +270,43 @@ void resources::getCandidateCards(
     },
     pageSize, offset);
 }
+
+void resources::createVacancy(
+    const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback){
+
+        const auto& session = req->getSession();
+        const auto &userId = session->get<std::string>("user_id");
+
+        auto jsonData = req->getJsonObject();
+        LOG_DEBUG << jsonData->toStyledString();
+
+        const auto& dbClient = app().getDbClient();
+
+        int vacId;
+        auto vacMapper = orm::Mapper<drogon_model::default_db::Vacancies>(dbClient);
+
+        Json::Value jsonResp;
+        try{
+        drogon_model::default_db::Vacancies vacancy(*jsonData);
+
+        vacancy.setEmployerId(std::stoi(userId));
+
+        vacMapper.insert(vacancy);
+        vacId = *vacancy.getId();
+
+        }catch (const std::exception& err){
+            LOG_DEBUG << "Error while parsing JSON to vacancy: "<<err.what()<<'\n';
+
+            jsonResp["error"] = "JSON format error";
+            const auto& resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            resp->setStatusCode(HttpStatusCode::k400BadRequest);
+            callback(resp);
+            return;
+        }
+
+
+        jsonResp["vacancy_id"] = vacId;
+        const auto& resp = HttpResponse::newHttpJsonResponse(jsonResp);
+        resp->setStatusCode(HttpStatusCode::k200OK);
+        callback(resp);
+    }

@@ -25,6 +25,9 @@ class resources final : public drogon::HttpController<resources> {
 static void getCandidateCards(
     const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
 
+static void createVacancy(
+    const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
+
 public:
   METHOD_LIST_BEGIN
   METHOD_ADD(resources::getResumes, "/resumes", drogon::Get,
@@ -36,6 +39,8 @@ public:
     METHOD_ADD(resources::saveResume, "resume", drogon::Post, "api::v1::checkAuthFilter"); // path is /api/v1/resources/resume
 
     METHOD_ADD(resources::getCandidateCards, "/candidateCards", drogon::Get); // path is /api/v1/resources/candidateCards/?page=..&pageSize=..
+
+    METHOD_ADD(resources::createVacancy, "createVacancy", drogon::Post, "api::v1::checkAuthFilter"); // path is /api/v1/resources/createVacancy
   METHOD_LIST_END
 };
 } // namespace api::v1
