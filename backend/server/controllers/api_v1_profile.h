@@ -26,4 +26,4 @@ public:
 };
 } // namespace api::v1
 
-void saveUserProfile(const std::string &id, const Json::Value &data);
+void saveUserProfileToRedis(const std::string &id, const Json::Value &data);

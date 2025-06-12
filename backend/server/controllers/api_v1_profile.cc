@@ -16,28 +16,30 @@ void profile::getProfile(
   const auto &session = req->session();
   Json::Value jsonResp;
   const auto &userStatus = session->get<std::string>("user_status");
+  LOG_DEBUG << "user status in session: " << userStatus;
   const auto &userId = session->get<std::string>("user_id");
   const auto &dbClient = app().getDbClient();
   const auto redisClientPtr = app().getRedisClient(CACHE_CLIENT);
   LOG_DEBUG << "Попытка зайти в профиль с аккаунта:" << userId << '\n';
-  // try {
-  //   LOG_DEBUG << "GET profile from redis\n";
-  //   const std::string key = "profile:" + userId;
-  //   auto res = redisClientPtr->execCommandSync<std::string>(
-  //       [](const nosql::RedisResult &r) { return r.asString(); }, "get %s",
-  //       key.c_str());
+  try {
+    LOG_DEBUG << "GET profile from redis\n";
+    const std::string key = "profile:" + userId;
+    auto res = redisClientPtr->execCommandSync<std::string>(
+        [](const nosql::RedisResult &r) { return r.asString(); }, "get %s",
+        key.c_str());
 
-  //   Json::CharReaderBuilder reader;
-  //   std::istringstream stream(res);
-  //   std::string errs;
-  //   Json::parseFromStream(reader, stream, &jsonResp, &errs);
-
-  //   auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
-  //   resp->setStatusCode(k200OK);
-  //   callback(resp);
-  //   return;
-  // } catch (const nosql::RedisException &err) {
-  // }
+    Json::CharReaderBuilder reader;
+    std::istringstream stream(res);
+    std::string errs;
+    Json::parseFromStream(reader, stream, &jsonResp, &errs);
+    LOG_DEBUG << jsonResp.toStyledString();
+    auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+    resp->setStatusCode(k200OK);
+    callback(resp);
+    return;
+  } catch (const nosql::RedisException &err) {
+    LOG_DEBUG <<"cant get profile from redis: "<< err.what();
+  }
   if (userStatus == CAND_STATUS) {
     auto mapper =
         drogon::orm::Mapper<drogon_model::default_db::Candidates>(dbClient);
@@ -58,7 +60,7 @@ void profile::getProfile(
     const auto &candidate = candidates.front();
     jsonResp = candidate.toJson();
     jsonResp["status"] = "candidate";
-    saveUserProfile(userId, jsonResp);
+    saveUserProfileToRedis(userId, jsonResp);
 
     auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
     resp->setStatusCode(drogon::k200OK);
@@ -86,7 +88,7 @@ void profile::getProfile(
     jsonResp = empl.toJson();
     jsonResp["status"] = "empl";
 
-    saveUserProfile(userId, jsonResp);
+    saveUserProfileToRedis(userId, jsonResp);
 
     auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
     resp->setStatusCode(drogon::k200OK);
@@ -105,7 +107,6 @@ void profile::getProfile(
 void profile::patchProfile(
     const HttpRequestPtr &req,
     std::function<void(const HttpResponsePtr &)> &&callback) {
-  LOG_DEBUG << "Зашли сюда\n";
   const auto &session = req->session();
   Json::Value jsonResp;
 
@@ -133,7 +134,7 @@ void profile::patchProfile(
       candidate.updateByJson(*jsonReq);
       mapper.update(candidate);
       const auto candidateJson = candidate.toJson();
-      saveUserProfile(userId, candidateJson);
+      saveUserProfileToRedis(userId, candidateJson);
       jsonResp["message"] = "Candidate updated";
       jsonResp["data"] = candidateJson;
       auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
@@ -150,7 +151,7 @@ void profile::patchProfile(
 
       const auto employerJson = employer.toJson();
 
-      saveUserProfile(userId, employerJson);
+      saveUserProfileToRedis(userId, employerJson);
 
       mapper.update(employer);
 
@@ -173,8 +174,8 @@ void profile::patchProfile(
   }
 }
 
-void saveUserProfile(const std::string &id, const Json::Value &data) {
-  const auto redisClientPtr = app().getRedisClient("cache");
+void saveUserProfileToRedis(const std::string &id, const Json::Value &data) {
+  const auto redisClientPtr = app().getRedisClient(CACHE_CLIENT);
 
   const std::string &key = "profile:" + id;
   const std::string &strData = data.toStyledString();
