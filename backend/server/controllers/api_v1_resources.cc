@@ -2,11 +2,13 @@
 
 #include <exception>
 #include <fstream>
+#include <string>
 
 #include "Candidates.h"
 #include "Vacancies.h"
 #include "drogon/HttpResponse.h"
 #include "drogon/HttpTypes.h"
+#include "drogon/orm/Criteria.h"
 #include "drogon/orm/Mapper.h"
 #include "trantor/utils/Logger.h"
 
@@ -309,4 +311,31 @@ void resources::createVacancy(
         const auto& resp = HttpResponse::newHttpJsonResponse(jsonResp);
         resp->setStatusCode(HttpStatusCode::k200OK);
         callback(resp);
+    }
+
+    //TODO: make this ASYNC
+    void resources::deleteVacancy(
+        const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback, const int vacId
+    ){
+        const auto& dbClient = app().getDbClient();
+        auto vacMapper = orm::Mapper<drogon_model::default_db::Vacancies>(dbClient);
+        const std::string& vacIdStr = std::to_string(vacId);
+
+        const int countOfDeleted = vacMapper.deleteBy(orm::Criteria(drogon_model::default_db::Vacancies::Cols::_id, orm::CompareOperator::EQ, vacIdStr));
+
+        Json::Value jsonResp;
+        if (countOfDeleted != 0){
+            jsonResp["count"] = countOfDeleted;
+
+            const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            resp->setStatusCode(drogon::k200OK);
+            callback(resp);
+        }else{
+            jsonResp["error"] = "no vacancies with this ID";
+
+            const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            resp->setStatusCode(drogon::k400BadRequest);
+            callback(resp);
+        }
+
     }

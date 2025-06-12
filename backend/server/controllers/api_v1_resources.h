@@ -1,5 +1,6 @@
 #pragma once
 
+#include "drogon/HttpTypes.h"
 #include "filters/api_v1_checkAuthFilter.h"
 #include <drogon/HttpController.h>
 
@@ -28,6 +29,10 @@ static void getCandidateCards(
 static void createVacancy(
     const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback);
 
+static void deleteVacancy(
+    const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback, const int vacId
+);
+
 public:
   METHOD_LIST_BEGIN
   METHOD_ADD(resources::getResumes, "/resumes", drogon::Get,
@@ -41,6 +46,8 @@ public:
     METHOD_ADD(resources::getCandidateCards, "/candidateCards", drogon::Get); // path is /api/v1/resources/candidateCards/?page=..&pageSize=..
 
     METHOD_ADD(resources::createVacancy, "createVacancy", drogon::Post, "api::v1::checkAuthFilter"); // path is /api/v1/resources/createVacancy
+
+    METHOD_ADD(resources::deleteVacancy, "deleteVacancy/{1}", drogon::Delete, "api::v1::checkAuthFilter"); // path is /api/v1/resources/deleteVacancy
   METHOD_LIST_END
 };
 } // namespace api::v1
