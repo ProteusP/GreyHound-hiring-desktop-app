@@ -33,6 +33,10 @@ static void deleteVacancy(
     const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback, const int vacId
 );
 
+static void getEmplVacancies(
+    const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback
+);
+
 public:
   METHOD_LIST_BEGIN
   METHOD_ADD(resources::getResumes, "/resumes", drogon::Get,
@@ -48,6 +52,8 @@ public:
     METHOD_ADD(resources::createVacancy, "createVacancy", drogon::Post, "api::v1::checkAuthFilter"); // path is /api/v1/resources/createVacancy
 
     METHOD_ADD(resources::deleteVacancy, "deleteVacancy/{1}", drogon::Delete, "api::v1::checkAuthFilter"); // path is /api/v1/resources/deleteVacancy
+
+    METHOD_ADD(resources::getEmplVacancies, "emplVacancies", drogon::Get, "api::v1::checkAuthFilter"); // path is /api/v1/resources/emplVacancies
   METHOD_LIST_END
 };
 } // namespace api::v1

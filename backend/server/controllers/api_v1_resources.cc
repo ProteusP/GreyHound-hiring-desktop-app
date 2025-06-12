@@ -339,3 +339,34 @@ void resources::createVacancy(
         }
 
     }
+
+    void resources::getEmplVacancies(
+        const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback
+    ){
+        const auto& session = req->getSession();
+        const auto &userId = session->get<std::string>("user_id");
+        const auto& dbClient = app().getDbClient();
+
+        auto vacCriteria = orm::Criteria(drogon_model::default_db::Vacancies::Cols::_employer_id, orm::CompareOperator::EQ, userId);
+
+        auto vacMapper = orm::Mapper<drogon_model::default_db::Vacancies>(dbClient);
+
+        const auto& vacs = vacMapper.findBy(vacCriteria);
+
+        Json::Value vacsJson(Json::arrayValue);
+
+        Json::Value jsonResp;
+
+        for (const auto& vac : vacs) {
+            vacsJson.append(vac.toJson());
+        }
+
+        const int count = vacs.size();
+        jsonResp["vacancies"] = vacsJson;
+        jsonResp["count"] = count;
+
+
+        const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+        resp->setStatusCode(HttpStatusCode::k200OK);
+        callback(resp);
+    }
