@@ -155,7 +155,7 @@ void profile::patchProfile(
 
       mapper.update(employer);
 
-      jsonResp["message"] = "Employer updated";
+      jsonResp["message"] = "Employer has been updated";
       jsonResp["data"] = employerJson;
       auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
       resp->setStatusCode(drogon::k200OK);

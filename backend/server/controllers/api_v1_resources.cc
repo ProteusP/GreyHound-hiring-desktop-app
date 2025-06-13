@@ -1,10 +1,20 @@
 #include "api_v1_resources.h"
 
+#include <exception>
 #include <fstream>
+#include <string>
+#include <unordered_map>
 
 #include "Candidates.h"
 #include "Vacancies.h"
+#include "drogon/HttpResponse.h"
+#include "drogon/HttpTypes.h"
+#include "drogon/orm/Criteria.h"
+#include "drogon/orm/DbClient.h"
+#include "drogon/orm/Exception.h"
 #include "drogon/orm/Mapper.h"
+#include "drogon/orm/Result.h"
+#include "trantor/utils/Logger.h"
 
 using namespace api::v1;
 
@@ -195,7 +205,7 @@ void resources::getCandidateCards(
         jsonResp["page"] = page;
         jsonResp["pageSize"] = pageSize;
         jsonResp["count"] = 0;
-        
+
         const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
         callback(resp);
         return;
@@ -266,3 +276,258 @@ void resources::getCandidateCards(
     },
     pageSize, offset);
 }
+
+void resources::createVacancy(
+    const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback){
+
+        const auto& session = req->getSession();
+        const auto &userId = session->get<std::string>("user_id");
+
+        auto jsonData = req->getJsonObject();
+        LOG_DEBUG << jsonData->toStyledString();
+
+        const auto& dbClient = app().getDbClient();
+
+        int vacId;
+        auto vacMapper = orm::Mapper<drogon_model::default_db::Vacancies>(dbClient);
+
+        Json::Value jsonResp;
+        try{
+        drogon_model::default_db::Vacancies vacancy(*jsonData);
+
+        vacancy.setEmployerId(std::stoi(userId));
+
+        vacMapper.insert(vacancy);
+        vacId = *vacancy.getId();
+
+        }catch (const std::exception& err){
+            LOG_DEBUG << "Error while parsing JSON to vacancy: "<<err.what()<<'\n';
+
+            jsonResp["error"] = "JSON format error";
+            const auto& resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            resp->setStatusCode(HttpStatusCode::k400BadRequest);
+            callback(resp);
+            return;
+        }
+
+
+        jsonResp["vacancy_id"] = vacId;
+        const auto& resp = HttpResponse::newHttpJsonResponse(jsonResp);
+        resp->setStatusCode(HttpStatusCode::k200OK);
+        callback(resp);
+    }
+
+    //TODO: make this ASYNC
+    // TODO: make vacId string by def
+    void resources::deleteVacancy(
+        const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback, const int vacId
+    ){
+        const auto& dbClient = app().getDbClient();
+        auto vacMapper = orm::Mapper<drogon_model::default_db::Vacancies>(dbClient);
+        const std::string& vacIdStr = std::to_string(vacId);
+
+        const int countOfDeleted = vacMapper.deleteBy(orm::Criteria(drogon_model::default_db::Vacancies::Cols::_id, orm::CompareOperator::EQ, vacIdStr));
+
+        Json::Value jsonResp;
+        if (countOfDeleted != 0){
+            jsonResp["count"] = countOfDeleted;
+
+            const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            resp->setStatusCode(drogon::k200OK);
+            callback(resp);
+        }else{
+            jsonResp["error"] = "no vacancies with this ID";
+
+            const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            resp->setStatusCode(drogon::k400BadRequest);
+            callback(resp);
+        }
+
+    }
+
+    // works SYNC
+    void resources::getEmplVacancies(
+        const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback
+    ){
+        const auto& session = req->getSession();
+        const auto &userId = session->get<std::string>("user_id");
+        const auto& dbClient = app().getDbClient();
+
+        auto vacCriteria = orm::Criteria(drogon_model::default_db::Vacancies::Cols::_employer_id, orm::CompareOperator::EQ, userId);
+
+        auto vacMapper = orm::Mapper<drogon_model::default_db::Vacancies>(dbClient);
+
+        const auto& vacs = vacMapper.findBy(vacCriteria);
+
+        Json::Value vacsJson(Json::arrayValue);
+
+        Json::Value jsonResp;
+
+        for (const auto& vac : vacs) {
+            vacsJson.append(vac.toJson());
+        }
+
+        const int count = vacs.size();
+        jsonResp["vacancies"] = vacsJson;
+        jsonResp["count"] = count;
+
+
+        const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+        resp->setStatusCode(HttpStatusCode::k200OK);
+        callback(resp);
+    }
+
+void resources::updateVacancy(
+        const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback, const int vacId
+    ){
+        const auto& jsonReq = req->getJsonObject();
+        Json::Value jsonResp;
+        const auto& session  = req->session();
+
+        if (!jsonReq){
+            jsonResp["error"] = "No data to patch!";
+            const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            resp->setStatusCode(HttpStatusCode::k400BadRequest);
+            callback(resp);
+            return;
+        }
+
+        //findOne is not noexcept!
+        // it should throw if there are != 1 vacancy w this ID
+        try{
+        const auto& dbClient = app().getDbClient();
+        const auto criteria = orm::Criteria(drogon_model::default_db::Vacancies::Cols::_id, orm::CompareOperator::EQ, std::to_string(vacId));
+        orm::Mapper<drogon_model::default_db::Vacancies> mapper(dbClient);
+
+        auto vac = mapper.findOne(criteria);
+
+        //does not cahnge ID! But may change empl id... (fixed)
+        vac.updateByJson(*jsonReq);
+        const int emplId = std::stoi(session->get<std::string>("user_id"));
+        vac.setEmployerId(emplId);
+        mapper.update(vac);
+        jsonResp["message"] = "Vacancy has been updated";
+        const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+        resp->setStatusCode(drogon::k200OK);
+        callback(resp);
+
+        }catch(const orm::DrogonDbException& err){
+            jsonResp["error"] = err.base().what();
+            LOG_ERROR << err.base().what();
+            const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            resp->setStatusCode(HttpStatusCode::k500InternalServerError);
+            callback(resp);
+        }
+    }
+
+void resources::getVacanciesCards(const
+        HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback
+    ){
+        //starts from 1
+        int page = 1;
+        int pageSize = 20;
+
+        const auto& pageStr = req->getParameter("page");
+        const auto& pageSizeStr = req->getParameter("pageSize");
+
+        if (!pageStr.empty()) page =std::stoi(pageStr);
+        if (!pageSizeStr.empty()) pageSize = std::stoi(pageSizeStr);
+
+        if (page < 1) page = 1;
+        if (pageSize < 1)  pageSize = 1;
+        if (pageSize > 20) pageSize = 20;
+
+        const int offset = (page - 1) * pageSize;
+        // not noexcept!!!
+        const auto& dbClient = app().getDbClient();
+
+        dbClient->execSqlAsync(
+            "SELECT id, name, salary,place, work_schedule_status_id, employer_id, remoteness_status_id, status FROM vacancies LIMIT ? OFFSET ?",
+            [callback, dbClient, page, pageSize](const orm::Result& vacanciesResult) mutable{
+
+                if (vacanciesResult.empty()){
+                    Json::Value jsonResp;
+                    jsonResp["vacancies"] = Json::arrayValue;
+                    jsonResp["page"] = page;
+                    jsonResp["pageSize"] = pageSize;
+                    jsonResp["count"] = 0;
+
+                    const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+                    callback(resp);
+                    return;
+                }
+
+                std::set<int> emplIds;
+                for (const auto& row : vacanciesResult){
+                    emplIds.insert(row["employer_id"].as<int>());
+                }
+
+                std::string placeHolders;
+
+                for (auto& id : emplIds){
+                    placeHolders.append(std::to_string(id) +",");
+                }
+                placeHolders.pop_back(); //pop_back last comma ','
+
+                const std::string sql = "SELECT em.user_id, em.company_name "
+                                        "FROM employers em "
+                                        "WHERE em.user_id IN (" + placeHolders +")";
+
+
+
+                dbClient->execSqlAsync(sql,
+                    [callback, emplIds, page, pageSize, vacanciesResult](const orm::Result& companiesResult) mutable{
+                        std::unordered_map<int, std::string> companies;
+                        for (const auto& row : companiesResult){
+                            const int employerId = row["user_id"].as<int>();
+                            const auto companyName = row["company_name"].as<std::string>();
+
+                            companies[employerId] = companyName;
+                        }
+
+                        Json::Value jsonResp;
+                        Json::Value vacsJson(Json::arrayValue);
+
+                        for (const auto& row : vacanciesResult){
+                            const int emplId = row["employer_id"].as<int>();
+                            Json::Value vacJson;
+                            vacJson["id"] = row["id"].as<int>();;
+                            vacJson["company_name"] = companies[emplId];
+                            vacJson["salary"] = row["salary"].as<std::string>();
+                            vacJson["name"] = row["name"].as<std::string>();
+                            vacJson["place"] = row["place"].as<std::string>();
+                            vacJson["status"] = row["status"].as<std::string>();
+                            vacJson["work_schedule_status_id"] = row["work_schedule_status_id"].as<std::string>();
+                            vacJson["remoteness_status_id"] = row["remoteness_status_id"].as<std::string>();
+                            vacsJson.append(vacJson);
+                        }
+
+                        jsonResp["vacancies"] = vacsJson;
+                        jsonResp["page"] = page;
+                        jsonResp["pageSize"] = pageSize;
+                        jsonResp["count"] = (int)vacanciesResult.size();
+
+                        const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+                        callback(resp);
+                    },
+                    [callback](const orm::DrogonDbException& err){
+                        Json::Value jsonResp;
+                        LOG_ERROR << err.base().what();
+                        jsonResp["error"] = "Database error on companies query";
+
+                        const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+                        resp->setStatusCode(drogon::k500InternalServerError);
+                        callback(resp);
+                    });
+            },
+            [callback](const orm::DrogonDbException& err){
+                Json::Value jsonResp;
+                LOG_ERROR << err.base().what();
+                jsonResp["error"] = "Database error on vacancies query";
+
+                const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+                resp->setStatusCode(k500InternalServerError);
+                callback(resp);
+            },
+            pageSize, offset);
+    }
