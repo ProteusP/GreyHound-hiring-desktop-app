@@ -46,6 +46,7 @@ class Responces
     {
         static const std::string _candidate_id;
         static const std::string _vacancy_id;
+        static const std::string _employer_id;
         static const std::string _status;
         static const std::string _created_at;
     };
@@ -115,6 +116,14 @@ class Responces
     ///Set the value of the column vacancy_id
     void setVacancyId(const int32_t &pVacancyId) noexcept;
 
+    /**  For column employer_id  */
+    ///Get the value of the column employer_id, returns the default value if the column is null
+    const int32_t &getValueOfEmployerId() const noexcept;
+    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    const std::shared_ptr<int32_t> &getEmployerId() const noexcept;
+    ///Set the value of the column employer_id
+    void setEmployerId(const int32_t &pEmployerId) noexcept;
+
     /**  For column status  */
     ///Get the value of the column status, returns the default value if the column is null
     const std::string &getValueOfStatus() const noexcept;
@@ -135,7 +144,7 @@ class Responces
     void setCreatedAtToNull() noexcept;
 
 
-    static size_t getColumnNumber() noexcept {  return 4;  }
+    static size_t getColumnNumber() noexcept {  return 5;  }
     static const std::string &getColumnName(size_t index) noexcept(false);
 
     Json::Value toJson() const;
@@ -158,6 +167,7 @@ class Responces
     void updateId(const uint64_t id);
     std::shared_ptr<int32_t> candidateId_;
     std::shared_ptr<int32_t> vacancyId_;
+    std::shared_ptr<int32_t> employerId_;
     std::shared_ptr<std::string> status_;
     std::shared_ptr<::trantor::Date> createdAt_;
     struct MetaData
@@ -171,7 +181,7 @@ class Responces
         const bool notNull_;
     };
     static const std::vector<MetaData> metaData_;
-    bool dirtyFlag_[4]={ false };
+    bool dirtyFlag_[5]={ false };
   public:
     static const std::string &sqlForFindingByPrimaryKey()
     {
@@ -199,15 +209,20 @@ class Responces
             sql += "vacancy_id,";
             ++parametersCount;
         }
+        if(dirtyFlag_[2])
+        {
+            sql += "employer_id,";
+            ++parametersCount;
+        }
         sql += "status,";
         ++parametersCount;
-        if(!dirtyFlag_[2])
+        if(!dirtyFlag_[3])
         {
             needSelection=true;
         }
         sql += "created_at,";
         ++parametersCount;
-        if(!dirtyFlag_[3])
+        if(!dirtyFlag_[4])
         {
             needSelection=true;
         }
@@ -234,11 +249,16 @@ class Responces
             sql.append("?,");
 
         }
+        if(dirtyFlag_[3])
+        {
+            sql.append("?,");
+
+        }
         else
         {
             sql +="default,";
         }
-        if(dirtyFlag_[3])
+        if(dirtyFlag_[4])
         {
             sql.append("?,");
 
