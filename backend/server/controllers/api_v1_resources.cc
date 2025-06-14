@@ -170,111 +170,175 @@ void resources::saveResume(const HttpRequestPtr &req,
 void resources::getCandidateCards(
     const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
 
-  //starts from 1
   int page = 1;
   int pageSize = 20;
 
-  const auto& pageStr = req->getParameter("page");
-  const auto& pageSizeStr = req->getParameter("pageSize");
+  const auto &pageStr = req->getParameter("page");
+  const auto &pageSizeStr = req->getParameter("pageSize");
 
-  if (!pageStr.empty()) page =std::stoi(pageStr);
+  if (!pageStr.empty()) page = std::stoi(pageStr);
   if (!pageSizeStr.empty()) pageSize = std::stoi(pageSizeStr);
-
   if (page < 1) page = 1;
-  if (pageSize < 1)  pageSize = 1;
   if (pageSize > 20) pageSize = 20;
 
+  const auto &placeOfStudyFilter = req->getParameter("place_of_study");
+  const auto &facultyOfEducFilter = req->getParameter("faculty_of_educ");
+  const auto &graduationYearFilter = req->getParameter("graduation_year");
+  const auto &placeFilter = req->getParameter("place");
+  const auto &searchStatusIdFilter = req->getParameter("search_status_id");
+  const auto &experienceStatusIdFilter = req->getParameter("experience_status_id");
+  const auto &workScheduleIdFilter = req->getParameter("work_schedule_status_id");
+
   const int offset = (page - 1) * pageSize;
-  // not noexcept!!!
-  const auto& dbClient = app().getDbClient();
+  const auto &dbClient = app().getDbClient();
 
-  // TODO
-  // No position in our DB now
-  dbClient ->execSqlAsync(
-    "SELECT user_id, place_of_study, faculty_of_educ, experience_status_id FROM candidates LIMIT ? OFFSET ?",
-    [callback, dbClient, page, pageSize](const drogon::orm::Result& candidatesResult) mutable {
+  std::string sql = "SELECT user_id, place_of_study, faculty_of_educ, experience_status_id FROM candidates WHERE 1=1";
+  std::vector<std::string> paramStrings;
 
-      std::vector<int> candidateIds;
-      for (const auto& row : candidatesResult) {
-        candidateIds.push_back(row["user_id"].as<int>());
-      }
+  if (!placeOfStudyFilter.empty()) {
+    sql += " AND place_of_study = ?";
+    paramStrings.push_back(placeOfStudyFilter);
+  }
+  if (!facultyOfEducFilter.empty()) {
+    sql += " AND faculty_of_educ = ?";
+    paramStrings.push_back(facultyOfEducFilter);
+  }
+  if (!graduationYearFilter.empty()) {
+    try {
+      std::stoi(graduationYearFilter);
+      sql += " AND graduation_year = ?";
+      paramStrings.push_back(graduationYearFilter);
+    } catch (...) {
+      Json::Value err;
+      err["error"] = "Invalid graduation_year format";
+      auto resp = HttpResponse::newHttpJsonResponse(err);
+      resp->setStatusCode(k400BadRequest);
+      callback(resp);
+      return;
+    }
+  }
+  if (!placeFilter.empty()) {
+    sql += " AND place = ?";
+    paramStrings.push_back(placeFilter);
+  }
+  if (!searchStatusIdFilter.empty()) {
+    try {
+      std::stoi(searchStatusIdFilter);
+      sql += " AND search_status_id = ?";
+      paramStrings.push_back(searchStatusIdFilter);
+    } catch (...) {
+      Json::Value err;
+      err["error"] = "Invalid search_status_id format";
+      auto resp = HttpResponse::newHttpJsonResponse(err);
+      resp->setStatusCode(k400BadRequest);
+      callback(resp);
+      return;
+    }
+  }
+  if (!experienceStatusIdFilter.empty()) {
+    try {
+      std::stoi(experienceStatusIdFilter);
+      sql += " AND experience_status_id = ?";
+      paramStrings.push_back(experienceStatusIdFilter);
+    } catch (...) {
+      Json::Value err;
+      err["error"] = "Invalid experience_status_id format";
+      auto resp = HttpResponse::newHttpJsonResponse(err);
+      resp->setStatusCode(k400BadRequest);
+      callback(resp);
+      return;
+    }
+  }
+  if (!workScheduleIdFilter.empty()) {
+    try {
+      std::stoi(workScheduleIdFilter);
+      sql += " AND work_schedule_status_id = ?";
+      paramStrings.push_back(workScheduleIdFilter);
+    } catch (...) {
+      Json::Value err;
+      err["error"] = "Invalid work_schedule_status_id format";
+      auto resp = HttpResponse::newHttpJsonResponse(err);
+      resp->setStatusCode(k400BadRequest);
+      callback(resp);
+      return;
+    }
+  }
 
-      if (candidateIds.empty()) {
-        Json::Value jsonResp;
-        jsonResp["candidates"] = Json::arrayValue;
-        jsonResp["page"] = page;
-        jsonResp["pageSize"] = pageSize;
-        jsonResp["count"] = 0;
+  sql += " LIMIT " + std::to_string(pageSize) + " OFFSET " + std::to_string(offset);
 
-        const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
-        callback(resp);
-        return;
-      }
-        std::string placeholders;
+  auto binder = *dbClient << sql;
+  for (const auto &param : paramStrings) {
+    binder << param;
+  }
 
-      for (size_t i = 0; i < candidateIds.size() -1; ++i) {
-        placeholders.append(std::to_string(candidateIds[i]) + ",");
-      }
-      placeholders.append(std::to_string(candidateIds.back()));
+  binder >> [callback, dbClient, page, pageSize](const drogon::orm::Result &candidatesResult) mutable {
+    std::vector<int> candidateIds;
+    for (const auto &row : candidatesResult) {
+      candidateIds.push_back(row["user_id"].as<int>());
+    }
 
+    if (candidateIds.empty()) {
+      Json::Value resp;
+      resp["candidates"] = Json::arrayValue;
+      resp["page"] = page;
+      resp["pageSize"] = pageSize;
+      resp["count"] = 0;
+      callback(HttpResponse::newHttpJsonResponse(resp));
+      return;
+    }
 
-      const std::string sql = "SELECT cs.user_id, exp.name "
-                        "FROM candidates cs "
-                        "JOIN experience exp ON cs.experience_status_id = exp.id "
-                        "WHERE cs.user_id IN (" + placeholders + ")";
+    std::string placeholders;
+    for (size_t i = 0; i < candidateIds.size(); ++i) {
+      if (i > 0) placeholders += ",";
+      placeholders += std::to_string(candidateIds[i]);
+    }
 
-      dbClient->execSqlAsync(
-        sql,
-        [callback, candidatesResult, candidateIds, page, pageSize](const drogon::orm::Result& expResult) mutable {
+    const std::string expSql =
+        "SELECT cs.user_id, exp.name FROM candidates cs "
+        "JOIN experience exp ON cs.experience_status_id = exp.id "
+        "WHERE cs.user_id IN (" + placeholders + ")";
+
+    dbClient->execSqlAsync(
+        expSql,
+        [callback, candidatesResult, candidateIds, page, pageSize](const drogon::orm::Result &expResult) {
           std::unordered_map<int, std::string> candidateExp;
-          for (const auto& row : expResult) {
-            int cid = row["user_id"].as<int>();
-            const auto exp = row["name"].as<std::string>();
-
-            candidateExp[cid] = exp;
+          for (const auto &row : expResult) {
+            candidateExp[row["user_id"].as<int>()] = row["name"].as<std::string>();
           }
 
-          Json::Value jsonResp;
+          Json::Value resp;
           Json::Value candidatesJson(Json::arrayValue);
-
-          for (const auto& row : candidatesResult) {
+          for (const auto &row : candidatesResult) {
             const int cid = row["user_id"].as<int>();
-            Json::Value candidateJson;
-            candidateJson["id"] = cid;
-            const auto placeOfStudy = row["place_of_study"].as<std::string>();
-            const auto facultyOfEducation = row["faculty_of_educ"].as<std::string>();
-            candidateJson["place"] = placeOfStudy;
-            candidateJson["faculty"] = facultyOfEducation;
-            candidateJson["experience"] = candidateExp[cid];
-            candidateJson["user_id"] = cid;
-            candidatesJson.append(candidateJson);
+            Json::Value item;
+            item["id"] = cid;
+            item["place"] = row["place_of_study"].as<std::string>();
+            item["faculty"] = row["faculty_of_educ"].as<std::string>();
+            item["experience"] = candidateExp[cid];
+            item["user_id"] = cid;
+            candidatesJson.append(item);
           }
 
-          jsonResp["candidates"] = candidatesJson;
-          jsonResp["page"] = page;
-          jsonResp["pageSize"] = pageSize;
-          jsonResp["count"] = static_cast<int>(candidateIds.size());
-
-          const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
-          callback(resp);
-        }
-        ,[callback](const drogon::orm::DrogonDbException& e) {
-          Json::Value jsonResp;
-          jsonResp["error"] = "Database error on experience query";
-          const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
-          resp->setStatusCode(HttpStatusCode::k500InternalServerError);
+          resp["candidates"] = candidatesJson;
+          resp["page"] = page;
+          resp["pageSize"] = pageSize;
+          resp["count"] = static_cast<int>(candidateIds.size());
+          callback(HttpResponse::newHttpJsonResponse(resp));
+        },
+        [callback](const drogon::orm::DrogonDbException &e) {
+          Json::Value err;
+          err["error"] = "Database error on experience query";
+          auto resp = HttpResponse::newHttpJsonResponse(err);
+          resp->setStatusCode(k500InternalServerError);
           callback(resp);
         });
-
-    },
-    [callback](const drogon::orm::DrogonDbException& e) {
-      Json::Value jsonResp;
-      jsonResp["error"] = "Database error on query";
-      const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
-      resp->setStatusCode(HttpStatusCode::k500InternalServerError);
-      callback(resp);
-    },
-    pageSize, offset);
+  } >> [callback](const drogon::orm::DrogonDbException &e) {
+    Json::Value err;
+    err["error"] = "Database error on query";
+    auto resp = HttpResponse::newHttpJsonResponse(err);
+    resp->setStatusCode(k500InternalServerError);
+    callback(resp);
+  };
 }
 
 
@@ -421,117 +485,164 @@ void resources::updateVacancy(
         }
     }
 
-void resources::getVacanciesCards(const
-        HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback
-    ){
-        //starts from 1
-        int page = 1;
-        int pageSize = 20;
+void resources::getVacanciesCards(
+    const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback) {
 
-        const auto& pageStr = req->getParameter("page");
-        const auto& pageSizeStr = req->getParameter("pageSize");
+    int page = 1;
+    int pageSize = 20;
 
-        if (!pageStr.empty()) page =std::stoi(pageStr);
-        if (!pageSizeStr.empty()) pageSize = std::stoi(pageSizeStr);
+    const auto &pageStr = req->getParameter("page");
+    const auto &pageSizeStr = req->getParameter("pageSize");
 
-        if (page < 1) page = 1;
-        if (pageSize < 1)  pageSize = 1;
-        if (pageSize > 20) pageSize = 20;
+    if (!pageStr.empty()) page = std::stoi(pageStr);
+    if (!pageSizeStr.empty()) pageSize = std::stoi(pageSizeStr);
+    if (page < 1) page = 1;
+    if (pageSize > 20) pageSize = 20;
 
-        const int offset = (page - 1) * pageSize;
-        // not noexcept!!!
-        const auto& dbClient = app().getDbClient();
+    const auto &salaryFilter = req->getParameter("salary");
+    const auto &placeFilter = req->getParameter("place");
+    const auto &educPlaceFilter = req->getParameter("educ_place");
+    const auto &experienceStatusIdFilter = req->getParameter("experience_status_id");
+    const auto &workScheduleStatusIdFilter = req->getParameter("work_schedule_status_id");
+    const auto &educStatusIdFilter = req->getParameter("educ_status_id");
+    const auto &remotenessStatusIdFilter = req->getParameter("remoteness_status_id");
+
+    const int offset = (page - 1) * pageSize;
+    const auto &dbClient = app().getDbClient();
+
+    std::string sql = "SELECT id, name, salary, place, work_schedule_status_id, employer_id, remoteness_status_id, status FROM vacancies WHERE 1=1";
+    std::vector<std::variant<std::string, int>> params;
+
+    try {
+        if (!salaryFilter.empty()) {
+            int salary = std::stoi(salaryFilter);
+            sql += " AND salary >= ?";
+            params.emplace_back(salary);
+        }
+
+        if (!placeFilter.empty()) {
+            sql += " AND place = ?";
+            params.emplace_back(placeFilter);
+        }
+
+        if (!educPlaceFilter.empty()) {
+            sql += " AND educ_place = ?";
+            params.emplace_back(educPlaceFilter);
+        }
+
+        if (!experienceStatusIdFilter.empty()) {
+            int val = std::stoi(experienceStatusIdFilter);
+            sql += " AND experience_status_id = ?";
+            params.emplace_back(val);
+        }
+
+        if (!workScheduleStatusIdFilter.empty()) {
+            int val = std::stoi(workScheduleStatusIdFilter);
+            sql += " AND work_schedule_status_id = ?";
+            params.emplace_back(val);
+        }
+
+        if (!educStatusIdFilter.empty()) {
+            int val = std::stoi(educStatusIdFilter);
+            sql += " AND educ_status_id = ?";
+            params.emplace_back(val);
+        }
+
+        if (!remotenessStatusIdFilter.empty()) {
+            int val = std::stoi(remotenessStatusIdFilter);
+            sql += " AND remoteness_status_id = ?";
+            params.emplace_back(val);
+        }
+    } catch (...) {
+        Json::Value err;
+        err["error"] = "Invalid filter parameter format";
+        auto resp = HttpResponse::newHttpJsonResponse(err);
+        resp->setStatusCode(k400BadRequest);
+        callback(resp);
+        return;
+    }
+
+    sql += " LIMIT " + std::to_string(pageSize) + " OFFSET " + std::to_string(offset);
+
+    auto binder = *dbClient << sql;
+    for (const auto &param : params) {
+        if (std::holds_alternative<int>(param))
+            binder << std::get<int>(param);
+        else
+            binder << std::get<std::string>(param);
+    }
+
+    binder >> [callback, dbClient, page, pageSize](const orm::Result &vacanciesResult) mutable {
+        std::set<int> emplIds;
+        for (const auto &row : vacanciesResult)
+            emplIds.insert(row["employer_id"].as<int>());
+
+        if (emplIds.empty()) {
+            Json::Value resp;
+            resp["vacancies"] = Json::arrayValue;
+            resp["page"] = page;
+            resp["pageSize"] = pageSize;
+            resp["count"] = 0;
+            callback(HttpResponse::newHttpJsonResponse(resp));
+            return;
+        }
+
+        std::string placeholders;
+        for (auto it = emplIds.begin(); it != emplIds.end(); ++it) {
+            if (it != emplIds.begin()) placeholders += ",";
+            placeholders += std::to_string(*it);
+        }
+
+        const std::string companySql =
+            "SELECT user_id, company_name FROM employers WHERE user_id IN (" + placeholders + ")";
 
         dbClient->execSqlAsync(
-            "SELECT id, name, salary,place, work_schedule_status_id, employer_id, remoteness_status_id, status FROM vacancies LIMIT ? OFFSET ?",
-            [callback, dbClient, page, pageSize](const orm::Result& vacanciesResult) mutable{
+            companySql,
+            [callback, vacanciesResult, page, pageSize](const orm::Result &companiesResult) mutable {
+                std::unordered_map<int, std::string> companies;
+                for (const auto &row : companiesResult)
+                    companies[row["user_id"].as<int>()] = row["company_name"].as<std::string>();
 
-                if (vacanciesResult.empty()){
-                    Json::Value jsonResp;
-                    jsonResp["vacancies"] = Json::arrayValue;
-                    jsonResp["page"] = page;
-                    jsonResp["pageSize"] = pageSize;
-                    jsonResp["count"] = 0;
-
-                    const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
-                    callback(resp);
-                    return;
+                Json::Value resp;
+                Json::Value vacsJson(Json::arrayValue);
+                for (const auto &row : vacanciesResult) {
+                    const int emplId = row["employer_id"].as<int>();
+                    Json::Value vacJson;
+                    vacJson["id"] = row["id"].as<int>();
+                    vacJson["company_name"] = companies[emplId];
+                    vacJson["salary"] = row["salary"].as<std::string>();
+                    vacJson["name"] = row["name"].as<std::string>();
+                    vacJson["place"] = row["place"].as<std::string>();
+                    vacJson["status"] = row["status"].as<std::string>();
+                    vacJson["work_schedule_status_id"] = row["work_schedule_status_id"].as<std::string>();
+                    vacJson["remoteness_status_id"] = row["remoteness_status_id"].as<std::string>();
+                    vacsJson.append(vacJson);
                 }
 
-                std::set<int> emplIds;
-                for (const auto& row : vacanciesResult){
-                    emplIds.insert(row["employer_id"].as<int>());
-                }
-
-                std::string placeHolders;
-
-                for (auto& id : emplIds){
-                    placeHolders.append(std::to_string(id) +",");
-                }
-                placeHolders.pop_back(); //pop_back last comma ','
-
-                const std::string sql = "SELECT em.user_id, em.company_name "
-                                        "FROM employers em "
-                                        "WHERE em.user_id IN (" + placeHolders +")";
-
-
-
-                dbClient->execSqlAsync(sql,
-                    [callback, emplIds, page, pageSize, vacanciesResult](const orm::Result& companiesResult) mutable{
-                        std::unordered_map<int, std::string> companies;
-                        for (const auto& row : companiesResult){
-                            const int employerId = row["user_id"].as<int>();
-                            const auto companyName = row["company_name"].as<std::string>();
-
-                            companies[employerId] = companyName;
-                        }
-
-                        Json::Value jsonResp;
-                        Json::Value vacsJson(Json::arrayValue);
-
-                        for (const auto& row : vacanciesResult){
-                            const int emplId = row["employer_id"].as<int>();
-                            Json::Value vacJson;
-                            vacJson["id"] = row["id"].as<int>();;
-                            vacJson["company_name"] = companies[emplId];
-                            vacJson["salary"] = row["salary"].as<std::string>();
-                            vacJson["name"] = row["name"].as<std::string>();
-                            vacJson["place"] = row["place"].as<std::string>();
-                            vacJson["status"] = row["status"].as<std::string>();
-                            vacJson["work_schedule_status_id"] = row["work_schedule_status_id"].as<std::string>();
-                            vacJson["remoteness_status_id"] = row["remoteness_status_id"].as<std::string>();
-                            vacsJson.append(vacJson);
-                        }
-
-                        jsonResp["vacancies"] = vacsJson;
-                        jsonResp["page"] = page;
-                        jsonResp["pageSize"] = pageSize;
-                        jsonResp["count"] = (int)vacanciesResult.size();
-
-                        const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
-                        callback(resp);
-                    },
-                    [callback](const orm::DrogonDbException& err){
-                        Json::Value jsonResp;
-                        LOG_ERROR << err.base().what();
-                        jsonResp["error"] = "Database error on companies query";
-
-                        const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
-                        resp->setStatusCode(drogon::k500InternalServerError);
-                        callback(resp);
-                    });
+                resp["vacancies"] = vacsJson;
+                resp["page"] = page;
+                resp["pageSize"] = pageSize;
+                resp["count"] = (int)vacanciesResult.size();
+                callback(HttpResponse::newHttpJsonResponse(resp));
             },
-            [callback](const orm::DrogonDbException& err){
-                Json::Value jsonResp;
-                LOG_ERROR << err.base().what();
-                jsonResp["error"] = "Database error on vacancies query";
-
-                const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            [callback](const orm::DrogonDbException &e) {
+                Json::Value err;
+                err["error"] = "Database error on companies query";
+                auto resp = HttpResponse::newHttpJsonResponse(err);
                 resp->setStatusCode(k500InternalServerError);
                 callback(resp);
-            },
-            pageSize, offset);
-    }
+            }
+        );
+    } >> [callback](const orm::DrogonDbException &e) {
+        Json::Value err;
+        err["error"] = "Database error on vacancies query";
+        auto resp = HttpResponse::newHttpJsonResponse(err);
+        resp->setStatusCode(k500InternalServerError);
+        callback(resp);
+    };
+}
+
+
 
 void resources::getCandidateInfo(
     const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback, std::string userId){
@@ -583,5 +694,4 @@ void resources::getCandidateInfo(
             resp->setStatusCode(k500InternalServerError);
             callback(resp);},
         userId);
-
     }
