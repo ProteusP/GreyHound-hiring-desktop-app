@@ -15,6 +15,7 @@ using namespace drogon_model::default_db;
 
 const std::string Responces::Cols::_candidate_id = "candidate_id";
 const std::string Responces::Cols::_vacancy_id = "vacancy_id";
+const std::string Responces::Cols::_employer_id = "employer_id";
 const std::string Responces::Cols::_status = "status";
 const std::string Responces::Cols::_created_at = "created_at";
 const std::vector<std::string> Responces::primaryKeyName = {"candidate_id","vacancy_id"};
@@ -24,6 +25,7 @@ const std::string Responces::tableName = "responces";
 const std::vector<typename Responces::MetaData> Responces::metaData_={
 {"candidate_id","int32_t","int",4,0,1,1},
 {"vacancy_id","int32_t","int",4,0,1,1},
+{"employer_id","int32_t","int",4,0,0,1},
 {"status","std::string","varchar(50)",50,0,0,0},
 {"created_at","::trantor::Date","timestamp",0,0,0,0}
 };
@@ -43,6 +45,10 @@ Responces::Responces(const Row &r, const ssize_t indexOffset) noexcept
         if(!r["vacancy_id"].isNull())
         {
             vacancyId_=std::make_shared<int32_t>(r["vacancy_id"].as<int32_t>());
+        }
+        if(!r["employer_id"].isNull())
+        {
+            employerId_=std::make_shared<int32_t>(r["employer_id"].as<int32_t>());
         }
         if(!r["status"].isNull())
         {
@@ -74,7 +80,7 @@ Responces::Responces(const Row &r, const ssize_t indexOffset) noexcept
     else
     {
         size_t offset = (size_t)indexOffset;
-        if(offset + 4 > r.size())
+        if(offset + 5 > r.size())
         {
             LOG_FATAL << "Invalid SQL result for this model";
             return;
@@ -93,9 +99,14 @@ Responces::Responces(const Row &r, const ssize_t indexOffset) noexcept
         index = offset + 2;
         if(!r[index].isNull())
         {
-            status_=std::make_shared<std::string>(r[index].as<std::string>());
+            employerId_=std::make_shared<int32_t>(r[index].as<int32_t>());
         }
         index = offset + 3;
+        if(!r[index].isNull())
+        {
+            status_=std::make_shared<std::string>(r[index].as<std::string>());
+        }
+        index = offset + 4;
         if(!r[index].isNull())
         {
             auto timeStr = r[index].as<std::string>();
@@ -124,7 +135,7 @@ Responces::Responces(const Row &r, const ssize_t indexOffset) noexcept
 
 Responces::Responces(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector) noexcept(false)
 {
-    if(pMasqueradingVector.size() != 4)
+    if(pMasqueradingVector.size() != 5)
     {
         LOG_ERROR << "Bad masquerading vector";
         return;
@@ -150,7 +161,7 @@ Responces::Responces(const Json::Value &pJson, const std::vector<std::string> &p
         dirtyFlag_[2] = true;
         if(!pJson[pMasqueradingVector[2]].isNull())
         {
-            status_=std::make_shared<std::string>(pJson[pMasqueradingVector[2]].asString());
+            employerId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[2]].asInt64());
         }
     }
     if(!pMasqueradingVector[3].empty() && pJson.isMember(pMasqueradingVector[3]))
@@ -158,7 +169,15 @@ Responces::Responces(const Json::Value &pJson, const std::vector<std::string> &p
         dirtyFlag_[3] = true;
         if(!pJson[pMasqueradingVector[3]].isNull())
         {
-            auto timeStr = pJson[pMasqueradingVector[3]].asString();
+            status_=std::make_shared<std::string>(pJson[pMasqueradingVector[3]].asString());
+        }
+    }
+    if(!pMasqueradingVector[4].empty() && pJson.isMember(pMasqueradingVector[4]))
+    {
+        dirtyFlag_[4] = true;
+        if(!pJson[pMasqueradingVector[4]].isNull())
+        {
+            auto timeStr = pJson[pMasqueradingVector[4]].asString();
             struct tm stm;
             memset(&stm,0,sizeof(stm));
             auto p = strptime(timeStr.c_str(),"%Y-%m-%d %H:%M:%S",&stm);
@@ -199,9 +218,17 @@ Responces::Responces(const Json::Value &pJson) noexcept(false)
             vacancyId_=std::make_shared<int32_t>((int32_t)pJson["vacancy_id"].asInt64());
         }
     }
-    if(pJson.isMember("status"))
+    if(pJson.isMember("employer_id"))
     {
         dirtyFlag_[2]=true;
+        if(!pJson["employer_id"].isNull())
+        {
+            employerId_=std::make_shared<int32_t>((int32_t)pJson["employer_id"].asInt64());
+        }
+    }
+    if(pJson.isMember("status"))
+    {
+        dirtyFlag_[3]=true;
         if(!pJson["status"].isNull())
         {
             status_=std::make_shared<std::string>(pJson["status"].asString());
@@ -209,7 +236,7 @@ Responces::Responces(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("created_at"))
     {
-        dirtyFlag_[3]=true;
+        dirtyFlag_[4]=true;
         if(!pJson["created_at"].isNull())
         {
             auto timeStr = pJson["created_at"].asString();
@@ -238,7 +265,7 @@ Responces::Responces(const Json::Value &pJson) noexcept(false)
 void Responces::updateByMasqueradedJson(const Json::Value &pJson,
                                             const std::vector<std::string> &pMasqueradingVector) noexcept(false)
 {
-    if(pMasqueradingVector.size() != 4)
+    if(pMasqueradingVector.size() != 5)
     {
         LOG_ERROR << "Bad masquerading vector";
         return;
@@ -262,7 +289,7 @@ void Responces::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[2] = true;
         if(!pJson[pMasqueradingVector[2]].isNull())
         {
-            status_=std::make_shared<std::string>(pJson[pMasqueradingVector[2]].asString());
+            employerId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[2]].asInt64());
         }
     }
     if(!pMasqueradingVector[3].empty() && pJson.isMember(pMasqueradingVector[3]))
@@ -270,7 +297,15 @@ void Responces::updateByMasqueradedJson(const Json::Value &pJson,
         dirtyFlag_[3] = true;
         if(!pJson[pMasqueradingVector[3]].isNull())
         {
-            auto timeStr = pJson[pMasqueradingVector[3]].asString();
+            status_=std::make_shared<std::string>(pJson[pMasqueradingVector[3]].asString());
+        }
+    }
+    if(!pMasqueradingVector[4].empty() && pJson.isMember(pMasqueradingVector[4]))
+    {
+        dirtyFlag_[4] = true;
+        if(!pJson[pMasqueradingVector[4]].isNull())
+        {
+            auto timeStr = pJson[pMasqueradingVector[4]].asString();
             struct tm stm;
             memset(&stm,0,sizeof(stm));
             auto p = strptime(timeStr.c_str(),"%Y-%m-%d %H:%M:%S",&stm);
@@ -309,9 +344,17 @@ void Responces::updateByJson(const Json::Value &pJson) noexcept(false)
             vacancyId_=std::make_shared<int32_t>((int32_t)pJson["vacancy_id"].asInt64());
         }
     }
-    if(pJson.isMember("status"))
+    if(pJson.isMember("employer_id"))
     {
         dirtyFlag_[2] = true;
+        if(!pJson["employer_id"].isNull())
+        {
+            employerId_=std::make_shared<int32_t>((int32_t)pJson["employer_id"].asInt64());
+        }
+    }
+    if(pJson.isMember("status"))
+    {
+        dirtyFlag_[3] = true;
         if(!pJson["status"].isNull())
         {
             status_=std::make_shared<std::string>(pJson["status"].asString());
@@ -319,7 +362,7 @@ void Responces::updateByJson(const Json::Value &pJson) noexcept(false)
     }
     if(pJson.isMember("created_at"))
     {
-        dirtyFlag_[3] = true;
+        dirtyFlag_[4] = true;
         if(!pJson["created_at"].isNull())
         {
             auto timeStr = pJson["created_at"].asString();
@@ -379,6 +422,23 @@ void Responces::setVacancyId(const int32_t &pVacancyId) noexcept
     dirtyFlag_[1] = true;
 }
 
+const int32_t &Responces::getValueOfEmployerId() const noexcept
+{
+    static const int32_t defaultValue = int32_t();
+    if(employerId_)
+        return *employerId_;
+    return defaultValue;
+}
+const std::shared_ptr<int32_t> &Responces::getEmployerId() const noexcept
+{
+    return employerId_;
+}
+void Responces::setEmployerId(const int32_t &pEmployerId) noexcept
+{
+    employerId_ = std::make_shared<int32_t>(pEmployerId);
+    dirtyFlag_[2] = true;
+}
+
 const std::string &Responces::getValueOfStatus() const noexcept
 {
     static const std::string defaultValue = std::string();
@@ -393,17 +453,17 @@ const std::shared_ptr<std::string> &Responces::getStatus() const noexcept
 void Responces::setStatus(const std::string &pStatus) noexcept
 {
     status_ = std::make_shared<std::string>(pStatus);
-    dirtyFlag_[2] = true;
+    dirtyFlag_[3] = true;
 }
 void Responces::setStatus(std::string &&pStatus) noexcept
 {
     status_ = std::make_shared<std::string>(std::move(pStatus));
-    dirtyFlag_[2] = true;
+    dirtyFlag_[3] = true;
 }
 void Responces::setStatusToNull() noexcept
 {
     status_.reset();
-    dirtyFlag_[2] = true;
+    dirtyFlag_[3] = true;
 }
 
 const ::trantor::Date &Responces::getValueOfCreatedAt() const noexcept
@@ -420,12 +480,12 @@ const std::shared_ptr<::trantor::Date> &Responces::getCreatedAt() const noexcept
 void Responces::setCreatedAt(const ::trantor::Date &pCreatedAt) noexcept
 {
     createdAt_ = std::make_shared<::trantor::Date>(pCreatedAt);
-    dirtyFlag_[3] = true;
+    dirtyFlag_[4] = true;
 }
 void Responces::setCreatedAtToNull() noexcept
 {
     createdAt_.reset();
-    dirtyFlag_[3] = true;
+    dirtyFlag_[4] = true;
 }
 
 void Responces::updateId(const uint64_t id)
@@ -441,6 +501,7 @@ const std::vector<std::string> &Responces::insertColumns() noexcept
     static const std::vector<std::string> inCols={
         "candidate_id",
         "vacancy_id",
+        "employer_id",
         "status",
         "created_at"
     };
@@ -473,6 +534,17 @@ void Responces::outputArgs(drogon::orm::internal::SqlBinder &binder) const
     }
     if(dirtyFlag_[2])
     {
+        if(getEmployerId())
+        {
+            binder << getValueOfEmployerId();
+        }
+        else
+        {
+            binder << nullptr;
+        }
+    }
+    if(dirtyFlag_[3])
+    {
         if(getStatus())
         {
             binder << getValueOfStatus();
@@ -482,7 +554,7 @@ void Responces::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[3])
+    if(dirtyFlag_[4])
     {
         if(getCreatedAt())
         {
@@ -514,6 +586,10 @@ const std::vector<std::string> Responces::updateColumns() const
     {
         ret.push_back(getColumnName(3));
     }
+    if(dirtyFlag_[4])
+    {
+        ret.push_back(getColumnName(4));
+    }
     return ret;
 }
 
@@ -543,6 +619,17 @@ void Responces::updateArgs(drogon::orm::internal::SqlBinder &binder) const
     }
     if(dirtyFlag_[2])
     {
+        if(getEmployerId())
+        {
+            binder << getValueOfEmployerId();
+        }
+        else
+        {
+            binder << nullptr;
+        }
+    }
+    if(dirtyFlag_[3])
+    {
         if(getStatus())
         {
             binder << getValueOfStatus();
@@ -552,7 +639,7 @@ void Responces::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[3])
+    if(dirtyFlag_[4])
     {
         if(getCreatedAt())
         {
@@ -583,6 +670,14 @@ Json::Value Responces::toJson() const
     {
         ret["vacancy_id"]=Json::Value();
     }
+    if(getEmployerId())
+    {
+        ret["employer_id"]=getValueOfEmployerId();
+    }
+    else
+    {
+        ret["employer_id"]=Json::Value();
+    }
     if(getStatus())
     {
         ret["status"]=getValueOfStatus();
@@ -606,7 +701,7 @@ Json::Value Responces::toMasqueradedJson(
     const std::vector<std::string> &pMasqueradingVector) const
 {
     Json::Value ret;
-    if(pMasqueradingVector.size() == 4)
+    if(pMasqueradingVector.size() == 5)
     {
         if(!pMasqueradingVector[0].empty())
         {
@@ -632,9 +727,9 @@ Json::Value Responces::toMasqueradedJson(
         }
         if(!pMasqueradingVector[2].empty())
         {
-            if(getStatus())
+            if(getEmployerId())
             {
-                ret[pMasqueradingVector[2]]=getValueOfStatus();
+                ret[pMasqueradingVector[2]]=getValueOfEmployerId();
             }
             else
             {
@@ -643,13 +738,24 @@ Json::Value Responces::toMasqueradedJson(
         }
         if(!pMasqueradingVector[3].empty())
         {
-            if(getCreatedAt())
+            if(getStatus())
             {
-                ret[pMasqueradingVector[3]]=getCreatedAt()->toDbStringLocal();
+                ret[pMasqueradingVector[3]]=getValueOfStatus();
             }
             else
             {
                 ret[pMasqueradingVector[3]]=Json::Value();
+            }
+        }
+        if(!pMasqueradingVector[4].empty())
+        {
+            if(getCreatedAt())
+            {
+                ret[pMasqueradingVector[4]]=getCreatedAt()->toDbStringLocal();
+            }
+            else
+            {
+                ret[pMasqueradingVector[4]]=Json::Value();
             }
         }
         return ret;
@@ -670,6 +776,14 @@ Json::Value Responces::toMasqueradedJson(
     else
     {
         ret["vacancy_id"]=Json::Value();
+    }
+    if(getEmployerId())
+    {
+        ret["employer_id"]=getValueOfEmployerId();
+    }
+    else
+    {
+        ret["employer_id"]=Json::Value();
     }
     if(getStatus())
     {
@@ -712,14 +826,24 @@ bool Responces::validateJsonForCreation(const Json::Value &pJson, std::string &e
         err="The vacancy_id column cannot be null";
         return false;
     }
+    if(pJson.isMember("employer_id"))
+    {
+        if(!validJsonOfField(2, "employer_id", pJson["employer_id"], err, true))
+            return false;
+    }
+    else
+    {
+        err="The employer_id column cannot be null";
+        return false;
+    }
     if(pJson.isMember("status"))
     {
-        if(!validJsonOfField(2, "status", pJson["status"], err, true))
+        if(!validJsonOfField(3, "status", pJson["status"], err, true))
             return false;
     }
     if(pJson.isMember("created_at"))
     {
-        if(!validJsonOfField(3, "created_at", pJson["created_at"], err, true))
+        if(!validJsonOfField(4, "created_at", pJson["created_at"], err, true))
             return false;
     }
     return true;
@@ -728,7 +852,7 @@ bool Responces::validateMasqueradedJsonForCreation(const Json::Value &pJson,
                                                    const std::vector<std::string> &pMasqueradingVector,
                                                    std::string &err)
 {
-    if(pMasqueradingVector.size() != 4)
+    if(pMasqueradingVector.size() != 5)
     {
         err = "Bad masquerading vector";
         return false;
@@ -767,12 +891,25 @@ bool Responces::validateMasqueradedJsonForCreation(const Json::Value &pJson,
               if(!validJsonOfField(2, pMasqueradingVector[2], pJson[pMasqueradingVector[2]], err, true))
                   return false;
           }
+        else
+        {
+            err="The " + pMasqueradingVector[2] + " column cannot be null";
+            return false;
+        }
       }
       if(!pMasqueradingVector[3].empty())
       {
           if(pJson.isMember(pMasqueradingVector[3]))
           {
               if(!validJsonOfField(3, pMasqueradingVector[3], pJson[pMasqueradingVector[3]], err, true))
+                  return false;
+          }
+      }
+      if(!pMasqueradingVector[4].empty())
+      {
+          if(pJson.isMember(pMasqueradingVector[4]))
+          {
+              if(!validJsonOfField(4, pMasqueradingVector[4], pJson[pMasqueradingVector[4]], err, true))
                   return false;
           }
       }
@@ -806,14 +943,19 @@ bool Responces::validateJsonForUpdate(const Json::Value &pJson, std::string &err
         err = "The value of primary key must be set in the json object for update";
         return false;
     }
+    if(pJson.isMember("employer_id"))
+    {
+        if(!validJsonOfField(2, "employer_id", pJson["employer_id"], err, false))
+            return false;
+    }
     if(pJson.isMember("status"))
     {
-        if(!validJsonOfField(2, "status", pJson["status"], err, false))
+        if(!validJsonOfField(3, "status", pJson["status"], err, false))
             return false;
     }
     if(pJson.isMember("created_at"))
     {
-        if(!validJsonOfField(3, "created_at", pJson["created_at"], err, false))
+        if(!validJsonOfField(4, "created_at", pJson["created_at"], err, false))
             return false;
     }
     return true;
@@ -822,7 +964,7 @@ bool Responces::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
                                                  const std::vector<std::string> &pMasqueradingVector,
                                                  std::string &err)
 {
-    if(pMasqueradingVector.size() != 4)
+    if(pMasqueradingVector.size() != 5)
     {
         err = "Bad masquerading vector";
         return false;
@@ -856,6 +998,11 @@ bool Responces::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
       if(!pMasqueradingVector[3].empty() && pJson.isMember(pMasqueradingVector[3]))
       {
           if(!validJsonOfField(3, pMasqueradingVector[3], pJson[pMasqueradingVector[3]], err, false))
+              return false;
+      }
+      if(!pMasqueradingVector[4].empty() && pJson.isMember(pMasqueradingVector[4]))
+      {
+          if(!validJsonOfField(4, pMasqueradingVector[4], pJson[pMasqueradingVector[4]], err, false))
               return false;
       }
     }
@@ -901,6 +1048,18 @@ bool Responces::validJsonOfField(size_t index,
         case 2:
             if(pJson.isNull())
             {
+                err="The " + fieldName + " column cannot be null";
+                return false;
+            }
+            if(!pJson.isInt())
+            {
+                err="Type error in the "+fieldName+" field";
+                return false;
+            }
+            break;
+        case 3:
+            if(pJson.isNull())
+            {
                 return true;
             }
             if(!pJson.isString())
@@ -917,7 +1076,7 @@ bool Responces::validJsonOfField(size_t index,
             }
 
             break;
-        case 3:
+        case 4:
             if(pJson.isNull())
             {
                 return true;

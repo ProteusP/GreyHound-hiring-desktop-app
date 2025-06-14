@@ -17,6 +17,7 @@ const std::string Invitations::Cols::_candidate_id = "candidate_id";
 const std::string Invitations::Cols::_vacancy_id = "vacancy_id";
 const std::string Invitations::Cols::_status = "status";
 const std::string Invitations::Cols::_created_at = "created_at";
+const std::string Invitations::Cols::_contact_info = "contact_info";
 const std::vector<std::string> Invitations::primaryKeyName = {"candidate_id","vacancy_id"};
 const bool Invitations::hasPrimaryKey = true;
 const std::string Invitations::tableName = "invitations";
@@ -25,7 +26,8 @@ const std::vector<typename Invitations::MetaData> Invitations::metaData_={
 {"candidate_id","int32_t","int",4,0,1,1},
 {"vacancy_id","int32_t","int",4,0,1,1},
 {"status","std::string","varchar(50)",50,0,0,0},
-{"created_at","::trantor::Date","timestamp",0,0,0,0}
+{"created_at","::trantor::Date","timestamp",0,0,0,0},
+{"contact_info","std::string","varchar(300)",300,0,0,1}
 };
 const std::string &Invitations::getColumnName(size_t index) noexcept(false)
 {
@@ -70,11 +72,15 @@ Invitations::Invitations(const Row &r, const ssize_t indexOffset) noexcept
                 createdAt_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
             }
         }
+        if(!r["contact_info"].isNull())
+        {
+            contactInfo_=std::make_shared<std::string>(r["contact_info"].as<std::string>());
+        }
     }
     else
     {
         size_t offset = (size_t)indexOffset;
-        if(offset + 4 > r.size())
+        if(offset + 5 > r.size())
         {
             LOG_FATAL << "Invalid SQL result for this model";
             return;
@@ -118,13 +124,18 @@ Invitations::Invitations(const Row &r, const ssize_t indexOffset) noexcept
                 createdAt_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
             }
         }
+        index = offset + 4;
+        if(!r[index].isNull())
+        {
+            contactInfo_=std::make_shared<std::string>(r[index].as<std::string>());
+        }
     }
 
 }
 
 Invitations::Invitations(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector) noexcept(false)
 {
-    if(pMasqueradingVector.size() != 4)
+    if(pMasqueradingVector.size() != 5)
     {
         LOG_ERROR << "Bad masquerading vector";
         return;
@@ -177,6 +188,14 @@ Invitations::Invitations(const Json::Value &pJson, const std::vector<std::string
                 }
                 createdAt_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
             }
+        }
+    }
+    if(!pMasqueradingVector[4].empty() && pJson.isMember(pMasqueradingVector[4]))
+    {
+        dirtyFlag_[4] = true;
+        if(!pJson[pMasqueradingVector[4]].isNull())
+        {
+            contactInfo_=std::make_shared<std::string>(pJson[pMasqueradingVector[4]].asString());
         }
     }
 }
@@ -233,12 +252,20 @@ Invitations::Invitations(const Json::Value &pJson) noexcept(false)
             }
         }
     }
+    if(pJson.isMember("contact_info"))
+    {
+        dirtyFlag_[4]=true;
+        if(!pJson["contact_info"].isNull())
+        {
+            contactInfo_=std::make_shared<std::string>(pJson["contact_info"].asString());
+        }
+    }
 }
 
 void Invitations::updateByMasqueradedJson(const Json::Value &pJson,
                                             const std::vector<std::string> &pMasqueradingVector) noexcept(false)
 {
-    if(pMasqueradingVector.size() != 4)
+    if(pMasqueradingVector.size() != 5)
     {
         LOG_ERROR << "Bad masquerading vector";
         return;
@@ -291,6 +318,14 @@ void Invitations::updateByMasqueradedJson(const Json::Value &pJson,
             }
         }
     }
+    if(!pMasqueradingVector[4].empty() && pJson.isMember(pMasqueradingVector[4]))
+    {
+        dirtyFlag_[4] = true;
+        if(!pJson[pMasqueradingVector[4]].isNull())
+        {
+            contactInfo_=std::make_shared<std::string>(pJson[pMasqueradingVector[4]].asString());
+        }
+    }
 }
 
 void Invitations::updateByJson(const Json::Value &pJson) noexcept(false)
@@ -341,6 +376,14 @@ void Invitations::updateByJson(const Json::Value &pJson) noexcept(false)
                 }
                 createdAt_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
             }
+        }
+    }
+    if(pJson.isMember("contact_info"))
+    {
+        dirtyFlag_[4] = true;
+        if(!pJson["contact_info"].isNull())
+        {
+            contactInfo_=std::make_shared<std::string>(pJson["contact_info"].asString());
         }
     }
 }
@@ -428,6 +471,28 @@ void Invitations::setCreatedAtToNull() noexcept
     dirtyFlag_[3] = true;
 }
 
+const std::string &Invitations::getValueOfContactInfo() const noexcept
+{
+    static const std::string defaultValue = std::string();
+    if(contactInfo_)
+        return *contactInfo_;
+    return defaultValue;
+}
+const std::shared_ptr<std::string> &Invitations::getContactInfo() const noexcept
+{
+    return contactInfo_;
+}
+void Invitations::setContactInfo(const std::string &pContactInfo) noexcept
+{
+    contactInfo_ = std::make_shared<std::string>(pContactInfo);
+    dirtyFlag_[4] = true;
+}
+void Invitations::setContactInfo(std::string &&pContactInfo) noexcept
+{
+    contactInfo_ = std::make_shared<std::string>(std::move(pContactInfo));
+    dirtyFlag_[4] = true;
+}
+
 void Invitations::updateId(const uint64_t id)
 {
 }
@@ -442,7 +507,8 @@ const std::vector<std::string> &Invitations::insertColumns() noexcept
         "candidate_id",
         "vacancy_id",
         "status",
-        "created_at"
+        "created_at",
+        "contact_info"
     };
     return inCols;
 }
@@ -493,6 +559,17 @@ void Invitations::outputArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
+    if(dirtyFlag_[4])
+    {
+        if(getContactInfo())
+        {
+            binder << getValueOfContactInfo();
+        }
+        else
+        {
+            binder << nullptr;
+        }
+    }
 }
 
 const std::vector<std::string> Invitations::updateColumns() const
@@ -513,6 +590,10 @@ const std::vector<std::string> Invitations::updateColumns() const
     if(dirtyFlag_[3])
     {
         ret.push_back(getColumnName(3));
+    }
+    if(dirtyFlag_[4])
+    {
+        ret.push_back(getColumnName(4));
     }
     return ret;
 }
@@ -563,6 +644,17 @@ void Invitations::updateArgs(drogon::orm::internal::SqlBinder &binder) const
             binder << nullptr;
         }
     }
+    if(dirtyFlag_[4])
+    {
+        if(getContactInfo())
+        {
+            binder << getValueOfContactInfo();
+        }
+        else
+        {
+            binder << nullptr;
+        }
+    }
 }
 Json::Value Invitations::toJson() const
 {
@@ -599,6 +691,14 @@ Json::Value Invitations::toJson() const
     {
         ret["created_at"]=Json::Value();
     }
+    if(getContactInfo())
+    {
+        ret["contact_info"]=getValueOfContactInfo();
+    }
+    else
+    {
+        ret["contact_info"]=Json::Value();
+    }
     return ret;
 }
 
@@ -606,7 +706,7 @@ Json::Value Invitations::toMasqueradedJson(
     const std::vector<std::string> &pMasqueradingVector) const
 {
     Json::Value ret;
-    if(pMasqueradingVector.size() == 4)
+    if(pMasqueradingVector.size() == 5)
     {
         if(!pMasqueradingVector[0].empty())
         {
@@ -652,6 +752,17 @@ Json::Value Invitations::toMasqueradedJson(
                 ret[pMasqueradingVector[3]]=Json::Value();
             }
         }
+        if(!pMasqueradingVector[4].empty())
+        {
+            if(getContactInfo())
+            {
+                ret[pMasqueradingVector[4]]=getValueOfContactInfo();
+            }
+            else
+            {
+                ret[pMasqueradingVector[4]]=Json::Value();
+            }
+        }
         return ret;
     }
     LOG_ERROR << "Masquerade failed";
@@ -686,6 +797,14 @@ Json::Value Invitations::toMasqueradedJson(
     else
     {
         ret["created_at"]=Json::Value();
+    }
+    if(getContactInfo())
+    {
+        ret["contact_info"]=getValueOfContactInfo();
+    }
+    else
+    {
+        ret["contact_info"]=Json::Value();
     }
     return ret;
 }
@@ -722,13 +841,23 @@ bool Invitations::validateJsonForCreation(const Json::Value &pJson, std::string 
         if(!validJsonOfField(3, "created_at", pJson["created_at"], err, true))
             return false;
     }
+    if(pJson.isMember("contact_info"))
+    {
+        if(!validJsonOfField(4, "contact_info", pJson["contact_info"], err, true))
+            return false;
+    }
+    else
+    {
+        err="The contact_info column cannot be null";
+        return false;
+    }
     return true;
 }
 bool Invitations::validateMasqueradedJsonForCreation(const Json::Value &pJson,
                                                      const std::vector<std::string> &pMasqueradingVector,
                                                      std::string &err)
 {
-    if(pMasqueradingVector.size() != 4)
+    if(pMasqueradingVector.size() != 5)
     {
         err = "Bad masquerading vector";
         return false;
@@ -776,6 +905,19 @@ bool Invitations::validateMasqueradedJsonForCreation(const Json::Value &pJson,
                   return false;
           }
       }
+      if(!pMasqueradingVector[4].empty())
+      {
+          if(pJson.isMember(pMasqueradingVector[4]))
+          {
+              if(!validJsonOfField(4, pMasqueradingVector[4], pJson[pMasqueradingVector[4]], err, true))
+                  return false;
+          }
+        else
+        {
+            err="The " + pMasqueradingVector[4] + " column cannot be null";
+            return false;
+        }
+      }
     }
     catch(const Json::LogicError &e)
     {
@@ -816,13 +958,18 @@ bool Invitations::validateJsonForUpdate(const Json::Value &pJson, std::string &e
         if(!validJsonOfField(3, "created_at", pJson["created_at"], err, false))
             return false;
     }
+    if(pJson.isMember("contact_info"))
+    {
+        if(!validJsonOfField(4, "contact_info", pJson["contact_info"], err, false))
+            return false;
+    }
     return true;
 }
 bool Invitations::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
                                                    const std::vector<std::string> &pMasqueradingVector,
                                                    std::string &err)
 {
-    if(pMasqueradingVector.size() != 4)
+    if(pMasqueradingVector.size() != 5)
     {
         err = "Bad masquerading vector";
         return false;
@@ -856,6 +1003,11 @@ bool Invitations::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
       if(!pMasqueradingVector[3].empty() && pJson.isMember(pMasqueradingVector[3]))
       {
           if(!validJsonOfField(3, pMasqueradingVector[3], pJson[pMasqueradingVector[3]], err, false))
+              return false;
+      }
+      if(!pMasqueradingVector[4].empty() && pJson.isMember(pMasqueradingVector[4]))
+      {
+          if(!validJsonOfField(4, pMasqueradingVector[4], pJson[pMasqueradingVector[4]], err, false))
               return false;
       }
     }
@@ -927,6 +1079,26 @@ bool Invitations::validJsonOfField(size_t index,
                 err="Type error in the "+fieldName+" field";
                 return false;
             }
+            break;
+        case 4:
+            if(pJson.isNull())
+            {
+                err="The " + fieldName + " column cannot be null";
+                return false;
+            }
+            if(!pJson.isString())
+            {
+                err="Type error in the "+fieldName+" field";
+                return false;
+            }
+            if(pJson.isString() && std::strlen(pJson.asCString()) > 300)
+            {
+                err="String length exceeds limit for the " +
+                    fieldName +
+                    " field (the maximum value is 300)";
+                return false;
+            }
+
             break;
         default:
             err="Internal error in the server";
