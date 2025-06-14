@@ -277,6 +277,7 @@ void resources::getCandidateCards(
     pageSize, offset);
 }
 
+
 void resources::createVacancy(
     const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback){
 
@@ -530,4 +531,57 @@ void resources::getVacanciesCards(const
                 callback(resp);
             },
             pageSize, offset);
+    }
+
+void resources::getCandidateInfo(
+    const HttpRequestPtr &req, std::function<void(const HttpResponsePtr &)> &&callback, std::string userId){
+
+    const auto& dbClient = app().getDbClient();
+    const std::string sql = "SELECT name, surname, email, phone_num, place, place_of_study, faculty_of_educ, experience_status_id FROM candidates WHERE user_id = ?";
+    dbClient->execSqlAsync(sql,
+        [callback, &userId](const orm::Result& candidate){
+            Json::Value jsonResp;
+
+            if (candidate.empty()){
+                jsonResp["error"] = "User not found";\
+                LOG_ERROR << "no user in db with id: " + userId;
+                const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+                resp->setStatusCode(drogon::k404NotFound);
+                callback(resp);
+                return;
+            }
+
+            if (candidate.size() > 1){
+                jsonResp["error"] = "User id is ambigious";
+                LOG_ERROR << "more than 1 user w id: " + userId;
+                const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+                resp->setStatusCode(drogon::k500InternalServerError);
+                callback(resp);
+                return;
+            }
+
+            const auto& row = candidate[0];
+
+            jsonResp["name"] = row["name"].as<std::string>();
+            jsonResp["surname"] = row["surname"].as<std::string>();
+            jsonResp["email"] = row["email"].as<std::string>();
+            jsonResp["phone_num"] = row["phone_num"].as<std::string>();
+            jsonResp["place"] = row["place"].as<std::string>();
+            jsonResp["study_info"] = row["place_of_study"].as<std::string>() + " " + row["faculty_of_educ"].as<std::string>();
+            jsonResp["experience_status_id"] = row["experience_status_id"].as<int>();
+
+            const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            resp -> setStatusCode(drogon::k200OK);
+            callback(resp);
+        },
+        [callback](const orm::DrogonDbException& err){
+            Json::Value jsonResp;
+            LOG_ERROR << err.base().what();
+            jsonResp["error"] = "Database error on candidate query";
+
+            const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
+            resp->setStatusCode(k500InternalServerError);
+            callback(resp);},
+        userId);
+
     }
