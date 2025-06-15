@@ -38,9 +38,14 @@ public:
         currentPage = 0;
         pageCache.clear();
     }
+    void createEmplFilters();
+    void createCandFilters();
+    QMap<QString, QWidget*> filterInputs;
+    QMap<QString, QWidget*> candFilterInputs;
 
     QWidget *createCandidatesPage(int numberPage);
-
+    QWidget *createCandidatesPageWithFilters(const QMap<QString, QVariant> &filters);
+    QWidget *createVacanciesPageWithFilters(const QMap<QString, QVariant> &filters);
     QWidget *createVacanciesPage(int numberPage);
 
     FlowLayout *getFlowLayout();

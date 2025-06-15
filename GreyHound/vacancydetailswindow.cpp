@@ -18,6 +18,7 @@ vacancyDetailsWindow::vacancyDetailsWindow(
       vacancy_id(vacancy_id_)
 {
     ui->setupUi(this);
+
     qDebug() << "tut1\n";
     ui->title->setText(title_);
     ui->company->setText(company_);
@@ -56,6 +57,8 @@ vacancyDetailsWindow::vacancyDetailsWindow(
             break;
     }
     ui->remoteness->setText(rmtnss);
+    this->setStyleSheet("QLabel { color: black; }");
+
 }
 
 vacancyDetailsWindow::~vacancyDetailsWindow() {
