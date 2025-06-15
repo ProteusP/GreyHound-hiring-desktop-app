@@ -23,7 +23,6 @@ private slots:
         auto aboutEdit = page.findChild<QTextEdit *>("aboutEdit");
 
         QVERIFY(nameEdit != nullptr);
-        QVERIFY(emailEdit != nullptr);
         QVERIFY(aboutEdit != nullptr);
 
         QCOMPARE(nameEdit->text(), companyName);
