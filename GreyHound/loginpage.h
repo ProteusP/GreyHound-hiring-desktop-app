@@ -6,9 +6,6 @@
 #include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QWidget>
-#include <QtSql/QSqlDatabase>
-#include <QtSql/QSqlError>
-#include <QtSql/QSqlQuery>
 
 namespace Ui {
 class LoginWidget;

@@ -17,7 +17,7 @@ class VacancyCard : public QFrame {
                          QWidget *parent = nullptr);
 
     void setFixedSize(int width, int height);
-    void setVacancyId(int id); // Переопределяем для внутренней настройки
+    void setVacancyId(int id);
 
   private slots:
     void on_detailsButton_clicked();

@@ -1,6 +1,6 @@
 #include "vacancydetailswindow.h"
-#include "ui_vacancydetailswindow.h"
 #include <QDebug>
+#include "ui_vacancydetailswindow.h"
 #include <QMessageBox>
 
 vacancyDetailsWindow::vacancyDetailsWindow(
@@ -80,18 +80,15 @@ void vacancyDetailsWindow::on_pushButton_clicked() {
             "border-radius: 5px; padding: 6px 12px; }"
             "QPushButton:hover { background-color: #2980b9; }");
 
-        // Читаем тело ответа всегда
         QByteArray responseData = reply->readAll();
         QJsonDocument jsonDoc = QJsonDocument::fromJson(responseData);
         QJsonObject obj = jsonDoc.object();
 
         if (reply->error() == QNetworkReply::NoError) {
-            // Всё прошло успешно
             msgBox.setIcon(QMessageBox::Information);
             msgBox.setWindowTitle("Успех");
             msgBox.setText("Отклик успешно отправлен!");
         } else {
-            // Ошибка — но проверим, может сервер дал пояснение
             QString serverError = obj["error"].toString();
             qDebug() << "Ошибка с сервера:" << serverError;
 

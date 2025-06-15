@@ -5,9 +5,6 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QNetworkAccessManager>
-#include <QSqlDatabase>
-#include <QSqlError>
-#include <QSqlQuery>
 #include <QWidget>
 
 namespace Ui {

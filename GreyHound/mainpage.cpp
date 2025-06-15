@@ -27,7 +27,6 @@ void MainPage::createEmplFilters() {
                          "margin-bottom: 8px;");
     mainVBox->addWidget(label);
 
-    // Названия полей
     QMap<QString, QString> textFields = {{"place_of_study", "Место обучения"},
                                          {"faculty_of_educ", "Факультет"},
                                          {"place", "Местоположение"}};
@@ -39,9 +38,8 @@ void MainPage::createEmplFilters() {
         {"experience_status_id", "Опыт"},
         {"work_schedule_status_id", "График"}};
 
-    filterInputs.clear(); // Очистим на случай повторного вызова
+    filterInputs.clear();
 
-    // Текстовые поля
     for (const auto &key : textFields.keys()) {
         QHBoxLayout *h = new QHBoxLayout();
         QLabel *lbl = new QLabel(textFields[key], this);
@@ -64,7 +62,6 @@ void MainPage::createEmplFilters() {
         filterInputs[key] = line;
     }
 
-    // Комбобоксы
     for (const auto &key : comboFields.keys()) {
         QHBoxLayout *h = new QHBoxLayout();
         QLabel *lbl = new QLabel(comboFields[key], this);
@@ -122,7 +119,6 @@ void MainPage::createEmplFilters() {
 
     mainVBox->addStretch();
 
-    // Кнопка "Применить"
     QPushButton *applyButton = new QPushButton("Применить", this);
     applyButton->setFixedWidth(160);
     applyButton->setStyleSheet("QPushButton {"
@@ -183,12 +179,10 @@ void MainPage::createCandFilters() {
                          "margin-bottom: 8px;");
     mainVBox->addWidget(label);
 
-    // Карта текстовых полей
     QMap<QString, QString> textFields = {{"salary", "Зарплата (от:)"},
                                          {"place", "Местоположение"},
                                          {"educ_place", "Место обучения"}};
 
-    // Карта комбобоксов
     QMap<QString, QString> comboFields = {{"experience_status_id", "Опыт"},
                                           {"work_schedule_status_id", "График"},
                                           {"educ_status_id", "Статус обучения"},
@@ -196,7 +190,6 @@ void MainPage::createCandFilters() {
 
     candFilterInputs.clear();
 
-    // Текстовые поля
     for (const auto &key : textFields.keys()) {
         QHBoxLayout *h = new QHBoxLayout();
         QLabel *lbl = new QLabel(textFields[key], this);
@@ -219,7 +212,6 @@ void MainPage::createCandFilters() {
         candFilterInputs[key] = line;
     }
 
-    // Комбобоксы
     for (const auto &key : comboFields.keys()) {
         QHBoxLayout *h = new QHBoxLayout();
         QLabel *lbl = new QLabel(comboFields[key], this);
@@ -320,76 +312,6 @@ void MainPage::createCandFilters() {
     });
 }
 
-// ggwp@mail.ru
-// Ggwp1122!
-void MainPage::setStatusOfCandidate(bool status_) { isCandidate = status_; }
-
-FlowLayout *MainPage::getFlowLayout() { return flow_layout; }
-
-// void MainPage::respondToVacancy(int vacancyId) {
-//     // 1. Проверяем авторизацию пользователя
-//     if (!isCandidate) {
-//         QMessageBox::warning(
-//             this, "Ошибка", "Только кандидаты могут откликаться на вакансии"
-//         );
-//         return;
-//     }
-
-//     int candidateId = getCurrentCandidateId();  // Нужно реализовать этот
-//     метод if (candidateId == -1) {
-//         QMessageBox::warning(
-//             this, "Ошибка", "Не удалось определить ваш профиль"
-//         );
-//         return;
-//     }
-
-//     QSqlQuery checkQuery;
-//     checkQuery.prepare(
-//         "SELECT COUNT(*) FROM responces "
-//         "WHERE candidate_id = ? AND vacancy_id = ?"
-//     );
-//     checkQuery.addBindValue(candidateId);
-//     checkQuery.addBindValue(vacancyId);
-
-//     if (!checkQuery.exec()) {
-//         QMessageBox::critical(
-//             this, "Ошибка",
-//             "Ошибка проверки откликов: " + checkQuery.lastError().text()
-//         );
-//         return;
-//     }
-
-//     if (checkQuery.next() && checkQuery.value(0).toInt() > 0) {
-//         QMessageBox::information(
-//             this, "Информация", "Вы уже откликались на эту вакансию"
-//         );
-//         return;
-//     }
-
-//     QSqlQuery insertQuery;
-//     insertQuery.prepare(
-//         "INSERT INTO responces "
-//         "(candidate_id, vacancy_id, status, created_at) "
-//         "VALUES (?, ?, 'pending', CURRENT_TIMESTAMP)"
-//     );
-//     insertQuery.addBindValue(candidateId);
-//     insertQuery.addBindValue(vacancyId);
-
-//     if (!insertQuery.exec()) {
-//         QMessageBox::critical(
-//             this, "Ошибка",
-//             "Не удалось сохранить отклик: " + insertQuery.lastError().text()
-//         );
-//         return;
-//     }
-
-//     QMessageBox::information(
-//         this, "Успех",
-//         "Ваш отклик успешно отправлен!\n"
-//         "Работодатель получит уведомление."
-//     );
-// }
-
 void MainPage::show(bool isemployee) {
     if (!isemployee) {
         int page = currentPage;
@@ -463,7 +385,6 @@ QWidget *MainPage::createCandidatesPageWithFilters(
     QWidget *candidateContainer = new QWidget(page);
     QVBoxLayout *candidateLayout = new QVBoxLayout(candidateContainer);
 
-    // 1. Показываем индикатор загрузки
     QLabel *loadingLabel = new QLabel("Загрузка...", candidateContainer);
     loadingLabel->setAlignment(Qt::AlignCenter);
     loadingLabel->setStyleSheet("font-size: 16px; color: gray; padding: 20px;");
@@ -475,7 +396,6 @@ QWidget *MainPage::createCandidatesPageWithFilters(
     pageLayout->addWidget(candidateContainer);
     page->setLayout(pageLayout);
 
-    // 2. Формируем URL
     QUrl url("http://localhost:80/api/v1/resources/candidateCards");
     QUrlQuery query;
     query.addQueryItem("page", QString::number(currentPage));
@@ -504,7 +424,6 @@ QWidget *MainPage::createCandidatesPageWithFilters(
             return;
         }
 
-        // Удаляем индикатор загрузки
         QLayout *oldLayout = candidateContainer->layout();
         if (oldLayout) {
             QLayoutItem *item;
@@ -515,7 +434,6 @@ QWidget *MainPage::createCandidatesPageWithFilters(
             delete oldLayout;
         }
 
-        // Создаём layout и добавляем карточки
         FlowLayout *flowLayout = new FlowLayout(candidateContainer);
         QByteArray responseData = reply->readAll();
         QJsonDocument jsonDoc = QJsonDocument::fromJson(responseData);
@@ -674,6 +592,10 @@ QWidget *MainPage::createVacanciesPageWithFilters(
 
     return page;
 }
+
+void MainPage::setStatusOfCandidate(bool status_) { isCandidate = status_; }
+
+FlowLayout *MainPage::getFlowLayout() { return flow_layout; }
 
 void MainPage::hide() {
     QLayoutItem *item;

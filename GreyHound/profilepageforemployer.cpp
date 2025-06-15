@@ -16,9 +16,7 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QVBoxLayout>
-#include <QtSql/QSqlError>
-#include <QtSql/QSqlQuery>
-#include <qdatetime.h>
+#include "ui_profilepageforemployer.h"
 
 ProfilePageForEmployer::ProfilePageForEmployer(QNetworkAccessManager *manager,
                                                QWidget *parent)
@@ -39,7 +37,7 @@ void ProfilePageForEmployer::SetupUI() {
                                        QSizePolicy::Expanding);
     responsesScrollArea->setStyleSheet("border: none;");
 
-    // Контейнер внутри ScrollArea
+
     responsesContainer = new QWidget();
     responsesLayout = new QVBoxLayout(responsesContainer);
     responsesLayout->setContentsMargins(10, 10, 10, 10);
@@ -48,7 +46,6 @@ void ProfilePageForEmployer::SetupUI() {
 
     responsesScrollArea->setWidget(responsesContainer);
 
-    // Добавляем scrollArea в основной layout формы (в твой verticalLayout)
     ui->verticalLayout->addWidget(responsesScrollArea);
 
     connect(ui->addVacancyButton, &QPushButton::clicked, this,
@@ -67,19 +64,17 @@ void ProfilePageForEmployer::setEmployerData(const QString &companyName,
     ui->companyNameEdit->setText(companyName);
     ui->emailEdit->setText(email);
     ui->aboutEdit->setPlainText(about);
-    loadVacancies();
     loadResponses();
 }
 
 void ProfilePageForEmployer::loadResponses() {
-    // Очищаем старые виджеты
+
     QLayoutItem *item;
     while ((item = responsesLayout->takeAt(0)) != nullptr) {
         delete item->widget();
         delete item;
     }
 
-    // Отправляем запрос к API
     QUrl url("http://localhost:80/api/v1/Notifications/getResponsesForEmpl");
     QNetworkRequest request(url);
     QNetworkReply *reply = networkManager->get(request);
@@ -307,7 +302,6 @@ void ProfilePageForEmployer::addCandidateWidget(
         sendAcceptanceEmail(candidateId, vacancyId); // передаём только ID'шники
         deleteResponse(vacancyId, candidateId);
     });
-
     connect(rejectBtn, &QPushButton::clicked, this,
             [this, candidateId, vacancyId]() {
                 deleteResponse(vacancyId, candidateId);
@@ -357,7 +351,7 @@ void ProfilePageForEmployer::deleteResponse(int vacancyId, int candidateId) {
     connect(reply, &QNetworkReply::finished, this, [=]() {
         reply->deleteLater();
         if (reply->error() == QNetworkReply::NoError) {
-            loadResponses(); // Обновим список
+            loadResponses();
         } else {
             qDebug() << "Ошибка удаления отклика:" << reply->errorString();
             QMessageBox::critical(this, "Ошибка", "Не удалось удалить отклик.");

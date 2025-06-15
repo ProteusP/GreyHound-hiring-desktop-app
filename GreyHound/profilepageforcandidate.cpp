@@ -48,8 +48,6 @@ void ProfilePageForCandidate::setCandidateData(
     ui->emailEdit->setText(email);
     ui->phoneEdit->setText(phoneNum);
     ui->placeEdit->setText(place);
-    // qDebug() << search_status_id << "<- серч статус, эксп статус -> " <<
-    // experience_status_id << '\n';
     ui->statusCombo->setCurrentIndex(search_status_id - 1);
     ui->universityEdit->setText(place_of_study);
     ui->facultyEdit->setText(faculty_of_educ);
@@ -95,49 +93,6 @@ void ProfilePageForCandidate::onSaveClicked() {
         }
         reply->deleteLater();
     });
-    // saveResumeData();
-}
-
-void ProfilePageForCandidate::loadResumeData() {
-    QSqlQuery query;
-    query.prepare(
-        "SELECT place_of_study, faculty_of_educ FROM candidates WHERE email "
-        "=:email");
-    QString email = ui->emailLabel->text();
-    query.bindValue(":email", email);
-    if (!query.exec() || !query.next()) {
-        qDebug() << "Не удалось получить данные для резюме";
-        return;
-    }
-
-    QString university = query.value(0).toString();
-    QString faculty = query.value(1).toString();
-
-    ui->universityEdit->setText(university);
-    ui->facultyEdit->setText(faculty);
-    // TODO add experience and smth else...
-}
-
-void ProfilePageForCandidate::saveResumeData() {
-    QSqlQuery query;
-    // TODO add experience and smth else...
-    query.prepare(
-        "UPDATE candidates SET  place_of_study =:university, faculty_of_educ "
-        "=:faculty WHERE email =:email");
-
-    QString email = ui->emailLabel->text();
-    QString university = ui->universityEdit->text();
-    QString faculty = ui->facultyEdit->text();
-
-    query.bindValue(":email", email);
-    query.bindValue(":university", university);
-    query.bindValue(":faculty", faculty);
-
-    if (!query.exec()) {
-        QMessageBox::critical(this, "Ошибка",
-                              "Ошибка сохранения резюме: " +
-                                  query.lastError().text());
-    }
 }
 
 void ProfilePageForCandidate::on_resumeButton_clicked() {

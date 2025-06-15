@@ -12,9 +12,7 @@
 #include <QScrollArea>
 #include <QString>
 #include <QWidget>
-#include <QtSql/QSqlDatabase>
-#include <QtSql/QSqlError>
-#include <QtSql/QSqlQuery>
+#include "resume.h"
 
 namespace Ui {
 class ProfilePageForCandidate;
@@ -35,13 +33,13 @@ class ProfilePageForCandidate : public QWidget {
                           const qint16 &experience_status_id);
     void saveChangesToDB(const QString &newPhone, const QString &newPlace,
                          const QString &newSearchStatus);
+signals:
     void loadResumeData();
     void saveResumeData();
-  signals:
     void homeButtonClicked();
     void logoutButtonClicked();
 
-  private slots:
+private slots:
     void onSaveClicked();
 
     void on_resumeButton_clicked();
