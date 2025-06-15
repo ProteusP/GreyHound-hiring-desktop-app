@@ -14,25 +14,23 @@ class RegisterPageForEmployer;
 class RegisterPageForEmployer : public QWidget {
     Q_OBJECT
 
-public:
-    explicit RegisterPageForEmployer(
-        QNetworkAccessManager *manager,
-        QWidget *parent = nullptr
-    );
+  public:
+    explicit RegisterPageForEmployer(QNetworkAccessManager *manager,
+                                     QWidget *parent = nullptr);
     ~RegisterPageForEmployer();
 
-private slots:
+  private slots:
     void on_registrationPB_employer_clicked();
 
     void on_backToStatusPB_clicked();
 
-private:
+  private:
     Ui::RegisterPageForEmployer *ui;
     QNetworkAccessManager *networkManager;
 
-signals:
+  signals:
     void registerSuccessful();
     void backToRegisterStatusPagePressed();
 };
 
-#endif  // REGISTERPAGEFOREMPLOYER_H
+#endif // REGISTERPAGEFOREMPLOYER_H

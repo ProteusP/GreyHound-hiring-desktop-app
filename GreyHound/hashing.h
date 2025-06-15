@@ -7,4 +7,4 @@
 
 QString hashPassword(const QString &password);
 
-#endif  // HASHING_H
+#endif // HASHING_H

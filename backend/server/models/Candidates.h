@@ -6,44 +6,38 @@
  */
 
 #pragma once
+#include <drogon/orm/BaseBuilder.h>
+#include <drogon/orm/Field.h>
+#include <drogon/orm/Mapper.h>
 #include <drogon/orm/Result.h>
 #include <drogon/orm/Row.h>
-#include <drogon/orm/Field.h>
 #include <drogon/orm/SqlBinder.h>
-#include <drogon/orm/Mapper.h>
-#include <drogon/orm/BaseBuilder.h>
 #ifdef __cpp_impl_coroutine
 #include <drogon/orm/CoroMapper.h>
 #endif
-#include <trantor/utils/Date.h>
-#include <trantor/utils/Logger.h>
+#include <iostream>
 #include <json/json.h>
+#include <memory>
+#include <stdint.h>
 #include <string>
 #include <string_view>
-#include <memory>
-#include <vector>
+#include <trantor/utils/Date.h>
+#include <trantor/utils/Logger.h>
 #include <tuple>
-#include <stdint.h>
-#include <iostream>
+#include <vector>
 
-namespace drogon
-{
-namespace orm
-{
+namespace drogon {
+namespace orm {
 class DbClient;
 using DbClientPtr = std::shared_ptr<DbClient>;
-}
-}
-namespace drogon_model
-{
-namespace default_db
-{
+} // namespace orm
+} // namespace drogon
+namespace drogon_model {
+namespace default_db {
 
-class Candidates
-{
+class Candidates {
   public:
-    struct Cols
-    {
+    struct Cols {
         static const std::string _name;
         static const std::string _surname;
         static const std::string _email;
@@ -72,12 +66,13 @@ class Candidates
     /**
      * @brief constructor
      * @param r One row of records in the SQL query result.
-     * @param indexOffset Set the offset to -1 to access all columns by column names,
-     * otherwise access all columns by offsets.
-     * @note If the SQL is not a style of 'select * from table_name ...' (select all
-     * columns by an asterisk), please set the offset to -1.
+     * @param indexOffset Set the offset to -1 to access all columns by column
+     * names, otherwise access all columns by offsets.
+     * @note If the SQL is not a style of 'select * from table_name ...' (select
+     * all columns by an asterisk), please set the offset to -1.
      */
-    explicit Candidates(const drogon::orm::Row &r, const ssize_t indexOffset = 0) noexcept;
+    explicit Candidates(const drogon::orm::Row &r,
+                        const ssize_t indexOffset = 0) noexcept;
 
     /**
      * @brief constructor
@@ -90,183 +85,218 @@ class Candidates
      * @param pJson The json object to construct a new instance.
      * @param pMasqueradingVector The aliases of table columns.
      */
-    Candidates(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector) noexcept(false);
+    Candidates(
+        const Json::Value &pJson,
+        const std::vector<std::string> &pMasqueradingVector) noexcept(false);
 
     Candidates() = default;
 
     void updateByJson(const Json::Value &pJson) noexcept(false);
-    void updateByMasqueradedJson(const Json::Value &pJson,
-                                 const std::vector<std::string> &pMasqueradingVector) noexcept(false);
-    static bool validateJsonForCreation(const Json::Value &pJson, std::string &err);
-    static bool validateMasqueradedJsonForCreation(const Json::Value &,
-                                                const std::vector<std::string> &pMasqueradingVector,
-                                                    std::string &err);
-    static bool validateJsonForUpdate(const Json::Value &pJson, std::string &err);
-    static bool validateMasqueradedJsonForUpdate(const Json::Value &,
-                                          const std::vector<std::string> &pMasqueradingVector,
-                                          std::string &err);
-    static bool validJsonOfField(size_t index,
-                          const std::string &fieldName,
-                          const Json::Value &pJson,
-                          std::string &err,
-                          bool isForCreation);
+    void updateByMasqueradedJson(
+        const Json::Value &pJson,
+        const std::vector<std::string> &pMasqueradingVector) noexcept(false);
+    static bool validateJsonForCreation(const Json::Value &pJson,
+                                        std::string &err);
+    static bool validateMasqueradedJsonForCreation(
+        const Json::Value &,
+        const std::vector<std::string> &pMasqueradingVector, std::string &err);
+    static bool validateJsonForUpdate(const Json::Value &pJson,
+                                      std::string &err);
+    static bool validateMasqueradedJsonForUpdate(
+        const Json::Value &,
+        const std::vector<std::string> &pMasqueradingVector, std::string &err);
+    static bool validJsonOfField(size_t index, const std::string &fieldName,
+                                 const Json::Value &pJson, std::string &err,
+                                 bool isForCreation);
 
     /**  For column name  */
-    ///Get the value of the column name, returns the default value if the column is null
+    /// Get the value of the column name, returns the default value if the
+    /// column is null
     const std::string &getValueOfName() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<std::string> &getName() const noexcept;
-    ///Set the value of the column name
+    /// Set the value of the column name
     void setName(const std::string &pName) noexcept;
     void setName(std::string &&pName) noexcept;
 
     /**  For column surname  */
-    ///Get the value of the column surname, returns the default value if the column is null
+    /// Get the value of the column surname, returns the default value if the
+    /// column is null
     const std::string &getValueOfSurname() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<std::string> &getSurname() const noexcept;
-    ///Set the value of the column surname
+    /// Set the value of the column surname
     void setSurname(const std::string &pSurname) noexcept;
     void setSurname(std::string &&pSurname) noexcept;
 
     /**  For column email  */
-    ///Get the value of the column email, returns the default value if the column is null
+    /// Get the value of the column email, returns the default value if the
+    /// column is null
     const std::string &getValueOfEmail() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<std::string> &getEmail() const noexcept;
-    ///Set the value of the column email
+    /// Set the value of the column email
     void setEmail(const std::string &pEmail) noexcept;
     void setEmail(std::string &&pEmail) noexcept;
 
     /**  For column phone_num  */
-    ///Get the value of the column phone_num, returns the default value if the column is null
+    /// Get the value of the column phone_num, returns the default value if the
+    /// column is null
     const std::string &getValueOfPhoneNum() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<std::string> &getPhoneNum() const noexcept;
-    ///Set the value of the column phone_num
+    /// Set the value of the column phone_num
     void setPhoneNum(const std::string &pPhoneNum) noexcept;
     void setPhoneNum(std::string &&pPhoneNum) noexcept;
     void setPhoneNumToNull() noexcept;
 
     /**  For column resume  */
-    ///Get the value of the column resume, returns the default value if the column is null
+    /// Get the value of the column resume, returns the default value if the
+    /// column is null
     const std::string &getValueOfResume() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<std::string> &getResume() const noexcept;
-    ///Set the value of the column resume
+    /// Set the value of the column resume
     void setResume(const std::string &pResume) noexcept;
     void setResume(std::string &&pResume) noexcept;
     void setResumeToNull() noexcept;
 
     /**  For column place_of_study  */
-    ///Get the value of the column place_of_study, returns the default value if the column is null
+    /// Get the value of the column place_of_study, returns the default value if
+    /// the column is null
     const std::string &getValueOfPlaceOfStudy() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<std::string> &getPlaceOfStudy() const noexcept;
-    ///Set the value of the column place_of_study
+    /// Set the value of the column place_of_study
     void setPlaceOfStudy(const std::string &pPlaceOfStudy) noexcept;
     void setPlaceOfStudy(std::string &&pPlaceOfStudy) noexcept;
     void setPlaceOfStudyToNull() noexcept;
 
     /**  For column faculty_of_educ  */
-    ///Get the value of the column faculty_of_educ, returns the default value if the column is null
+    /// Get the value of the column faculty_of_educ, returns the default value
+    /// if the column is null
     const std::string &getValueOfFacultyOfEduc() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<std::string> &getFacultyOfEduc() const noexcept;
-    ///Set the value of the column faculty_of_educ
+    /// Set the value of the column faculty_of_educ
     void setFacultyOfEduc(const std::string &pFacultyOfEduc) noexcept;
     void setFacultyOfEduc(std::string &&pFacultyOfEduc) noexcept;
     void setFacultyOfEducToNull() noexcept;
 
     /**  For column graduation_year  */
-    ///Get the value of the column graduation_year, returns the default value if the column is null
+    /// Get the value of the column graduation_year, returns the default value
+    /// if the column is null
     const int32_t &getValueOfGraduationYear() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<int32_t> &getGraduationYear() const noexcept;
-    ///Set the value of the column graduation_year
+    /// Set the value of the column graduation_year
     void setGraduationYear(const int32_t &pGraduationYear) noexcept;
     void setGraduationYearToNull() noexcept;
 
     /**  For column about  */
-    ///Get the value of the column about, returns the default value if the column is null
+    /// Get the value of the column about, returns the default value if the
+    /// column is null
     const std::string &getValueOfAbout() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<std::string> &getAbout() const noexcept;
-    ///Set the value of the column about
+    /// Set the value of the column about
     void setAbout(const std::string &pAbout) noexcept;
     void setAbout(std::string &&pAbout) noexcept;
     void setAboutToNull() noexcept;
 
     /**  For column place  */
-    ///Get the value of the column place, returns the default value if the column is null
+    /// Get the value of the column place, returns the default value if the
+    /// column is null
     const std::string &getValueOfPlace() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<std::string> &getPlace() const noexcept;
-    ///Set the value of the column place
+    /// Set the value of the column place
     void setPlace(const std::string &pPlace) noexcept;
     void setPlace(std::string &&pPlace) noexcept;
     void setPlaceToNull() noexcept;
 
     /**  For column search_status_id  */
-    ///Get the value of the column search_status_id, returns the default value if the column is null
+    /// Get the value of the column search_status_id, returns the default value
+    /// if the column is null
     const int32_t &getValueOfSearchStatusId() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<int32_t> &getSearchStatusId() const noexcept;
-    ///Set the value of the column search_status_id
+    /// Set the value of the column search_status_id
     void setSearchStatusId(const int32_t &pSearchStatusId) noexcept;
     void setSearchStatusIdToNull() noexcept;
 
     /**  For column educ_status_id  */
-    ///Get the value of the column educ_status_id, returns the default value if the column is null
+    /// Get the value of the column educ_status_id, returns the default value if
+    /// the column is null
     const int32_t &getValueOfEducStatusId() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<int32_t> &getEducStatusId() const noexcept;
-    ///Set the value of the column educ_status_id
+    /// Set the value of the column educ_status_id
     void setEducStatusId(const int32_t &pEducStatusId) noexcept;
     void setEducStatusIdToNull() noexcept;
 
     /**  For column experience_status_id  */
-    ///Get the value of the column experience_status_id, returns the default value if the column is null
+    /// Get the value of the column experience_status_id, returns the default
+    /// value if the column is null
     const int32_t &getValueOfExperienceStatusId() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<int32_t> &getExperienceStatusId() const noexcept;
-    ///Set the value of the column experience_status_id
+    /// Set the value of the column experience_status_id
     void setExperienceStatusId(const int32_t &pExperienceStatusId) noexcept;
     void setExperienceStatusIdToNull() noexcept;
 
     /**  For column work_schedule_status_id  */
-    ///Get the value of the column work_schedule_status_id, returns the default value if the column is null
+    /// Get the value of the column work_schedule_status_id, returns the default
+    /// value if the column is null
     const int32_t &getValueOfWorkScheduleStatusId() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<int32_t> &getWorkScheduleStatusId() const noexcept;
-    ///Set the value of the column work_schedule_status_id
+    /// Set the value of the column work_schedule_status_id
     void setWorkScheduleStatusId(const int32_t &pWorkScheduleStatusId) noexcept;
     void setWorkScheduleStatusIdToNull() noexcept;
 
     /**  For column search_status  */
-    ///Get the value of the column search_status, returns the default value if the column is null
+    /// Get the value of the column search_status, returns the default value if
+    /// the column is null
     const std::string &getValueOfSearchStatus() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<std::string> &getSearchStatus() const noexcept;
-    ///Set the value of the column search_status
+    /// Set the value of the column search_status
     void setSearchStatus(const std::string &pSearchStatus) noexcept;
     void setSearchStatus(std::string &&pSearchStatus) noexcept;
     void setSearchStatusToNull() noexcept;
 
     /**  For column user_id  */
-    ///Get the value of the column user_id, returns the default value if the column is null
+    /// Get the value of the column user_id, returns the default value if the
+    /// column is null
     const int32_t &getValueOfUserId() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<int32_t> &getUserId() const noexcept;
-    ///Set the value of the column user_id
+    /// Set the value of the column user_id
     void setUserId(const int32_t &pUserId) noexcept;
 
-
-    static size_t getColumnNumber() noexcept {  return 16;  }
+    static size_t getColumnNumber() noexcept { return 16; }
     static const std::string &getColumnName(size_t index) noexcept(false);
 
     Json::Value toJson() const;
-    Json::Value toMasqueradedJson(const std::vector<std::string> &pMasqueradingVector) const;
+    Json::Value toMasqueradedJson(
+        const std::vector<std::string> &pMasqueradingVector) const;
     /// Relationship interfaces
   private:
     friend drogon::orm::Mapper<Candidates>;
@@ -281,7 +311,7 @@ class Candidates
     void outputArgs(drogon::orm::internal::SqlBinder &binder) const;
     const std::vector<std::string> updateColumns() const;
     void updateArgs(drogon::orm::internal::SqlBinder &binder) const;
-    ///For mysql or sqlite3
+    /// For mysql or sqlite3
     void updateId(const uint64_t id);
     std::shared_ptr<std::string> name_;
     std::shared_ptr<std::string> surname_;
@@ -299,8 +329,7 @@ class Candidates
     std::shared_ptr<int32_t> workScheduleStatusId_;
     std::shared_ptr<std::string> searchStatus_;
     std::shared_ptr<int32_t> userId_;
-    struct MetaData
-    {
+    struct MetaData {
         const std::string colName_;
         const std::string colType_;
         const std::string colDatabaseType_;
@@ -310,199 +339,147 @@ class Candidates
         const bool notNull_;
     };
     static const std::vector<MetaData> metaData_;
-    bool dirtyFlag_[16]={ false };
+    bool dirtyFlag_[16] = {false};
+
   public:
-    static const std::string &sqlForFindingByPrimaryKey()
-    {
-        static const std::string sql="select * from " + tableName + " where user_id = ?";
+    static const std::string &sqlForFindingByPrimaryKey() {
+        static const std::string sql =
+            "select * from " + tableName + " where user_id = ?";
         return sql;
     }
 
-    static const std::string &sqlForDeletingByPrimaryKey()
-    {
-        static const std::string sql="delete from " + tableName + " where user_id = ?";
+    static const std::string &sqlForDeletingByPrimaryKey() {
+        static const std::string sql =
+            "delete from " + tableName + " where user_id = ?";
         return sql;
     }
-    std::string sqlForInserting(bool &needSelection) const
-    {
-        std::string sql="insert into " + tableName + " (";
+    std::string sqlForInserting(bool &needSelection) const {
+        std::string sql = "insert into " + tableName + " (";
         size_t parametersCount = 0;
         needSelection = false;
-        if(dirtyFlag_[0])
-        {
+        if (dirtyFlag_[0]) {
             sql += "name,";
             ++parametersCount;
         }
-        if(dirtyFlag_[1])
-        {
+        if (dirtyFlag_[1]) {
             sql += "surname,";
             ++parametersCount;
         }
-        if(dirtyFlag_[2])
-        {
+        if (dirtyFlag_[2]) {
             sql += "email,";
             ++parametersCount;
         }
-        if(dirtyFlag_[3])
-        {
+        if (dirtyFlag_[3]) {
             sql += "phone_num,";
             ++parametersCount;
         }
-        if(dirtyFlag_[4])
-        {
+        if (dirtyFlag_[4]) {
             sql += "resume,";
             ++parametersCount;
         }
-        if(dirtyFlag_[5])
-        {
+        if (dirtyFlag_[5]) {
             sql += "place_of_study,";
             ++parametersCount;
         }
-        if(dirtyFlag_[6])
-        {
+        if (dirtyFlag_[6]) {
             sql += "faculty_of_educ,";
             ++parametersCount;
         }
-        if(dirtyFlag_[7])
-        {
+        if (dirtyFlag_[7]) {
             sql += "graduation_year,";
             ++parametersCount;
         }
-        if(dirtyFlag_[8])
-        {
+        if (dirtyFlag_[8]) {
             sql += "about,";
             ++parametersCount;
         }
-        if(dirtyFlag_[9])
-        {
+        if (dirtyFlag_[9]) {
             sql += "place,";
             ++parametersCount;
         }
         sql += "search_status_id,";
         ++parametersCount;
-        if(!dirtyFlag_[10])
-        {
-            needSelection=true;
+        if (!dirtyFlag_[10]) {
+            needSelection = true;
         }
-        if(dirtyFlag_[11])
-        {
+        if (dirtyFlag_[11]) {
             sql += "educ_status_id,";
             ++parametersCount;
         }
-        if(dirtyFlag_[12])
-        {
+        if (dirtyFlag_[12]) {
             sql += "experience_status_id,";
             ++parametersCount;
         }
-        if(dirtyFlag_[13])
-        {
+        if (dirtyFlag_[13]) {
             sql += "work_schedule_status_id,";
             ++parametersCount;
         }
-        if(dirtyFlag_[14])
-        {
+        if (dirtyFlag_[14]) {
             sql += "search_status,";
             ++parametersCount;
         }
-        if(dirtyFlag_[15])
-        {
+        if (dirtyFlag_[15]) {
             sql += "user_id,";
             ++parametersCount;
         }
-        if(parametersCount > 0)
-        {
-            sql[sql.length()-1]=')';
+        if (parametersCount > 0) {
+            sql[sql.length() - 1] = ')';
             sql += " values (";
-        }
-        else
+        } else
             sql += ") values (";
 
-        if(dirtyFlag_[0])
-        {
+        if (dirtyFlag_[0]) {
+            sql.append("?,");
+        }
+        if (dirtyFlag_[1]) {
+            sql.append("?,");
+        }
+        if (dirtyFlag_[2]) {
+            sql.append("?,");
+        }
+        if (dirtyFlag_[3]) {
+            sql.append("?,");
+        }
+        if (dirtyFlag_[4]) {
+            sql.append("?,");
+        }
+        if (dirtyFlag_[5]) {
+            sql.append("?,");
+        }
+        if (dirtyFlag_[6]) {
+            sql.append("?,");
+        }
+        if (dirtyFlag_[7]) {
+            sql.append("?,");
+        }
+        if (dirtyFlag_[8]) {
+            sql.append("?,");
+        }
+        if (dirtyFlag_[9]) {
+            sql.append("?,");
+        }
+        if (dirtyFlag_[10]) {
             sql.append("?,");
 
+        } else {
+            sql += "default,";
         }
-        if(dirtyFlag_[1])
-        {
+        if (dirtyFlag_[11]) {
             sql.append("?,");
-
         }
-        if(dirtyFlag_[2])
-        {
+        if (dirtyFlag_[12]) {
             sql.append("?,");
-
         }
-        if(dirtyFlag_[3])
-        {
+        if (dirtyFlag_[13]) {
             sql.append("?,");
-
         }
-        if(dirtyFlag_[4])
-        {
+        if (dirtyFlag_[14]) {
             sql.append("?,");
-
         }
-        if(dirtyFlag_[5])
-        {
+        if (dirtyFlag_[15]) {
             sql.append("?,");
-
         }
-        if(dirtyFlag_[6])
-        {
-            sql.append("?,");
-
-        }
-        if(dirtyFlag_[7])
-        {
-            sql.append("?,");
-
-        }
-        if(dirtyFlag_[8])
-        {
-            sql.append("?,");
-
-        }
-        if(dirtyFlag_[9])
-        {
-            sql.append("?,");
-
-        }
-        if(dirtyFlag_[10])
-        {
-            sql.append("?,");
-
-        }
-        else
-        {
-            sql +="default,";
-        }
-        if(dirtyFlag_[11])
-        {
-            sql.append("?,");
-
-        }
-        if(dirtyFlag_[12])
-        {
-            sql.append("?,");
-
-        }
-        if(dirtyFlag_[13])
-        {
-            sql.append("?,");
-
-        }
-        if(dirtyFlag_[14])
-        {
-            sql.append("?,");
-
-        }
-        if(dirtyFlag_[15])
-        {
-            sql.append("?,");
-
-        }
-        if(parametersCount > 0)
-        {
+        if (parametersCount > 0) {
             sql.resize(sql.length() - 1);
         }
         sql.append(1, ')');

@@ -1,11 +1,8 @@
 #include "customwidgets.h"
 
-VacancyCard::VacancyCard(
-    const QString &titleLabel_,
-    const QString &companyLabel_,
-    const QString &descLabel_,
-    QWidget *parent
-)
+VacancyCard::VacancyCard(const QString &titleLabel_,
+                         const QString &companyLabel_,
+                         const QString &descLabel_, QWidget *parent)
     : QFrame(parent) {
     QLabel *titleLabel = new QLabel(titleLabel_, this);
     QLabel *companyLabel = new QLabel(companyLabel_, this);

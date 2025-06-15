@@ -1,8 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QNetworkAccessManager>
 #include "loginpage.h"
 #include "mainpage.h"
 #include "profilepageforcandidate.h"
@@ -10,6 +8,8 @@
 #include "registerpageforcandidate.h"
 #include "registerpageforemployer.h"
 #include "registerstatus.h"
+#include <QMainWindow>
+#include <QNetworkAccessManager>
 
 QT_BEGIN_NAMESPACE
 
@@ -22,19 +22,15 @@ QT_END_NAMESPACE
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
-public:
+  public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    QString getEmail() {
-        return email;
-    }
+    QString getEmail() { return email; }
 
-    void setEmail(QString email_) {
-        email = email_;
-    }
+    void setEmail(QString email_) { email = email_; }
 
-private slots:
+  private slots:
     void onMainPage(bool isCandidate);
     void onRegisterStatusPage();
     void onBackToLoginPage();
@@ -48,7 +44,7 @@ private slots:
     void onProfileEmployerHomeClicked();
     void onLogoutClicked();
 
-private:
+  private:
     QNetworkAccessManager *networkManager;
     Ui::MainWindow *ui;
     QString email;
@@ -61,4 +57,4 @@ private:
     ProfilePageForEmployer *profileEmployerPage;
     friend class MainWindowTest;
 };
-#endif  // MAINWINDOW_H
+#endif // MAINWINDOW_H

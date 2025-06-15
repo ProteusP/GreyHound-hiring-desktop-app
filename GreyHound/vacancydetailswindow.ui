@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>428</width>
-    <height>238</height>
+    <width>432</width>
+    <height>247</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -206,6 +206,11 @@ QGroupBox {
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
            <widget class="QLabel" name="title">
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+  color: black;
+}</string>
+            </property>
             <property name="text">
              <string/>
             </property>

@@ -9,15 +9,13 @@ PasswordWarningDialog::PasswordWarningDialog(QWidget *parent)
     setFixedSize(300, 200);
     QVBoxLayout *layout = new QVBoxLayout(this);
 
-    QLabel *label = new QLabel(
-        "Пароль должен содержать:\n"
-        "• Минимум 8 символов\n"
-        "• Хотя бы одну заглавную букву\n"
-        "• Хотя бы одну строчную букву\n"
-        "• Хотя бы одну цифру\n"
-        "• Хотя бы один спец. символ",
-        this
-    );
+    QLabel *label = new QLabel("Пароль должен содержать:\n"
+                               "• Минимум 8 символов\n"
+                               "• Хотя бы одну заглавную букву\n"
+                               "• Хотя бы одну строчную букву\n"
+                               "• Хотя бы одну цифру\n"
+                               "• Хотя бы один спец. символ",
+                               this);
     label->setStyleSheet("color: red; font-size: 12px;");
 
     QPushButton *okButton = new QPushButton("ОК", this);

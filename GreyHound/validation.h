@@ -7,4 +7,4 @@ bool isEmailValid(const QString &email);
 
 bool isPasswordValid(const QString &password);
 
-#endif  // VALIDATION_H
+#endif // VALIDATION_H

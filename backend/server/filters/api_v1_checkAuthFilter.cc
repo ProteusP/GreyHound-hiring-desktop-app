@@ -12,14 +12,13 @@
 using namespace drogon;
 using namespace api::v1;
 
-void checkAuthFilter::doFilter(const HttpRequestPtr &req,
-                         FilterCallback &&fcb,
-                         FilterChainCallback &&fccb)
-{
+void checkAuthFilter::doFilter(const HttpRequestPtr &req, FilterCallback &&fcb,
+                               FilterChainCallback &&fccb) {
     auto session = req->session();
     LOG_DEBUG << "Filter checkAuthFilter: request to " << req->getPath();
     /*We would need to add a constant for the field in the session */
-    if (!session || !session->find("authenticated") || !session->get<bool>("authenticated")){
+    if (!session || !session->find("authenticated") ||
+        !session->get<bool>("authenticated")) {
         Json::Value json;
         json["error"] = "Unauthorized";
 
@@ -28,6 +27,6 @@ void checkAuthFilter::doFilter(const HttpRequestPtr &req,
         fcb(resp);
         return;
     }
-    //passed
+    // passed
     fccb();
 }

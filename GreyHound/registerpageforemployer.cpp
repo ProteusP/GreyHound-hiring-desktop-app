@@ -1,21 +1,18 @@
 #include "registerpageforemployer.h"
+#include "hashing.h"
+#include "passwordwarningdialog.h"
+#include "ui_registerpageforemployer.h"
+#include "validation.h"
 #include <QGraphicsDropShadowEffect>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
-#include "hashing.h"
-#include "passwordwarningdialog.h"
-#include "ui_registerpageforemployer.h"
-#include "validation.h"
 
-RegisterPageForEmployer::RegisterPageForEmployer(
-    QNetworkAccessManager *manager,
-    QWidget *parent
-)
-    : QWidget(parent),
-      ui(new Ui::RegisterPageForEmployer),
+RegisterPageForEmployer::RegisterPageForEmployer(QNetworkAccessManager *manager,
+                                                 QWidget *parent)
+    : QWidget(parent), ui(new Ui::RegisterPageForEmployer),
       networkManager(manager) {
     ui->setupUi(this);
 
@@ -27,9 +24,7 @@ RegisterPageForEmployer::RegisterPageForEmployer(
     ui->widget->setGraphicsEffect(shadow);
 }
 
-RegisterPageForEmployer::~RegisterPageForEmployer() {
-    delete ui;
-}
+RegisterPageForEmployer::~RegisterPageForEmployer() { delete ui; }
 
 void RegisterPageForEmployer::on_registrationPB_employer_clicked() {
     QString company_name = ui->registrationLineEditCompanyNameEmployer->text();
@@ -39,9 +34,8 @@ void RegisterPageForEmployer::on_registrationPB_employer_clicked() {
 
     std::vector<QString> fieldInputVec = {company_name, email, password};
     if (fieldInputVec[0].isEmpty() || fieldInputVec[0].isEmpty()) {
-        QMessageBox::warning(
-            this, "Ошибка", "Никакое поле не должно быть пустым"
-        );
+        QMessageBox::warning(this, "Ошибка",
+                             "Никакое поле не должно быть пустым");
         return;
     }
 
@@ -74,9 +68,8 @@ void RegisterPageForEmployer::on_registrationPB_employer_clicked() {
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
                     .toInt();
             if (statusCode == 409) {
-                QMessageBox::warning(
-                    this, "Ошибка", "Этот email уже зарегистрирован."
-                );
+                QMessageBox::warning(this, "Ошибка",
+                                     "Этот email уже зарегистрирован.");
             } else if (statusCode == 400) {
                 QMessageBox::warning(this, "Упс...", "Ошибка сервера.");
             } else {

@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "./ui_mainwindow.h"
 #include <QDebug>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -7,7 +8,6 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QString>
-#include "./ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
@@ -37,74 +37,65 @@ MainWindow::MainWindow(QWidget *parent)
     ui->stackedWidget->addWidget(profileEmployerPage);
 
     ui->stackedWidget->setCurrentWidget(loginPage);
-    connect(
-        loginPage, &LoginWidget::loginSuccessful, this,
-        [this](bool isCandidate) { onMainPage(isCandidate); }
-    );
-    connect(
-        loginPage, &LoginWidget::registerPressed, this,
-        &MainWindow::onRegisterStatusPage
-    );
-    connect(
-        registerStatusPage, &RegisterStatus::backToLoginPressed, this,
-        &MainWindow::onBackToLoginPage
-    );
-    connect(
-        registerStatusPage, &RegisterStatus::statusCandidatePressed, this,
-        &MainWindow::onStatusCandidatePage
-    );
-    connect(
-        registerStatusPage, &RegisterStatus::statusEmployerPressed, this,
-        &MainWindow::onStatusEmployerPage
-    );
-    connect(
-        registerCandidatePage,
-        &RegisterPageForCandidate::backToRegisterStatusPagePressed, this,
-        &MainWindow::onBackToRegisterStatusPage
-    );
-    connect(
-        registerEmployerPage,
-        &RegisterPageForEmployer::backToRegisterStatusPagePressed, this,
-        &MainWindow::onBackToRegisterStatusPage
-    );
-    connect(
-        registerCandidatePage, &RegisterPageForCandidate::registerSuccessful,
-        this, &MainWindow::registerSuccess
-    );
-    connect(
-        registerEmployerPage, &RegisterPageForEmployer::registerSuccessful,
-        this, &MainWindow::registerSuccess
-    );
-    connect(
-        mainPage, &MainPage::onProfilePressed, this, &MainWindow::onProfilePage
-    );
-    connect(
-        profileCandidatePage, &ProfilePageForCandidate::homeButtonClicked, this,
-        &MainWindow::onProfileCandidateHomeClicked
-    );
-    connect(
-        profileEmployerPage, &ProfilePageForEmployer::homeButtonClicked, this,
-        &MainWindow::onProfileEmployerHomeClicked
-    );
-    connect(
-        profileEmployerPage, &ProfilePageForEmployer::logoutButtonClicked, this,
-        &MainWindow::onLogoutClicked
-    );
-    connect(
-        profileCandidatePage, &ProfilePageForCandidate::logoutButtonClicked,
-        this, &MainWindow::onLogoutClicked
-    );
+    connect(loginPage, &LoginWidget::loginSuccessful, this,
+            [this](bool isCandidate) { onMainPage(isCandidate); });
+    connect(loginPage, &LoginWidget::registerPressed, this,
+            &MainWindow::onRegisterStatusPage);
+    connect(registerStatusPage, &RegisterStatus::backToLoginPressed, this,
+            &MainWindow::onBackToLoginPage);
+    connect(registerStatusPage, &RegisterStatus::statusCandidatePressed, this,
+            &MainWindow::onStatusCandidatePage);
+    connect(registerStatusPage, &RegisterStatus::statusEmployerPressed, this,
+            &MainWindow::onStatusEmployerPage);
+    connect(registerCandidatePage,
+            &RegisterPageForCandidate::backToRegisterStatusPagePressed, this,
+            &MainWindow::onBackToRegisterStatusPage);
+    connect(registerEmployerPage,
+            &RegisterPageForEmployer::backToRegisterStatusPagePressed, this,
+            &MainWindow::onBackToRegisterStatusPage);
+    connect(registerCandidatePage,
+            &RegisterPageForCandidate::registerSuccessful, this,
+            &MainWindow::registerSuccess);
+    connect(registerEmployerPage, &RegisterPageForEmployer::registerSuccessful,
+            this, &MainWindow::registerSuccess);
+    connect(mainPage, &MainPage::onProfilePressed, this,
+            &MainWindow::onProfilePage);
+    connect(profileCandidatePage, &ProfilePageForCandidate::homeButtonClicked,
+            this, &MainWindow::onProfileCandidateHomeClicked);
+    connect(profileEmployerPage, &ProfilePageForEmployer::homeButtonClicked,
+            this, &MainWindow::onProfileEmployerHomeClicked);
+    connect(profileEmployerPage, &ProfilePageForEmployer::logoutButtonClicked,
+            this, &MainWindow::onLogoutClicked);
+    connect(profileCandidatePage, &ProfilePageForCandidate::logoutButtonClicked,
+            this, &MainWindow::onLogoutClicked);
 }
 
-MainWindow::~MainWindow() {
-    delete ui;
-}
+MainWindow::~MainWindow() { delete ui; }
 
 void MainWindow::onMainPage(bool isCandidate) {
     mainPage->setStatusOfCandidate(isCandidate);
     if (mainPage->getFlowLayout() != nullptr) {
-        mainPage->hide();
+        mainPage->hide(); // очищаем карточки
     }
+
+    QLayout *filtersLayout =
+        mainPage->findChild<QVBoxLayout *>("verticalLayout_3");
+    if (filtersLayout) {
+        QLayoutItem *child;
+        while ((child = filtersLayout->takeAt(0)) != nullptr) {
+            if (child->widget()) {
+                child->widget()->deleteLater();
+            }
+            delete child;
+        }
+    }
+
+    if (isCandidate) {
+        mainPage->createCandFilters();
+    } else {
+        mainPage->createEmplFilters();
+    }
+
     mainPage->show(isCandidate);
     ui->stackedWidget->setCurrentWidget(mainPage);
 }
@@ -147,14 +138,12 @@ void MainWindow::loadProfileData() {
                     obj["place"].toString(), obj["search_status_id"].toInt(),
                     obj["faculty_of_educ"].toString(),
                     obj["place_of_study"].toString(),
-                    obj["experience_status_id"].toInt()
-                );
+                    obj["experience_status_id"].toInt());
                 ui->stackedWidget->setCurrentWidget(profileCandidatePage);
             } else if (obj["status"].toString() == "empl") {
                 profileEmployerPage->setEmployerData(
                     obj["company_name"].toString(), obj["email"].toString(),
-                    obj["about"].toString()
-                );
+                    obj["about"].toString());
                 ui->stackedWidget->setCurrentWidget(profileEmployerPage);
             }
         } else {
@@ -162,9 +151,8 @@ void MainWindow::loadProfileData() {
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
                     .toInt();
             if (statusCode == 404) {
-                QMessageBox::warning(
-                    this, "Упс...", "Ты не найден в нашей базе("
-                );
+                QMessageBox::warning(this, "Упс...",
+                                     "Ты не найден в нашей базе(");
             } else if (statusCode == 400) {
                 QMessageBox::warning(this, "Упс...", "Статус не определён");
             } else {
@@ -176,21 +164,13 @@ void MainWindow::loadProfileData() {
     return;
 }
 
-void MainWindow::onProfilePage() {
-    loadProfileData();
-}
+void MainWindow::onProfilePage() { loadProfileData(); }
 
-void MainWindow::registerSuccess() {
-    onBackToLoginPage();
-}
+void MainWindow::registerSuccess() { onBackToLoginPage(); }
 
-void MainWindow::onProfileCandidateHomeClicked() {
-    onMainPage(true);
-}
+void MainWindow::onProfileCandidateHomeClicked() { onMainPage(true); }
 
-void MainWindow::onProfileEmployerHomeClicked() {
-    onMainPage(false);
-}
+void MainWindow::onProfileEmployerHomeClicked() { onMainPage(false); }
 
 void MainWindow::onLogoutClicked() {
     mainPage->deleteData();
@@ -202,9 +182,8 @@ void MainWindow::onLogoutClicked() {
         if (reply->error() == QNetworkReply::NoError) {
             onBackToLoginPage();
         } else {
-            QMessageBox::warning(
-                this, "Ошибка сервера", "Для выхода закройте окно приложения"
-            );
+            QMessageBox::warning(this, "Ошибка сервера",
+                                 "Для выхода закройте окно приложения");
         }
         reply->deleteLater();
     });

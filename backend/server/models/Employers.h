@@ -6,44 +6,38 @@
  */
 
 #pragma once
+#include <drogon/orm/BaseBuilder.h>
+#include <drogon/orm/Field.h>
+#include <drogon/orm/Mapper.h>
 #include <drogon/orm/Result.h>
 #include <drogon/orm/Row.h>
-#include <drogon/orm/Field.h>
 #include <drogon/orm/SqlBinder.h>
-#include <drogon/orm/Mapper.h>
-#include <drogon/orm/BaseBuilder.h>
 #ifdef __cpp_impl_coroutine
 #include <drogon/orm/CoroMapper.h>
 #endif
-#include <trantor/utils/Date.h>
-#include <trantor/utils/Logger.h>
+#include <iostream>
 #include <json/json.h>
+#include <memory>
+#include <stdint.h>
 #include <string>
 #include <string_view>
-#include <memory>
-#include <vector>
+#include <trantor/utils/Date.h>
+#include <trantor/utils/Logger.h>
 #include <tuple>
-#include <stdint.h>
-#include <iostream>
+#include <vector>
 
-namespace drogon
-{
-namespace orm
-{
+namespace drogon {
+namespace orm {
 class DbClient;
 using DbClientPtr = std::shared_ptr<DbClient>;
-}
-}
-namespace drogon_model
-{
-namespace default_db
-{
+} // namespace orm
+} // namespace drogon
+namespace drogon_model {
+namespace default_db {
 
-class Employers
-{
+class Employers {
   public:
-    struct Cols
-    {
+    struct Cols {
         static const std::string _email;
         static const std::string _company_name;
         static const std::string _about;
@@ -60,12 +54,13 @@ class Employers
     /**
      * @brief constructor
      * @param r One row of records in the SQL query result.
-     * @param indexOffset Set the offset to -1 to access all columns by column names,
-     * otherwise access all columns by offsets.
-     * @note If the SQL is not a style of 'select * from table_name ...' (select all
-     * columns by an asterisk), please set the offset to -1.
+     * @param indexOffset Set the offset to -1 to access all columns by column
+     * names, otherwise access all columns by offsets.
+     * @note If the SQL is not a style of 'select * from table_name ...' (select
+     * all columns by an asterisk), please set the offset to -1.
      */
-    explicit Employers(const drogon::orm::Row &r, const ssize_t indexOffset = 0) noexcept;
+    explicit Employers(const drogon::orm::Row &r,
+                       const ssize_t indexOffset = 0) noexcept;
 
     /**
      * @brief constructor
@@ -78,69 +73,80 @@ class Employers
      * @param pJson The json object to construct a new instance.
      * @param pMasqueradingVector The aliases of table columns.
      */
-    Employers(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector) noexcept(false);
+    Employers(
+        const Json::Value &pJson,
+        const std::vector<std::string> &pMasqueradingVector) noexcept(false);
 
     Employers() = default;
 
     void updateByJson(const Json::Value &pJson) noexcept(false);
-    void updateByMasqueradedJson(const Json::Value &pJson,
-                                 const std::vector<std::string> &pMasqueradingVector) noexcept(false);
-    static bool validateJsonForCreation(const Json::Value &pJson, std::string &err);
-    static bool validateMasqueradedJsonForCreation(const Json::Value &,
-                                                const std::vector<std::string> &pMasqueradingVector,
-                                                    std::string &err);
-    static bool validateJsonForUpdate(const Json::Value &pJson, std::string &err);
-    static bool validateMasqueradedJsonForUpdate(const Json::Value &,
-                                          const std::vector<std::string> &pMasqueradingVector,
-                                          std::string &err);
-    static bool validJsonOfField(size_t index,
-                          const std::string &fieldName,
-                          const Json::Value &pJson,
-                          std::string &err,
-                          bool isForCreation);
+    void updateByMasqueradedJson(
+        const Json::Value &pJson,
+        const std::vector<std::string> &pMasqueradingVector) noexcept(false);
+    static bool validateJsonForCreation(const Json::Value &pJson,
+                                        std::string &err);
+    static bool validateMasqueradedJsonForCreation(
+        const Json::Value &,
+        const std::vector<std::string> &pMasqueradingVector, std::string &err);
+    static bool validateJsonForUpdate(const Json::Value &pJson,
+                                      std::string &err);
+    static bool validateMasqueradedJsonForUpdate(
+        const Json::Value &,
+        const std::vector<std::string> &pMasqueradingVector, std::string &err);
+    static bool validJsonOfField(size_t index, const std::string &fieldName,
+                                 const Json::Value &pJson, std::string &err,
+                                 bool isForCreation);
 
     /**  For column email  */
-    ///Get the value of the column email, returns the default value if the column is null
+    /// Get the value of the column email, returns the default value if the
+    /// column is null
     const std::string &getValueOfEmail() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<std::string> &getEmail() const noexcept;
-    ///Set the value of the column email
+    /// Set the value of the column email
     void setEmail(const std::string &pEmail) noexcept;
     void setEmail(std::string &&pEmail) noexcept;
 
     /**  For column company_name  */
-    ///Get the value of the column company_name, returns the default value if the column is null
+    /// Get the value of the column company_name, returns the default value if
+    /// the column is null
     const std::string &getValueOfCompanyName() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<std::string> &getCompanyName() const noexcept;
-    ///Set the value of the column company_name
+    /// Set the value of the column company_name
     void setCompanyName(const std::string &pCompanyName) noexcept;
     void setCompanyName(std::string &&pCompanyName) noexcept;
 
     /**  For column about  */
-    ///Get the value of the column about, returns the default value if the column is null
+    /// Get the value of the column about, returns the default value if the
+    /// column is null
     const std::string &getValueOfAbout() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<std::string> &getAbout() const noexcept;
-    ///Set the value of the column about
+    /// Set the value of the column about
     void setAbout(const std::string &pAbout) noexcept;
     void setAbout(std::string &&pAbout) noexcept;
     void setAboutToNull() noexcept;
 
     /**  For column user_id  */
-    ///Get the value of the column user_id, returns the default value if the column is null
+    /// Get the value of the column user_id, returns the default value if the
+    /// column is null
     const int32_t &getValueOfUserId() const noexcept;
-    ///Return a shared_ptr object pointing to the column const value, or an empty shared_ptr object if the column is null
+    /// Return a shared_ptr object pointing to the column const value, or an
+    /// empty shared_ptr object if the column is null
     const std::shared_ptr<int32_t> &getUserId() const noexcept;
-    ///Set the value of the column user_id
+    /// Set the value of the column user_id
     void setUserId(const int32_t &pUserId) noexcept;
 
-
-    static size_t getColumnNumber() noexcept {  return 4;  }
+    static size_t getColumnNumber() noexcept { return 4; }
     static const std::string &getColumnName(size_t index) noexcept(false);
 
     Json::Value toJson() const;
-    Json::Value toMasqueradedJson(const std::vector<std::string> &pMasqueradingVector) const;
+    Json::Value toMasqueradedJson(
+        const std::vector<std::string> &pMasqueradingVector) const;
     /// Relationship interfaces
   private:
     friend drogon::orm::Mapper<Employers>;
@@ -155,14 +161,13 @@ class Employers
     void outputArgs(drogon::orm::internal::SqlBinder &binder) const;
     const std::vector<std::string> updateColumns() const;
     void updateArgs(drogon::orm::internal::SqlBinder &binder) const;
-    ///For mysql or sqlite3
+    /// For mysql or sqlite3
     void updateId(const uint64_t id);
     std::shared_ptr<std::string> email_;
     std::shared_ptr<std::string> companyName_;
     std::shared_ptr<std::string> about_;
     std::shared_ptr<int32_t> userId_;
-    struct MetaData
-    {
+    struct MetaData {
         const std::string colName_;
         const std::string colType_;
         const std::string colDatabaseType_;
@@ -172,74 +177,59 @@ class Employers
         const bool notNull_;
     };
     static const std::vector<MetaData> metaData_;
-    bool dirtyFlag_[4]={ false };
+    bool dirtyFlag_[4] = {false};
+
   public:
-    static const std::string &sqlForFindingByPrimaryKey()
-    {
-        static const std::string sql="select * from " + tableName + " where user_id = ?";
+    static const std::string &sqlForFindingByPrimaryKey() {
+        static const std::string sql =
+            "select * from " + tableName + " where user_id = ?";
         return sql;
     }
 
-    static const std::string &sqlForDeletingByPrimaryKey()
-    {
-        static const std::string sql="delete from " + tableName + " where user_id = ?";
+    static const std::string &sqlForDeletingByPrimaryKey() {
+        static const std::string sql =
+            "delete from " + tableName + " where user_id = ?";
         return sql;
     }
-    std::string sqlForInserting(bool &needSelection) const
-    {
-        std::string sql="insert into " + tableName + " (";
+    std::string sqlForInserting(bool &needSelection) const {
+        std::string sql = "insert into " + tableName + " (";
         size_t parametersCount = 0;
         needSelection = false;
-        if(dirtyFlag_[0])
-        {
+        if (dirtyFlag_[0]) {
             sql += "email,";
             ++parametersCount;
         }
-        if(dirtyFlag_[1])
-        {
+        if (dirtyFlag_[1]) {
             sql += "company_name,";
             ++parametersCount;
         }
-        if(dirtyFlag_[2])
-        {
+        if (dirtyFlag_[2]) {
             sql += "about,";
             ++parametersCount;
         }
-        if(dirtyFlag_[3])
-        {
+        if (dirtyFlag_[3]) {
             sql += "user_id,";
             ++parametersCount;
         }
-        if(parametersCount > 0)
-        {
-            sql[sql.length()-1]=')';
+        if (parametersCount > 0) {
+            sql[sql.length() - 1] = ')';
             sql += " values (";
-        }
-        else
+        } else
             sql += ") values (";
 
-        if(dirtyFlag_[0])
-        {
+        if (dirtyFlag_[0]) {
             sql.append("?,");
-
         }
-        if(dirtyFlag_[1])
-        {
+        if (dirtyFlag_[1]) {
             sql.append("?,");
-
         }
-        if(dirtyFlag_[2])
-        {
+        if (dirtyFlag_[2]) {
             sql.append("?,");
-
         }
-        if(dirtyFlag_[3])
-        {
+        if (dirtyFlag_[3]) {
             sql.append("?,");
-
         }
-        if(parametersCount > 0)
-        {
+        if (parametersCount > 0) {
             sql.resize(sql.length() - 1);
         }
         sql.append(1, ')');

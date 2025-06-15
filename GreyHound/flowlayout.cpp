@@ -30,9 +30,7 @@ FlowLayout::~FlowLayout() {
 
 //! [3]
 
-void FlowLayout::addItem(QLayoutItem *item) {
-    itemList.append(item);
-}
+void FlowLayout::addItem(QLayoutItem *item) { itemList.append(item); }
 
 //! [3]
 
@@ -57,9 +55,7 @@ int FlowLayout::verticalSpacing() const {
 
 //! [5]
 
-int FlowLayout::count() const {
-    return itemList.size();
-}
+int FlowLayout::count() const { return itemList.size(); }
 
 QLayoutItem *FlowLayout::itemAt(int index) const {
     return itemList.value(index);
@@ -76,16 +72,12 @@ QLayoutItem *FlowLayout::takeAt(int index) {
 
 //! [6]
 
-Qt::Orientations FlowLayout::expandingDirections() const {
-    return {};
-}
+Qt::Orientations FlowLayout::expandingDirections() const { return {}; }
 
 //! [6]
 
 //! [7]
-bool FlowLayout::hasHeightForWidth() const {
-    return true;
-}
+bool FlowLayout::hasHeightForWidth() const { return true; }
 
 int FlowLayout::heightForWidth(int width) const {
     int height = doLayout(QRect(0, 0, width, 0), true);
@@ -101,9 +93,7 @@ void FlowLayout::setGeometry(const QRect &rect) {
     doLayout(rect, false);
 }
 
-QSize FlowLayout::sizeHint() const {
-    return minimumSize();
-}
+QSize FlowLayout::sizeHint() const { return minimumSize(); }
 
 QSize FlowLayout::minimumSize() const {
     QSize size;
@@ -112,9 +102,8 @@ QSize FlowLayout::minimumSize() const {
     }
 
     const QMargins margins = contentsMargins();
-    size += QSize(
-        margins.left() + margins.right(), margins.top() + margins.bottom()
-    );
+    size += QSize(margins.left() + margins.right(),
+                  margins.top() + margins.bottom());
     return size;
 }
 
@@ -135,15 +124,14 @@ int FlowLayout::doLayout(const QRect &rect, bool testOnly) const {
         const QWidget *wid = item->widget();
         int spaceX = horizontalSpacing();
         if (spaceX == -1) {
-            spaceX = wid->style()->layoutSpacing(
-                QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Horizontal
-            );
+            spaceX = wid->style()->layoutSpacing(QSizePolicy::PushButton,
+                                                 QSizePolicy::PushButton,
+                                                 Qt::Horizontal);
         }
         int spaceY = verticalSpacing();
         if (spaceY == -1) {
             spaceY = wid->style()->layoutSpacing(
-                QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Vertical
-            );
+                QSizePolicy::PushButton, QSizePolicy::PushButton, Qt::Vertical);
         }
         //! [10]
         //! [11]
