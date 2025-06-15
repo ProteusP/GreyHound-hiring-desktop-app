@@ -253,6 +253,11 @@ QGroupBox {
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
            <widget class="QLabel" name="name">
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+  color: black;
+}</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -260,6 +265,11 @@ QGroupBox {
           </item>
           <item>
            <widget class="QLabel" name="surname">
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+  color: black;
+}</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -267,6 +277,11 @@ QGroupBox {
           </item>
           <item>
            <widget class="QLabel" name="city">
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+  color: black;
+}</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -274,6 +289,11 @@ QGroupBox {
           </item>
           <item>
            <widget class="QLabel" name="email">
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+  color: black;
+}</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -281,6 +301,11 @@ QGroupBox {
           </item>
           <item>
            <widget class="QLabel" name="phone">
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+  color: black;
+}</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -288,6 +313,11 @@ QGroupBox {
           </item>
           <item>
            <widget class="QLabel" name="education">
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+  color: black;
+}</string>
+            </property>
             <property name="text">
              <string/>
             </property>
@@ -295,6 +325,11 @@ QGroupBox {
           </item>
           <item>
            <widget class="QLabel" name="experience">
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+  color: black;
+}</string>
+            </property>
             <property name="text">
              <string/>
             </property>

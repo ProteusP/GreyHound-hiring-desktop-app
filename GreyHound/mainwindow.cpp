@@ -114,11 +114,31 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::onMainPage(bool isCandidate) {
-    mainPage->setStatusOfCandidate(isCandidate
-    );  // надо будет убрать, тк не пригождится
+    mainPage->setStatusOfCandidate(isCandidate);
+
     if (mainPage->getFlowLayout() != nullptr) {
-        mainPage->hide();
+        mainPage->hide();  // очищаем карточки
     }
+
+            // Удаляем старые фильтры из verticalLayout_3
+    QLayout *filtersLayout = mainPage->findChild<QVBoxLayout *>("verticalLayout_3");
+    if (filtersLayout) {
+        QLayoutItem *child;
+        while ((child = filtersLayout->takeAt(0)) != nullptr) {
+            if (child->widget()) {
+                child->widget()->deleteLater();
+            }
+            delete child;
+        }
+    }
+
+            // Создаём фильтры заново в зависимости от роли
+    if (isCandidate) {
+        mainPage->createCandFilters();
+    } else {
+        mainPage->createEmplFilters();
+    }
+
     mainPage->show(isCandidate);
     ui->stackedWidget->setCurrentWidget(mainPage);
 }
