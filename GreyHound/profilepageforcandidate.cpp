@@ -1,4 +1,5 @@
 #include "profilepageforcandidate.h"
+#include "ui_profilepageforcandidate.h"
 #include <QFile>
 #include <QFileDialog>
 #include <QGroupBox>
@@ -10,14 +11,10 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QUrlQuery>
-#include "ui_profilepageforcandidate.h"
 
-ProfilePageForCandidate::ProfilePageForCandidate(
-    QNetworkAccessManager *manager,
-    QWidget *parent
-)
-    : QWidget(parent),
-      ui(new Ui::ProfilePageForCandidate),
+ProfilePageForCandidate::ProfilePageForCandidate(QNetworkAccessManager *manager,
+                                                 QWidget *parent)
+    : QWidget(parent), ui(new Ui::ProfilePageForCandidate),
       networkManager(manager) {
     ui->setupUi(this);
     SetupUI();
@@ -33,31 +30,19 @@ void ProfilePageForCandidate::SetupUI() {
     ui->experinceCombo->addItem("1 - 3 года", "2");
     ui->experinceCombo->addItem("3 - 5 лет", "3");
     ui->experinceCombo->addItem("5+ лет", "4");
-    connect(
-        ui->homepagePB, &QPushButton::clicked, this,
-        &ProfilePageForCandidate::homeButtonClicked
-    );
-    connect(
-        ui->saveButton, &QPushButton::clicked, this,
-        &ProfilePageForCandidate::onSaveClicked
-    );
-    connect(
-        ui->logoutPB, &QPushButton::clicked, this,
-        &ProfilePageForCandidate::logoutButtonClicked
-    );
+    connect(ui->homepagePB, &QPushButton::clicked, this,
+            &ProfilePageForCandidate::homeButtonClicked);
+    connect(ui->saveButton, &QPushButton::clicked, this,
+            &ProfilePageForCandidate::onSaveClicked);
+    connect(ui->logoutPB, &QPushButton::clicked, this,
+            &ProfilePageForCandidate::logoutButtonClicked);
 }
 
 void ProfilePageForCandidate::setCandidateData(
-    const QString &name,
-    const QString &email,
-    const QString &surname,
-    const QString &phoneNum,
-    const QString &place,
-    const qint16 &search_status_id,
-    const QString &faculty_of_educ,
-    const QString &place_of_study,
-    const qint16 &experience_status_id
-) {
+    const QString &name, const QString &email, const QString &surname,
+    const QString &phoneNum, const QString &place,
+    const qint16 &search_status_id, const QString &faculty_of_educ,
+    const QString &place_of_study, const qint16 &experience_status_id) {
     ui->nameEdit->setText(name);
     ui->surnameEdit->setText(surname);
     ui->emailEdit->setText(email);
@@ -101,8 +86,7 @@ void ProfilePageForCandidate::onSaveClicked() {
             if (statusCode == 400) {
                 QMessageBox::warning(
                     this, "Ошибка",
-                    "По пути на сервер данные потерялись( просим прощения"
-                );
+                    "По пути на сервер данные потерялись( просим прощения");
             } else if (statusCode == 500) {
                 QMessageBox::warning(this, "Упс...", "Ошибка сервера.");
             } else {
@@ -118,8 +102,7 @@ void ProfilePageForCandidate::loadResumeData() {
     QSqlQuery query;
     query.prepare(
         "SELECT place_of_study, faculty_of_educ FROM candidates WHERE email "
-        "=:email"
-    );
+        "=:email");
     QString email = ui->emailLabel->text();
     query.bindValue(":email", email);
     if (!query.exec() || !query.next()) {
@@ -140,8 +123,7 @@ void ProfilePageForCandidate::saveResumeData() {
     // TODO add experience and smth else...
     query.prepare(
         "UPDATE candidates SET  place_of_study =:university, faculty_of_educ "
-        "=:faculty WHERE email =:email"
-    );
+        "=:faculty WHERE email =:email");
 
     QString email = ui->emailLabel->text();
     QString university = ui->universityEdit->text();
@@ -152,10 +134,9 @@ void ProfilePageForCandidate::saveResumeData() {
     query.bindValue(":faculty", faculty);
 
     if (!query.exec()) {
-        QMessageBox::critical(
-            this, "Ошибка",
-            "Ошибка сохранения резюме: " + query.lastError().text()
-        );
+        QMessageBox::critical(this, "Ошибка",
+                              "Ошибка сохранения резюме: " +
+                                  query.lastError().text());
     }
 }
 
@@ -171,11 +152,9 @@ void ProfilePageForCandidate::on_resumeButton_clicked() {
         QHttpMultiPart *multiPart =
             new QHttpMultiPart(QHttpMultiPart::FormDataType);
         QHttpPart filePart;
-        filePart.setHeader(
-            QNetworkRequest::ContentDispositionHeader,
-            QString("form-data; name=\"file\"; filename=\"%1\"")
-                .arg(QFileInfo(filePath).fileName())
-        );
+        filePart.setHeader(QNetworkRequest::ContentDispositionHeader,
+                           QString("form-data; name=\"file\"; filename=\"%1\"")
+                               .arg(QFileInfo(filePath).fileName()));
         filePart.setBodyDevice(file);
         file->setParent(multiPart);
         multiPart->append(filePart);

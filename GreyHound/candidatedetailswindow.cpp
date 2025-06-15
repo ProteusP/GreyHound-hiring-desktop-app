@@ -1,4 +1,5 @@
 #include "candidatedetailswindow.h"
+#include "ui_candidatedetailswindow.h"
 #include <QDesktopServices>
 #include <QFile>
 #include <QJsonDocument>
@@ -9,23 +10,17 @@
 #include <QNetworkRequest>
 #include <QTemporaryFile>
 #include <QUrl>
-#include "ui_candidatedetailswindow.h"
 
-candidateDetailsWindow::candidateDetailsWindow(
-    QNetworkAccessManager *manager,
-    const int &user_id_,
-    QWidget *parent
-)
-    : QDialog(parent),
-      ui(new Ui::candidateDetailsWindow),
-      networkManager(manager),
-      user_id(user_id_) {
+candidateDetailsWindow::candidateDetailsWindow(QNetworkAccessManager *manager,
+                                               const int &user_id_,
+                                               QWidget *parent)
+    : QDialog(parent), ui(new Ui::candidateDetailsWindow),
+      networkManager(manager), user_id(user_id_) {
     ui->setupUi(this);
     QNetworkRequest request;
     request.setUrl(
         QUrl(QString("http://localhost:80/api/v1/resources/candidateInfo/%1")
-                 .arg(user_id))
-    );
+                 .arg(user_id)));
     request.setRawHeader("Accept", "application/json");
     QNetworkReply *reply = networkManager->get(request);
     connect(reply, &QNetworkReply::finished, this, [=]() {
@@ -40,23 +35,23 @@ candidateDetailsWindow::candidateDetailsWindow(
             ui->phone->setText(obj["phone_num"].toString());
             ui->education->setText(obj["study_info"].toString());
             QString experienceString;
-            switch (obj["experience_status_id"].toInt()
-            ) {  // TODO: create file-getter
-                case 1:
-                    experienceString = "Без опыта";
-                    break;
-                case 2:
-                    experienceString = "1-3 лет";
-                    break;
-                case 3:
-                    experienceString = "3-5 лет";
-                    break;
-                case 4:
-                    experienceString = "5+ лет";
-                    break;
-                default:
-                    experienceString = "хз скок";
-                    break;
+            switch (obj["experience_status_id"]
+                        .toInt()) { // TODO: create file-getter
+            case 1:
+                experienceString = "Без опыта";
+                break;
+            case 2:
+                experienceString = "1-3 лет";
+                break;
+            case 3:
+                experienceString = "3-5 лет";
+                break;
+            case 4:
+                experienceString = "5+ лет";
+                break;
+            default:
+                experienceString = "хз скок";
+                break;
             }
             ui->experience->setText(experienceString);
         } else {
@@ -66,9 +61,8 @@ candidateDetailsWindow::candidateDetailsWindow(
             if (statusCode == 404) {
                 QMessageBox::warning(this, "Ошибка", "Пользователь не найден");
             } else if (statusCode == 500) {
-                QMessageBox::warning(
-                    this, "Ошибка", "Ошибка на нашей стороне..."
-                );
+                QMessageBox::warning(this, "Ошибка",
+                                     "Ошибка на нашей стороне...");
             } else {
                 QMessageBox::warning(this, "Ошибка", "Что-то непонятное");
             }
@@ -77,13 +71,9 @@ candidateDetailsWindow::candidateDetailsWindow(
     });
 }
 
-candidateDetailsWindow::~candidateDetailsWindow() {
-    delete ui;
-}
+candidateDetailsWindow::~candidateDetailsWindow() { delete ui; }
 
-void candidateDetailsWindow::on_exitButton_clicked() {
-    this->close();
-}
+void candidateDetailsWindow::on_exitButton_clicked() { this->close(); }
 
 void candidateDetailsWindow::on_resumeButton_clicked() {
     QString url =
@@ -101,8 +91,8 @@ void candidateDetailsWindow::on_resumeButton_clicked() {
                 tempFile.open();
                 tempFile.write(pdfData);
                 tempFile.close();
-                QDesktopServices::openUrl(QUrl::fromLocalFile(tempFile.fileName(
-                )));
+                QDesktopServices::openUrl(
+                    QUrl::fromLocalFile(tempFile.fileName()));
             }
         } else {
             QMessageBox::warning(this, "Упс...", "Ничего не найдено.");

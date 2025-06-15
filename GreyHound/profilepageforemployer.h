@@ -6,6 +6,7 @@
 #include <QLineEdit>
 #include <QNetworkAccessManager>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QTableWidget>
 #include <QTextEdit>
 #include <QVBoxLayout>
@@ -18,42 +19,32 @@ class ProfilePageForEmployer;
 class ProfilePageForEmployer : public QWidget {
     Q_OBJECT
 
-public:
-    explicit ProfilePageForEmployer(
-        QNetworkAccessManager *manager,
-        QWidget *parent = nullptr
-    );
+  public:
+    explicit ProfilePageForEmployer(QNetworkAccessManager *manager,
+                                    QWidget *parent = nullptr);
     ~ProfilePageForEmployer();
 
-    void setEmployerData(
-        const QString &companyName,
-        const QString &email,
-        const QString &about
-    );
+    void setEmployerData(const QString &companyName, const QString &email,
+                         const QString &about);
 
-    void addCandidateWidget(
-        QVBoxLayout *layout,
-        const QString &name,
-        const QString &position,
-        const QString &date,
-        int vacancyId,
-        int candidateId
-    );
+    void addCandidateWidget(QVBoxLayout *layout, const QString &name,
+                            const QString &position, const QString &date,
+                            int vacancyId, int candidateId);
 
     void acceptCandidate(int candidateId, int vacancyId);
     void rejectCandidate(int candidateId, int vacancyId);
 
-signals:
+  signals:
     void homeButtonClicked();
     void logoutButtonClicked();
 
-private slots:
+  private slots:
     void onSaveClicked();
     void onAddVacancyClicked();
     void onEditVacancyClicked();
     void onDeleteVacancyClicked();
 
-private:
+  private:
     void SetupUI();
     void saveCompanyInfo();
     void loadVacancies();
@@ -62,6 +53,7 @@ private:
     void loadEducStatusData(QComboBox *comboBox);
     void loadRemotenessData(QComboBox *comboBox);
     void loadResponses();
+    void sendAcceptanceEmail(int candidateId, int vacancyId);
     void deleteResponse(int vacancyId, int candidateId);
     QString getExpThroughId(const int &id);
     QString getWorkScheduleThroughId(const int &id);
@@ -69,9 +61,11 @@ private:
     int currentEmployerId;
     QNetworkAccessManager *networkManager;
     Ui::ProfilePageForEmployer *ui;
-    QVBoxLayout *candidatesLayout;
+    QScrollArea *responsesScrollArea = nullptr;
+    QWidget *responsesContainer = nullptr;
+    QVBoxLayout *responsesLayout = nullptr;
 
-    QPushButton *
-    createActionButton(const QString &iconText, const QString &tooltip);
+    QPushButton *createActionButton(const QString &iconText,
+                                    const QString &tooltip);
 };
-#endif  // PROFILEPAGEFOREMPLOYER_H
+#endif // PROFILEPAGEFOREMPLOYER_H

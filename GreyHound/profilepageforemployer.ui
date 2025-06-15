@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>784</width>
-    <height>591</height>
+    <width>792</width>
+    <height>694</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -556,55 +556,7 @@ QPushButton:hover {
 }
 </string>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <spacer name="verticalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Orientation::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QLabel" name="notificationsLabel">
-          <property name="font">
-           <font>
-            <family>Golos Text</family>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">QLabel {
-	border: none;
-	color: black;
-}</string>
-          </property>
-          <property name="text">
-           <string>Уведомления</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignmentFlag::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Orientation::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
+       <layout class="QVBoxLayout" name="verticalLayout"/>
       </widget>
      </item>
     </layout>

@@ -4,13 +4,12 @@
 #include <QString>
 
 class Resume {
-public:
+  public:
     QString university;
     QString faculty;
     QString experienceYears;
 
-    Resume() : experienceYears("Нет") {
-    }
+    Resume() : experienceYears("Нет") {}
 };
 
-#endif  // RESUME_H
+#endif // RESUME_H

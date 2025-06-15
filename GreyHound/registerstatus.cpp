@@ -1,6 +1,6 @@
 #include "registerstatus.h"
-#include <QGraphicsDropShadowEffect>
 #include "ui_registerstatus.h"
+#include <QGraphicsDropShadowEffect>
 
 RegisterStatus::RegisterStatus(QWidget *parent)
     : QWidget(parent), ui(new Ui::RegisterStatus) {
@@ -12,13 +12,9 @@ RegisterStatus::RegisterStatus(QWidget *parent)
     ui->widget->setGraphicsEffect(shadow);
 }
 
-RegisterStatus::~RegisterStatus() {
-    delete ui;
-}
+RegisterStatus::~RegisterStatus() { delete ui; }
 
-void RegisterStatus::on_backToLoginPB_clicked() {
-    emit backToLoginPressed();
-}
+void RegisterStatus::on_backToLoginPB_clicked() { emit backToLoginPressed(); }
 
 void RegisterStatus::on_statusCandidatePB_clicked() {
     emit statusCandidatePressed();

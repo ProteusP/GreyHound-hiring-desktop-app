@@ -9,21 +9,18 @@
 
 class candidateCard : public QFrame {
     Q_OBJECT
-public:
-    explicit candidateCard(
-        QNetworkAccessManager *manager,
-        const QString &placeOfStudy_,
-        const QString &facultyOfEducation_,
-        const QString &experience_,
-        const int &id,
-        QWidget *parent = nullptr
-    );
+  public:
+    explicit candidateCard(QNetworkAccessManager *manager,
+                           const QString &placeOfStudy_,
+                           const QString &facultyOfEducation_,
+                           const QString &experience_, const int &id,
+                           QWidget *parent = nullptr);
 
     void setFixedSize(int width, int height);
-private slots:
+  private slots:
     void on_detailsButton_clicked();
 
-private:
+  private:
     QNetworkAccessManager *networkManager;
     QLabel *placeOfStudy;
     QLabel *facultyOfEducation;
@@ -32,4 +29,4 @@ private:
     QPushButton *detailsButton;
 };
 
-#endif  // CANDIDATECARD_H
+#endif // CANDIDATECARD_H

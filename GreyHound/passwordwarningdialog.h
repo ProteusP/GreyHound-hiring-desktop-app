@@ -6,8 +6,8 @@
 class PasswordWarningDialog : public QDialog {
     Q_OBJECT
 
-public:
+  public:
     explicit PasswordWarningDialog(QWidget *parent = nullptr);
 };
 
-#endif  // PASSWORDWARNINGDIALOG_H
+#endif // PASSWORDWARNINGDIALOG_H

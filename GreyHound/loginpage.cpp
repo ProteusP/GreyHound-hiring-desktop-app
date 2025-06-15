@@ -1,4 +1,6 @@
 #include "loginpage.h"
+#include "hashing.h"
+#include "ui_loginpage.h"
 #include <QGraphicsDropShadowEffect>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -6,8 +8,6 @@
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QRegularExpression>
-#include "hashing.h"
-#include "ui_loginpage.h"
 
 LoginWidget::LoginWidget(QNetworkAccessManager *manager, QWidget *parent)
     : QWidget(parent), ui(new Ui::LoginWidget), networkManager(manager) {
@@ -20,9 +20,7 @@ LoginWidget::LoginWidget(QNetworkAccessManager *manager, QWidget *parent)
     ui->widgetLogin->setGraphicsEffect(shadow);
 }
 
-LoginWidget::~LoginWidget() {
-    delete ui;
-}
+LoginWidget::~LoginWidget() { delete ui; }
 
 void LoginWidget::on_loginPB_clicked() {
     QString email = ui->mailLine->text();
@@ -47,13 +45,11 @@ void LoginWidget::on_loginPB_clicked() {
                 reply->attribute(QNetworkRequest::HttpStatusCodeAttribute)
                     .toInt();
             if (statusCode == 400) {
-                QMessageBox::warning(
-                    this, "Ошибка", "Никакое поле не должно быть пустым."
-                );
+                QMessageBox::warning(this, "Ошибка",
+                                     "Никакое поле не должно быть пустым.");
             } else if (statusCode == 401) {
-                QMessageBox::warning(
-                    this, "Упс...", "Неверный логин или пароль."
-                );
+                QMessageBox::warning(this, "Упс...",
+                                     "Неверный логин или пароль.");
             } else if (statusCode == 500) {
                 QMessageBox::warning(this, "Упс...", "Ошибка сервера.");
             } else {
@@ -65,6 +61,4 @@ void LoginWidget::on_loginPB_clicked() {
     return;
 }
 
-void LoginWidget::on_registerPB_clicked() {
-    emit registerPressed();
-}
+void LoginWidget::on_registerPB_clicked() { emit registerPressed(); }

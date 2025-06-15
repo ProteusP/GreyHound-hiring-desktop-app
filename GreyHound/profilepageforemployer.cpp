@@ -1,5 +1,5 @@
 #include "profilepageforemployer.h"
-#include <qdatetime.h>
+#include "ui_profilepageforemployer.h"
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
@@ -18,14 +18,11 @@
 #include <QVBoxLayout>
 #include <QtSql/QSqlError>
 #include <QtSql/QSqlQuery>
-#include "ui_profilepageforemployer.h"
+#include <qdatetime.h>
 
-ProfilePageForEmployer::ProfilePageForEmployer(
-    QNetworkAccessManager *manager,
-    QWidget *parent
-)
-    : QWidget(parent),
-      ui(new Ui::ProfilePageForEmployer),
+ProfilePageForEmployer::ProfilePageForEmployer(QNetworkAccessManager *manager,
+                                               QWidget *parent)
+    : QWidget(parent), ui(new Ui::ProfilePageForEmployer),
       networkManager(manager) {
     ui->setupUi(this);
     SetupUI();
@@ -35,79 +32,100 @@ ProfilePageForEmployer::~ProfilePageForEmployer() = default;
 
 void ProfilePageForEmployer::SetupUI() {
     ui->vacanciesTable->resizeColumnsToContents();
-    connect(
-        ui->addVacancyButton, &QPushButton::clicked, this,
-        &ProfilePageForEmployer::onAddVacancyClicked
-    );
-    connect(
-        ui->homepagePB, &QPushButton::clicked, this,
-        &ProfilePageForEmployer::homeButtonClicked
-    );
-    connect(
-        ui->saveButton, &QPushButton::clicked, this,
-        &ProfilePageForEmployer::onSaveClicked
-    );
-    connect(
-        ui->logoutPB, &QPushButton::clicked, this,
-        &ProfilePageForEmployer::logoutButtonClicked
-    );
+
+    responsesScrollArea = new QScrollArea(this);
+    responsesScrollArea->setWidgetResizable(true);
+    responsesScrollArea->setSizePolicy(QSizePolicy::Expanding,
+                                       QSizePolicy::Expanding);
+    responsesScrollArea->setStyleSheet("border: none;");
+
+    // Контейнер внутри ScrollArea
+    responsesContainer = new QWidget();
+    responsesLayout = new QVBoxLayout(responsesContainer);
+    responsesLayout->setContentsMargins(10, 10, 10, 10);
+    responsesLayout->setSpacing(12);
+    responsesContainer->setLayout(responsesLayout);
+
+    responsesScrollArea->setWidget(responsesContainer);
+
+    // Добавляем scrollArea в основной layout формы (в твой verticalLayout)
+    ui->verticalLayout->addWidget(responsesScrollArea);
+
+    connect(ui->addVacancyButton, &QPushButton::clicked, this,
+            &ProfilePageForEmployer::onAddVacancyClicked);
+    connect(ui->homepagePB, &QPushButton::clicked, this,
+            &ProfilePageForEmployer::homeButtonClicked);
+    connect(ui->saveButton, &QPushButton::clicked, this,
+            &ProfilePageForEmployer::onSaveClicked);
+    connect(ui->logoutPB, &QPushButton::clicked, this,
+            &ProfilePageForEmployer::logoutButtonClicked);
 }
 
-void ProfilePageForEmployer::setEmployerData(
-    const QString &companyName,
-    const QString &email,
-    const QString &about
-) {
+void ProfilePageForEmployer::setEmployerData(const QString &companyName,
+                                             const QString &email,
+                                             const QString &about) {
     ui->companyNameEdit->setText(companyName);
     ui->emailEdit->setText(email);
     ui->aboutEdit->setPlainText(about);
     loadVacancies();
-    // loadResponses();
+    loadResponses();
 }
 
 void ProfilePageForEmployer::loadResponses() {
+    // Очищаем старые виджеты
     QLayoutItem *item;
-    while ((item = candidatesLayout->takeAt(0)) != nullptr) {
+    while ((item = responsesLayout->takeAt(0)) != nullptr) {
         delete item->widget();
         delete item;
     }
 
-    QSqlQuery query;
-    query.prepare(
-        "SELECT r.vacancy_id, r.candidate_id, r.created_at, "
-        "v.name as vacancy_name, "
-        "c.name, c.surname "
-        "FROM responces r "
-        "LEFT JOIN vacancies v ON r.vacancy_id = v.id "
-        "LEFT JOIN candidates c ON r.candidate_id = c.id "
-        "WHERE v.employer_id = :employer_id AND r.status = 'pending'"
-    );
-    query.bindValue(":employer_id", currentEmployerId);
+    // Отправляем запрос к API
+    QUrl url("http://localhost:80/api/v1/Notifications/getResponsesForEmpl");
+    QNetworkRequest request(url);
+    QNetworkReply *reply = networkManager->get(request);
 
-    if (query.exec()) {
-        while (query.next()) {
-            int vacancyId = query.value("vacancy_id").toInt();
-            int candidateId = query.value("candidate_id").toInt();
-            QString createdAt =
-                query.value("created_at").toDateTime().toString("dd.MM.yyyy");
-            QString vacancyName = query.value("vacancy_name").toString();
-            QString firstName = query.value("name").toString();
-            QString lastName = query.value("surname").toString();
-            QString fullName = QString("%1 %2").arg(firstName, lastName);
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        reply->deleteLater();
 
-            addCandidateWidget(
-                candidatesLayout, fullName, vacancyName, createdAt, vacancyId,
-                candidateId
-            );
+        if (reply->error() != QNetworkReply::NoError) {
+            qDebug() << "Ошибка сети:" << reply->errorString();
+            QMessageBox::critical(this, "Ошибка", "Ошибка загрузки откликов.");
+            return;
         }
-    } else {
-        qDebug() << "Ошибка загрузки откликов:" << query.lastError().text();
-    }
-}
 
-void ProfilePageForEmployer::onSaveClicked() {
-    saveCompanyInfo();
+        QByteArray data = reply->readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(data);
+
+        if (!doc.isObject() || !doc.object().contains("responses")) {
+            QMessageBox::warning(this, "Ошибка", "Некорректный формат ответа.");
+            return;
+        }
+
+        QJsonArray responses = doc.object()["responses"].toArray();
+        if (responses.isEmpty()) {
+            QLabel *emptyLabel = new QLabel("Нет новых откликов.");
+            emptyLabel->setStyleSheet("color: grey; font-size: 14px;");
+            responsesLayout->addWidget(emptyLabel);
+            return;
+        }
+
+        for (const QJsonValue &val : responses) {
+            QJsonObject obj = val.toObject();
+            int vacancyId = obj["vacancy_id"].toInt();
+            int candidateId = obj["candidate_id"].toInt();
+            QString createdAt = obj["created_at"].toString().left(10);
+            QString vacancyName = obj["vacancy_name"].toString();
+            QString candidateName = obj["candidate_name"].toString();
+            QString candidateSurname = obj["candidate_surname"].toString();
+            QString fullName = candidateName + " " + candidateSurname;
+
+            addCandidateWidget(responsesLayout, fullName, vacancyName,
+                               createdAt, vacancyId, candidateId);
+        }
+        responsesLayout->addStretch();
+    });
 }
+void ProfilePageForEmployer::onSaveClicked() { saveCompanyInfo(); }
 
 void ProfilePageForEmployer::saveCompanyInfo() {
     QString newName = ui->companyNameEdit->text();
@@ -131,8 +149,7 @@ void ProfilePageForEmployer::saveCompanyInfo() {
             if (statusCode == 400) {
                 QMessageBox::warning(
                     this, "Ошибка",
-                    "По пути на сервер данные потерялись( просим прощения"
-                );
+                    "По пути на сервер данные потерялись( просим прощения");
             } else if (statusCode == 500) {
                 QMessageBox::warning(this, "Упс...", "Ошибка сервера.");
             } else {
@@ -148,8 +165,7 @@ void ProfilePageForEmployer::loadVacancies() {
     ui->vacanciesTable->setRowCount(0);
 
     QNetworkRequest request(
-        QUrl("http://localhost:80/api/v1/resources/emplVacancies")
-    );
+        QUrl("http://localhost:80/api/v1/resources/emplVacancies"));
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
     QNetworkReply *reply = networkManager->get(request);
 
@@ -171,9 +187,8 @@ void ProfilePageForEmployer::loadVacancies() {
             ui->vacanciesTable->insertRow(row);
 
             auto addItem = [&](int column, const QString &value) {
-                ui->vacanciesTable->setItem(
-                    row, column, new QTableWidgetItem(value)
-                );
+                ui->vacanciesTable->setItem(row, column,
+                                            new QTableWidgetItem(value));
             };
 
             addItem(0, vac["name"].toString());
@@ -181,13 +196,10 @@ void ProfilePageForEmployer::loadVacancies() {
             addItem(2, vac["place"].toString());
             addItem(3, vac["educ_place"].toString());
             addItem(4, getExpThroughId(vac["experience_status_id"].toInt()));
-            addItem(
-                5,
-                getWorkScheduleThroughId(vac["work_schedule_status_id"].toInt())
-            );
-            addItem(
-                6, getEducationStatusThroughId(vac["educ_status_id"].toInt())
-            );
+            addItem(5, getWorkScheduleThroughId(
+                           vac["work_schedule_status_id"].toInt()));
+            addItem(6,
+                    getEducationStatusThroughId(vac["educ_status_id"].toInt()));
             addItem(7, vac["remoteness_status_id"].toString());
 
             QWidget *actionWidget = new QWidget();
@@ -195,17 +207,13 @@ void ProfilePageForEmployer::loadVacancies() {
 
             QPushButton *editButton = new QPushButton("✎");
             editButton->setProperty("vacancyId", vac["id"].toInt());
-            connect(
-                editButton, &QPushButton::clicked, this,
-                &ProfilePageForEmployer::onEditVacancyClicked
-            );
+            connect(editButton, &QPushButton::clicked, this,
+                    &ProfilePageForEmployer::onEditVacancyClicked);
 
             QPushButton *deleteButton = new QPushButton("🗑");
             deleteButton->setProperty("vacancyId", vac["id"].toInt());
-            connect(
-                deleteButton, &QPushButton::clicked, this,
-                &ProfilePageForEmployer::onDeleteVacancyClicked
-            );
+            connect(deleteButton, &QPushButton::clicked, this,
+                    &ProfilePageForEmployer::onDeleteVacancyClicked);
 
             layout->addWidget(editButton);
             layout->addWidget(deleteButton);
@@ -219,14 +227,10 @@ void ProfilePageForEmployer::loadVacancies() {
 }
 
 void ProfilePageForEmployer::addCandidateWidget(
-    QVBoxLayout *layout,
-    const QString &name,
-    const QString &position,
-    const QString &date,
-    int vacancyId,
-    int candidateId
-) {
+    QVBoxLayout *layout, const QString &name, const QString &position,
+    const QString &date, int vacancyId, int candidateId) {
     QWidget *candidateWidget = new QWidget();
+    candidateWidget->setFixedHeight(210);
     candidateWidget->setStyleSheet(
         "QWidget {"
         "  background: white;"
@@ -235,9 +239,8 @@ void ProfilePageForEmployer::addCandidateWidget(
         "  margin-bottom: 6px;"
         "}"
         "QLabel { font-size: 12px; }"
-        "QLabel#name { font-weight: bold; color: #2C3E50; }"
-        "QLabel#vacancyId { color: #7F8C8D; font-size: 11px; }"
-    );
+        "QLabel#name { font-weight: bold; color: black; }"
+        "QLabel#vacancyId { color: black; font-size: 11px; }");
 
     QVBoxLayout *candidateLayout = new QVBoxLayout(candidateWidget);
     candidateLayout->setSpacing(4);
@@ -246,16 +249,24 @@ void ProfilePageForEmployer::addCandidateWidget(
     QLabel *nameLabel = new QLabel(name);
     nameLabel->setObjectName("name");
     nameLabel->setWordWrap(true);
+    nameLabel->setStyleSheet("color: black; font-size: 11px;");
+    nameLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
     QLabel *posLabel = new QLabel(position);
     posLabel->setWordWrap(true);
+    posLabel->setStyleSheet("color: black; font-size: 11px;");
+
+    posLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
     QLabel *dateLabel = new QLabel("Отклик: " + date);
-    dateLabel->setStyleSheet("color: #7F8C8D; font-size: 11px;");
+    dateLabel->setStyleSheet("color: black; font-size: 11px;");
+    dateLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
     QLabel *vacancyLabel =
         new QLabel("ID вакансии: " + QString::number(vacancyId));
     vacancyLabel->setObjectName("vacancyId");
+    vacancyLabel->setStyleSheet("color: black; font-size: 11px;");
+    vacancyLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
 
     QHBoxLayout *buttonsLayout = new QHBoxLayout();
     buttonsLayout->setSpacing(4);
@@ -277,11 +288,9 @@ void ProfilePageForEmployer::addCandidateWidget(
         return btn;
     };
 
-    QPushButton *viewBtn = createButton("Просмотр", "#3498DB", "#2980B9");
     QPushButton *acceptBtn = createButton("Принять", "#27AE60", "#219653");
     QPushButton *rejectBtn = createButton("Отклонить", "#E74C3C", "#C0392B");
 
-    buttonsLayout->addWidget(viewBtn);
     buttonsLayout->addWidget(acceptBtn);
     buttonsLayout->addWidget(rejectBtn);
     buttonsLayout->addStretch();
@@ -294,40 +303,66 @@ void ProfilePageForEmployer::addCandidateWidget(
 
     layout->addWidget(candidateWidget);
 
-    connect(viewBtn, &QPushButton::clicked, this, [this, candidateId]() {
-        qDebug() << "Просмотр кандидата ID:" << candidateId;
+    connect(acceptBtn, &QPushButton::clicked, this, [=]() {
+        sendAcceptanceEmail(candidateId, vacancyId); // передаём только ID'шники
+        deleteResponse(vacancyId, candidateId);
     });
 
-    connect(
-        acceptBtn, &QPushButton::clicked, this,
-        [this, candidateId, vacancyId]() {
-            deleteResponse(vacancyId, candidateId);
-        }
-    );
+    connect(rejectBtn, &QPushButton::clicked, this,
+            [this, candidateId, vacancyId]() {
+                deleteResponse(vacancyId, candidateId);
+            });
+}
+void ProfilePageForEmployer::sendAcceptanceEmail(int candidateId,
+                                                 int vacancyId) {
+    QNetworkRequest request(
+        QUrl("http://localhost:80/api/v1/Notifications/sendAcceptanceEmail"));
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
 
-    connect(
-        rejectBtn, &QPushButton::clicked, this,
-        [this, candidateId, vacancyId]() {
-            deleteResponse(vacancyId, candidateId);
+    QJsonObject payload;
+    payload["candidate_id"] = candidateId;
+    payload["vacancy_id"] = vacancyId;
+
+    QNetworkReply *reply =
+        networkManager->post(request, QJsonDocument(payload).toJson());
+
+    connect(reply, &QNetworkReply::finished, this, [reply]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            qDebug() << "Ошибка отправки письма:" << reply->errorString();
+            QMessageBox::critical(nullptr, "Ошибка",
+                                  "Не удалось отправить письмо кандидату.");
+        } else {
+            QByteArray response = reply->readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(response);
+            QJsonObject obj = doc.object();
+
+            QString msgText = obj.contains("message")
+                                  ? obj["message"].toString()
+                                  : "Письмо успешно отправлено кандидату.";
+
+            QMessageBox::information(nullptr, "Успешно", msgText);
         }
-    );
+        reply->deleteLater();
+    });
 }
 
 void ProfilePageForEmployer::deleteResponse(int vacancyId, int candidateId) {
-    QSqlQuery query;
-    query.prepare(
-        "DELETE FROM responces WHERE vacancy_id = :vacancy_id AND candidate_id "
-        "= :candidate_id"
-    );
-    query.bindValue(":vacancy_id", vacancyId);
-    query.bindValue(":candidate_id", candidateId);
+    QUrl url(QString("http://localhost:80/api/v1/Notifications/"
+                     "deleteResponse?vacancy_id=%1&candidate_id=%2")
+                 .arg(vacancyId)
+                 .arg(candidateId));
+    QNetworkRequest request(url);
+    QNetworkReply *reply = networkManager->deleteResource(request);
 
-    if (query.exec()) {
-        loadResponses();
-    } else {
-        qDebug() << "Ошибка удаления отклика:" << query.lastError().text();
-        QMessageBox::critical(this, "Ошибка", "Не удалось удалить отклик");
-    }
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        reply->deleteLater();
+        if (reply->error() == QNetworkReply::NoError) {
+            loadResponses(); // Обновим список
+        } else {
+            qDebug() << "Ошибка удаления отклика:" << reply->errorString();
+            QMessageBox::critical(this, "Ошибка", "Не удалось удалить отклик.");
+        }
+    });
 }
 
 void ProfilePageForEmployer::onAddVacancyClicked() {
@@ -439,9 +474,8 @@ void ProfilePageForEmployer::onAddVacancyClicked() {
     form.addRow("Образование:", educationCombo);
     form.addRow("Удаленность:", remotePossibleCombo);
 
-    QDialogButtonBox buttonBox(
-        QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog
-    );
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+                               Qt::Horizontal, &dialog);
     form.addRow(&buttonBox);
     buttonBox.button(QDialogButtonBox::Ok)->setText("Сохранить");
     buttonBox.button(QDialogButtonBox::Ok)->setIcon(QIcon());
@@ -454,11 +488,9 @@ void ProfilePageForEmployer::onAddVacancyClicked() {
 
     if (dialog.exec() == QDialog::Accepted) {
         QNetworkRequest request(
-            QUrl("http://localhost:80/api/v1/resources/createVacancy")
-        );
-        request.setHeader(
-            QNetworkRequest::ContentTypeHeader, "application/json"
-        );
+            QUrl("http://localhost:80/api/v1/resources/createVacancy"));
+        request.setHeader(QNetworkRequest::ContentTypeHeader,
+                          "application/json");
         QJsonObject json;
         json["name"] = nameEdit->text();
         json["salary"] = salaryEdit->text().toDouble();
@@ -486,9 +518,8 @@ void ProfilePageForEmployer::onAddVacancyClicked() {
                 qDebug() << "Вакансия ID:" << obj["vacancy_id"];
                 loadVacancies();
             } else {
-                QMessageBox::warning(
-                    this, "Упс...", "Ошибка при отправке запроса."
-                );
+                QMessageBox::warning(this, "Упс...",
+                                     "Ошибка при отправке запроса.");
             }
             reply->deleteLater();
         });
@@ -607,9 +638,8 @@ void ProfilePageForEmployer::onEditVacancyClicked() {
     form.addRow("Образование:", educationCombo);
     form.addRow("Удаленность:", remotePossibleCombo);
 
-    QDialogButtonBox buttonBox(
-        QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog
-    );
+    QDialogButtonBox buttonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel,
+                               Qt::Horizontal, &dialog);
     form.addRow(&buttonBox);
     buttonBox.button(QDialogButtonBox::Ok)->setText("Сохранить");
     buttonBox.button(QDialogButtonBox::Ok)->setIcon(QIcon());
@@ -623,11 +653,9 @@ void ProfilePageForEmployer::onEditVacancyClicked() {
     if (dialog.exec() == QDialog::Accepted) {
         QNetworkRequest request(QUrl(
             QString("http://localhost:80/api/v1/resources/updateVacancy/%1")
-                .arg(vacancyId)
-        ));
-        request.setHeader(
-            QNetworkRequest::ContentTypeHeader, "application/json"
-        );
+                .arg(vacancyId)));
+        request.setHeader(QNetworkRequest::ContentTypeHeader,
+                          "application/json");
         QJsonObject updated;
         updated["name"] = nameEdit->text();
         updated["salary"] = salaryEdit->text().toInt();
@@ -660,19 +688,16 @@ void ProfilePageForEmployer::onDeleteVacancyClicked() {
     QPushButton *button = qobject_cast<QPushButton *>(sender());
     int vacancyId = button->property("vacancyId").toInt();
 
-    QMessageBox::StandardButton replyToDelete = QMessageBox::question(
-        this, "Удаление", "Удалить вакансию?",
-        QMessageBox::Yes | QMessageBox::No
-    );
+    QMessageBox::StandardButton replyToDelete =
+        QMessageBox::question(this, "Удаление", "Удалить вакансию?",
+                              QMessageBox::Yes | QMessageBox::No);
 
     if (replyToDelete == QMessageBox::Yes) {
         QNetworkRequest request(QUrl(
             QString("http://localhost:80/api/v1/resources/deleteVacancy/%1")
-                .arg(vacancyId)
-        ));
-        request.setHeader(
-            QNetworkRequest::ContentTypeHeader, "application/json"
-        );
+                .arg(vacancyId)));
+        request.setHeader(QNetworkRequest::ContentTypeHeader,
+                          "application/json");
         QNetworkReply *reply =
             networkManager->sendCustomRequest(request, "DELETE");
 
@@ -686,13 +711,11 @@ void ProfilePageForEmployer::onDeleteVacancyClicked() {
                     loadVacancies();
                 } else {
                     QMessageBox::warning(
-                        this, "Ошибка", "Вакансия не найдена или уже удалена."
-                    );
+                        this, "Ошибка", "Вакансия не найдена или уже удалена.");
                 }
             } else {
-                QMessageBox::critical(
-                    this, "Ошибка сети", "Что-то непонятное..."
-                );
+                QMessageBox::critical(this, "Ошибка сети",
+                                      "Что-то непонятное...");
             }
             reply->deleteLater();
         });
@@ -700,16 +723,15 @@ void ProfilePageForEmployer::onDeleteVacancyClicked() {
 }
 
 void ProfilePageForEmployer::loadExperienceData(
-    QComboBox *desiredExperienceCombo
-) {
+    QComboBox *desiredExperienceCombo) {
     desiredExperienceCombo->addItem("Без опыта", 1);
     desiredExperienceCombo->addItem("1-3 лет", 2);
     desiredExperienceCombo->addItem("3-5 лет", 3);
     desiredExperienceCombo->addItem("5+ лет", 4);
 }
 
-void ProfilePageForEmployer::loadWorkScheduleData(QComboBox *workScheduleCombo
-) {
+void ProfilePageForEmployer::loadWorkScheduleData(
+    QComboBox *workScheduleCombo) {
     workScheduleCombo->addItem("Полный рабочий день", 1);
     workScheduleCombo->addItem("Частичная занятость", 2);
     workScheduleCombo->addItem("Гибкий график", 3);
@@ -725,57 +747,57 @@ void ProfilePageForEmployer::loadEducStatusData(QComboBox *educationCombo) {
     educationCombo->addItem("Не имеет значения", 6);
 }
 
-void ProfilePageForEmployer::loadRemotenessData(QComboBox *remotePossibleCombo
-) {
+void ProfilePageForEmployer::loadRemotenessData(
+    QComboBox *remotePossibleCombo) {
     remotePossibleCombo->addItem("Да", 1);
     remotePossibleCombo->addItem("Нет", 0);
 }
 
 QString ProfilePageForEmployer::getExpThroughId(const int &id) {
     switch (id) {
-        case 1:
-            return "Без опыта";
-        case 2:
-            return "1-3 лет";
-        case 3:
-            return "3-5 лет";
-        case 4:
-            return "5+ лет";
-        default:
-            return "...";
+    case 1:
+        return "Без опыта";
+    case 2:
+        return "1-3 лет";
+    case 3:
+        return "3-5 лет";
+    case 4:
+        return "5+ лет";
+    default:
+        return "...";
     }
 }
 
 QString ProfilePageForEmployer::getWorkScheduleThroughId(const int &id) {
     switch (id) {
-        case 1:
-            return "Полный рабочий день";
-        case 2:
-            return "Частичная занятость";
-        case 3:
-            return "Гибкий график";
-        case 4:
-            return "Другое";
-        default:
-            return "...";
+    case 1:
+        return "Полный рабочий день";
+    case 2:
+        return "Частичная занятость";
+    case 3:
+        return "Гибкий график";
+    case 4:
+        return "Другое";
+    default:
+        return "...";
     }
 }
 
 QString ProfilePageForEmployer::getEducationStatusThroughId(const int &id) {
     switch (id) {
-        case 1:
-            return "Среднее";
-        case 2:
-            return "Среднее специальное";
-        case 3:
-            return "Бакалавриат";
-        case 4:
-            return "Магистратура";
-        case 5:
-            return "Аспирантура";
-        case 6:
-            return "Не имеет значения";
-        default:
-            return "...";
+    case 1:
+        return "Среднее";
+    case 2:
+        return "Среднее специальное";
+    case 3:
+        return "Бакалавриат";
+    case 4:
+        return "Магистратура";
+    case 5:
+        return "Аспирантура";
+    case 6:
+        return "Не имеет значения";
+    default:
+        return "...";
     }
 }

@@ -8,19 +8,15 @@
 
 #include <drogon/HttpFilter.h>
 using namespace drogon;
-namespace api
-{
-namespace v1
-{
+namespace api {
+namespace v1 {
 
-class checkAuthFilter : public HttpFilter<checkAuthFilter>
-{
+class checkAuthFilter : public HttpFilter<checkAuthFilter> {
   public:
     checkAuthFilter() {}
-    void doFilter(const HttpRequestPtr &req,
-                  FilterCallback &&fcb,
+    void doFilter(const HttpRequestPtr &req, FilterCallback &&fcb,
                   FilterChainCallback &&fccb) override;
 };
 
-}
-}
+} // namespace v1
+} // namespace api

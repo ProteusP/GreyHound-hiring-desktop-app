@@ -9,25 +9,20 @@
 
 class VacancyCard : public QFrame {
     Q_OBJECT
-public:
-    explicit VacancyCard(
-        QNetworkAccessManager *manager_,
-        const QString &title_,
-        const QString &company_,
-        const QString &salary_,
-        const QString &place_,
-        const int &workSchedule_,
-        const int &remoteness_,
-        const int &vacancy_id_,
-        QWidget *parent = nullptr
-    );
+  public:
+    explicit VacancyCard(QNetworkAccessManager *manager_, const QString &title_,
+                         const QString &company_, const QString &salary_,
+                         const QString &place_, const int &workSchedule_,
+                         const int &remoteness_, const int &vacancy_id_,
+                         QWidget *parent = nullptr);
 
     void setFixedSize(int width, int height);
-    void setVacancyId(int id);  // Переопределяем для внутренней настройки
+    void setVacancyId(int id); // Переопределяем для внутренней настройки
 
-private slots:
+  private slots:
     void on_detailsButton_clicked();
-private:
+
+  private:
     QNetworkAccessManager *networkManager;
     QLabel *title;
     QLabel *company;
@@ -43,4 +38,4 @@ private:
     QPushButton *detailsButton;
 };
 
-#endif  // VACANCYCARD_H
+#endif // VACANCYCARD_H

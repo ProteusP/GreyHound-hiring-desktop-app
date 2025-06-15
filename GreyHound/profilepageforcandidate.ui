@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>836</width>
-    <height>627</height>
+    <height>645</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,67 +22,6 @@
   <layout class="QGridLayout" name="gridLayout_4">
    <item row="0" column="0">
     <layout class="QGridLayout" name="gridLayout_3">
-     <item row="0" column="0">
-      <widget class="QWidget" name="notificationsWidget" native="true">
-       <property name="styleSheet">
-        <string notr="true">QWidget {
-    border: 1px solid #e0e0e0;
-	border-radius: 10px;
-    background-color: white;
-}
-</string>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout">
-        <item>
-         <spacer name="verticalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Orientation::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QLabel" name="notificationsLabel">
-          <property name="font">
-           <font>
-            <family>Golos Text</family>
-           </font>
-          </property>
-          <property name="styleSheet">
-           <string notr="true">QLabel {
-	border: none;
-	color: black;
-}</string>
-          </property>
-          <property name="text">
-           <string>Уведомления</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignmentFlag::AlignCenter</set>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Orientation::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </widget>
-     </item>
      <item row="0" column="1">
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <property name="spacing">
@@ -796,6 +735,19 @@ QPushButton:hover {
         </widget>
        </item>
       </layout>
+     </item>
+     <item row="0" column="0">
+      <widget class="QWidget" name="notificationsWidget" native="true">
+       <property name="styleSheet">
+        <string notr="true">QWidget {
+    border: 1px solid #e0e0e0;
+	border-radius: 10px;
+    background-color: white;
+}
+</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout"/>
+      </widget>
      </item>
     </layout>
    </item>

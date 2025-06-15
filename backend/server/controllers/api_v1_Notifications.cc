@@ -20,12 +20,9 @@ void Notifications::candRespond(
     std::function<void(const HttpResponsePtr &)> &&callback) {
     const auto &json = req->getJsonObject();
 
-    if (!json || !json->isMember("vacancy_id") ||
-    !json->isMember("candidate_id") ||
-    !json->isMember("employer_id")) {
+    if (!json || !json->isMember("vacancy_id")) {
         Json::Value err;
-        err["error"] =
-            "Invalid request format: missing vacancy_id or candidate_id";
+        err["error"] = "Invalid request format: missing vacancy_id";
         const auto resp = HttpResponse::newHttpJsonResponse(err);
         resp->setStatusCode(k400BadRequest);
         callback(resp);
@@ -33,8 +30,19 @@ void Notifications::candRespond(
     }
 
     const int vacancy_id = (*json)["vacancy_id"].asInt();
-    const int employer_id = (*json)["employer_id"].asInt();
-    const int candidate_id = (*json)["candidate_id"].asInt();
+
+    // Получаем user_id из сессии
+    auto session = req->session();
+    if (!session || !session->find("user_id")) {
+        Json::Value err;
+        err["error"] = "Unauthorized: no session";
+        const auto resp = HttpResponse::newHttpJsonResponse(err);
+        resp->setStatusCode(k401Unauthorized);
+        callback(resp);
+        return;
+    }
+
+    const auto candidate_id = std::stoi(session->get<std::string>("user_id"));
 
     const auto &dbClient = app().getDbClient();
     auto callbackPtr =
@@ -44,6 +52,7 @@ void Notifications::candRespond(
     auto foundCandidate = std::make_shared<bool>(false);
     auto foundVacancy = std::make_shared<bool>(false);
     auto alreadyResponded = std::make_shared<bool>(false);
+    auto employer_id_ptr = std::make_shared<int>(-1);
     auto finishedChecks = std::make_shared<int>(0);
 
     auto checkComplete = [=]() {
@@ -72,7 +81,7 @@ void Notifications::candRespond(
                     drogon_model::default_db::Responces responce;
                     responce.setCandidateId(candidate_id);
                     responce.setVacancyId(vacancy_id);
-                    responce.setEmployerId(employer_id);
+                    responce.setEmployerId(*employer_id_ptr);
                     responce.setCreatedAt(trantor::Date::now());
 
                     orm::Mapper<drogon_model::default_db::Responces>
@@ -107,6 +116,7 @@ void Notifications::candRespond(
         }
     };
 
+    // Проверка кандидата
     try {
         orm::Mapper<drogon_model::default_db::Candidates> candidatesMapper(
             dbClient);
@@ -123,22 +133,24 @@ void Notifications::candRespond(
             });
     } catch (const std::exception &e) {
         Json::Value err;
-        err["error"] = "Database error";
-        LOG_DEBUG << "Database error (candidate check): " << e.what();
+        err["error"] = "Database error (candidate check)";
+        err["detail"] = e.what();
         const auto resp = HttpResponse::newHttpJsonResponse(err);
         resp->setStatusCode(k500InternalServerError);
         (*callbackPtr)(resp);
         return;
     }
 
+    // Проверка вакансии и получение employer_id
     try {
         orm::Mapper<drogon_model::default_db::Vacancies> vacanciesMapper(
             dbClient);
         vacanciesMapper.findOne(
             orm::Criteria(drogon_model::default_db::Vacancies::Cols::_id,
                           vacancy_id),
-            [=](const drogon_model::default_db::Vacancies &) {
+            [=](const drogon_model::default_db::Vacancies &vac) {
                 *foundVacancy = true;
+                *employer_id_ptr = vac.getValueOfEmployerId();
                 checkComplete();
             },
             [=](const orm::DrogonDbException &) {
@@ -147,12 +159,14 @@ void Notifications::candRespond(
             });
     } catch (const std::exception &e) {
         Json::Value err;
-        err["error"] = "Database error";
-        LOG_DEBUG << "Database error (vacancy check): " << e.what();
+        err["error"] = "Database error (vacancy check)";
+        err["detail"] = e.what();
         const auto resp = HttpResponse::newHttpJsonResponse(err);
         resp->setStatusCode(k500InternalServerError);
         (*callbackPtr)(resp);
     }
+
+    // Проверка повторного отклика
     try {
         orm::Mapper<drogon_model::default_db::Responces> responcesMapper(
             dbClient);
@@ -436,70 +450,73 @@ void Notifications::emplRespond(
 
 void Notifications::getResponsesForEmpl(
     const HttpRequestPtr &req,
-    std::function<void(const HttpResponsePtr &)> &&callback)
-{
-    const auto &json = req->getJsonObject();
-    const auto callbackPtr = std::make_shared<std::function<void(const HttpResponsePtr &)>>(std::move(callback));
+    std::function<void(const HttpResponsePtr &)> &&callback) {
 
-    if (!json || !json->isMember("employer_id")) {
+    auto callbackPtr =
+        std::make_shared<std::function<void(const HttpResponsePtr &)>>(
+            std::move(callback));
+    auto session = req->session();
+
+    // Проверка: есть ли в сессии employer_id
+    if (!session->find("user_id")) {
         Json::Value err;
-        err["error"] = "Missing employer_id";
+        err["error"] = "Not authorized or employer_id missing in session";
         auto resp = HttpResponse::newHttpJsonResponse(err);
-        resp->setStatusCode(k400BadRequest);
+        resp->setStatusCode(k401Unauthorized);
         (*callbackPtr)(resp);
         return;
     }
 
-    int employer_id = (*json)["employer_id"].asInt();
-    const auto &dbClient = app().getDbClient();
+    int employer_id = std::stoi(session->get<std::string>("user_id"));
+    auto dbClient = app().getDbClient();
+    auto result = std::make_shared<Json::Value>();
+    (*result)["responses"] = Json::arrayValue;
 
-    try {
-        orm::Mapper<drogon_model::default_db::Responces> responseMapper(dbClient);
-        responseMapper.findBy(
-            orm::Criteria(drogon_model::default_db::Responces::Cols::_employer_id, employer_id) &&
-            orm::Criteria(drogon_model::default_db::Responces::Cols::_status, "Active"),
-            [callbackPtr](const std::vector<drogon_model::default_db::Responces> &responses) {
-                Json::Value result;
-                result["responses"] = Json::arrayValue;
+    dbClient->execSqlAsync(
+        "SELECT r.vacancy_id, r.candidate_id, r.created_at, "
+        "v.name AS vacancy_name, c.name AS candidate_name, c.surname AS "
+        "candidate_surname "
+        "FROM responces r "
+        "JOIN vacancies v ON r.vacancy_id = v.id "
+        "JOIN candidates c ON r.candidate_id = c.user_id "
+        "WHERE r.status = 'Active' AND v.employer_id = ?",
+        [callbackPtr, result](const orm::Result &res) {
+            for (const auto &row : res) {
+                Json::Value rJson;
+                rJson["vacancy_id"] = row["vacancy_id"].as<int>();
+                rJson["candidate_id"] = row["candidate_id"].as<int>();
+                rJson["created_at"] = row["created_at"].as<std::string>();
+                rJson["vacancy_name"] = row["vacancy_name"].as<std::string>();
+                rJson["candidate_name"] =
+                    row["candidate_name"].as<std::string>();
+                rJson["candidate_surname"] =
+                    row["candidate_surname"].as<std::string>();
+                (*result)["responses"].append(rJson);
+            }
 
-                for (const auto &r : responses) {
-                    Json::Value rJson;
-                    rJson["vacancy_id"] = r.getValueOfVacancyId();
-                    rJson["candidate_id"] = r.getValueOfCandidateId();
-                    rJson["created_at"] = r.getValueOfCreatedAt().toFormattedString(false);
-                    rJson["status"] = r.getValueOfStatus();
-                    result["responses"].append(rJson);
-                }
-
-                auto resp = HttpResponse::newHttpJsonResponse(result);
-                (*callbackPtr)(resp);
-            },
-            [callbackPtr](const orm::DrogonDbException &e) {
-                Json::Value err;
-                err["error"] = "Failed to fetch responses";
-                err["detail"] = e.base().what();
-                auto resp = HttpResponse::newHttpJsonResponse(err);
-                resp->setStatusCode(k500InternalServerError);
-                (*callbackPtr)(resp);
-            });
-    } catch (const std::exception &e) {
-        Json::Value err;
-        err["error"] = "Exception occurred";
-        err["detail"] = e.what();
-        auto resp = HttpResponse::newHttpJsonResponse(err);
-        resp->setStatusCode(k500InternalServerError);
-        (*callbackPtr)(resp);
-    }
+            auto resp = HttpResponse::newHttpJsonResponse(*result);
+            (*callbackPtr)(resp);
+        },
+        [callbackPtr](const orm::DrogonDbException &e) {
+            Json::Value err;
+            err["error"] = "Database query failed";
+            err["detail"] = e.base().what();
+            auto resp = HttpResponse::newHttpJsonResponse(err);
+            resp->setStatusCode(k500InternalServerError);
+            (*callbackPtr)(resp);
+        },
+        employer_id // подставляется в SQL
+    );
 }
-
-
 
 void Notifications::getInvitationsForCand(
     const HttpRequestPtr &req,
     std::function<void(const HttpResponsePtr &)> &&callback) {
 
     const auto &json = req->getJsonObject();
-    const auto callbackPtr = std::make_shared<std::function<void(const HttpResponsePtr &)>>(std::move(callback));
+    const auto callbackPtr =
+        std::make_shared<std::function<void(const HttpResponsePtr &)>>(
+            std::move(callback));
 
     if (!json || !json->isMember("candidate_id")) {
         Json::Value err;
@@ -514,17 +531,25 @@ void Notifications::getInvitationsForCand(
     const auto &dbClient = app().getDbClient();
 
     try {
-        orm::Mapper<drogon_model::default_db::Invitations> invitationsMapper(dbClient);
+        orm::Mapper<drogon_model::default_db::Invitations> invitationsMapper(
+            dbClient);
         invitationsMapper.findBy(
-            orm::Criteria(drogon_model::default_db::Invitations::Cols::_candidate_id, candidate_id) &&
-            orm::Criteria(drogon_model::default_db::Invitations::Cols::_status, "Active"),
-            [callbackPtr](const std::vector<drogon_model::default_db::Invitations> &invitations) {
+            orm::Criteria(
+                drogon_model::default_db::Invitations::Cols::_candidate_id,
+                candidate_id) &&
+                orm::Criteria(
+                    drogon_model::default_db::Invitations::Cols::_status,
+                    "Active"),
+            [callbackPtr](
+                const std::vector<drogon_model::default_db::Invitations>
+                    &invitations) {
                 Json::Value result;
                 for (const auto &inv : invitations) {
                     Json::Value item;
                     item["vacancy_id"] = inv.getValueOfVacancyId();
                     item["contact_info"] = inv.getValueOfContactInfo();
-                    item["created_at"] = inv.getValueOfCreatedAt().toFormattedString(false);
+                    item["created_at"] =
+                        inv.getValueOfCreatedAt().toFormattedString(false);
                     item["status"] = inv.getValueOfStatus();
                     result["invitations"].append(item);
                 }
@@ -547,4 +572,89 @@ void Notifications::getInvitationsForCand(
         resp->setStatusCode(k500InternalServerError);
         (*callbackPtr)(resp);
     }
+}
+
+void Notifications::deleteResponse(
+    const HttpRequestPtr &req,
+    std::function<void(const HttpResponsePtr &)> &&callback) {
+    auto params = req->getParameters();
+    int vacancyId = std::stoi(params["vacancy_id"]);
+    int candidateId = std::stoi(params["candidate_id"]);
+
+    auto dbClient = app().getDbClient();
+
+    dbClient->execSqlAsync(
+        "DELETE FROM responces WHERE vacancy_id = ? AND candidate_id = ?",
+        [callback](const drogon::orm::Result &result) {
+            Json::Value json;
+            json["success"] = true;
+            auto resp = HttpResponse::newHttpJsonResponse(json);
+            callback(resp);
+        },
+        [callback](const drogon::orm::DrogonDbException &e) {
+            Json::Value err;
+            err["error"] = "Удаление не удалось";
+            err["detail"] = e.base().what();
+            auto resp = HttpResponse::newHttpJsonResponse(err);
+            resp->setStatusCode(k500InternalServerError);
+            callback(resp);
+        },
+        vacancyId, candidateId);
+}
+
+void Notifications::sendAcceptanceEmail(
+    const HttpRequestPtr &req,
+    std::function<void(const HttpResponsePtr &)> &&callback) {
+    auto json = req->getJsonObject();
+    if (!json || !json->isMember("candidate_id") ||
+        !json->isMember("vacancy_id")) {
+        Json::Value err;
+        err["error"] = "Missing candidate_id or vacancy_id";
+        auto resp = HttpResponse::newHttpJsonResponse(err);
+        resp->setStatusCode(k400BadRequest);
+        return callback(resp);
+    }
+
+    int candidateId = (*json)["candidate_id"].asInt();
+    int vacancyId = (*json)["vacancy_id"].asInt();
+
+    auto dbClient = app().getDbClient();
+    dbClient->execSqlAsync(
+        R"(
+            SELECT u.email AS employer_email, v.name AS vacancy_name
+            FROM vacancies v
+            JOIN users u ON v.employer_id = u.id
+            WHERE v.id = ?
+        )",
+        [callback](const drogon::orm::Result &res) {
+            if (res.empty()) {
+                Json::Value err;
+                err["error"] = "Vacancy not found";
+                auto resp = HttpResponse::newHttpJsonResponse(err);
+                resp->setStatusCode(k404NotFound);
+                return callback(resp);
+            }
+
+            std::string employerEmail =
+                res[0]["employer_email"].as<std::string>();
+            std::string vacancyTitle = res[0]["vacancy_name"].as<std::string>();
+
+            std::string msg = "Вам рассмотрели как кандидата\n";
+            msg += "Email работодателя: " + employerEmail + "\n";
+            msg += "Вакансия: " + vacancyTitle;
+
+            Json::Value success;
+            success["message"] = msg;
+
+            callback(HttpResponse::newHttpJsonResponse(success));
+        },
+        [callback](const drogon::orm::DrogonDbException &e) {
+            Json::Value err;
+            err["error"] = "Database error";
+            err["detail"] = e.base().what();
+            auto resp = HttpResponse::newHttpJsonResponse(err);
+            resp->setStatusCode(k500InternalServerError);
+            callback(resp);
+        },
+        vacancyId);
 }

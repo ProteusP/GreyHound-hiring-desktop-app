@@ -18,1091 +18,876 @@ const std::string Invitations::Cols::_vacancy_id = "vacancy_id";
 const std::string Invitations::Cols::_status = "status";
 const std::string Invitations::Cols::_created_at = "created_at";
 const std::string Invitations::Cols::_contact_info = "contact_info";
-const std::vector<std::string> Invitations::primaryKeyName = {"candidate_id","vacancy_id"};
+const std::vector<std::string> Invitations::primaryKeyName = {"candidate_id",
+                                                              "vacancy_id"};
 const bool Invitations::hasPrimaryKey = true;
 const std::string Invitations::tableName = "invitations";
 
-const std::vector<typename Invitations::MetaData> Invitations::metaData_={
-{"candidate_id","int32_t","int",4,0,1,1},
-{"vacancy_id","int32_t","int",4,0,1,1},
-{"status","std::string","varchar(50)",50,0,0,0},
-{"created_at","::trantor::Date","timestamp",0,0,0,0},
-{"contact_info","std::string","varchar(300)",300,0,0,1}
-};
-const std::string &Invitations::getColumnName(size_t index) noexcept(false)
-{
+const std::vector<typename Invitations::MetaData> Invitations::metaData_ = {
+    {"candidate_id", "int32_t", "int", 4, 0, 1, 1},
+    {"vacancy_id", "int32_t", "int", 4, 0, 1, 1},
+    {"status", "std::string", "varchar(50)", 50, 0, 0, 0},
+    {"created_at", "::trantor::Date", "timestamp", 0, 0, 0, 0},
+    {"contact_info", "std::string", "varchar(300)", 300, 0, 0, 1}};
+const std::string &Invitations::getColumnName(size_t index) noexcept(false) {
     assert(index < metaData_.size());
     return metaData_[index].colName_;
 }
-Invitations::Invitations(const Row &r, const ssize_t indexOffset) noexcept
-{
-    if(indexOffset < 0)
-    {
-        if(!r["candidate_id"].isNull())
-        {
-            candidateId_=std::make_shared<int32_t>(r["candidate_id"].as<int32_t>());
+Invitations::Invitations(const Row &r, const ssize_t indexOffset) noexcept {
+    if (indexOffset < 0) {
+        if (!r["candidate_id"].isNull()) {
+            candidateId_ =
+                std::make_shared<int32_t>(r["candidate_id"].as<int32_t>());
         }
-        if(!r["vacancy_id"].isNull())
-        {
-            vacancyId_=std::make_shared<int32_t>(r["vacancy_id"].as<int32_t>());
+        if (!r["vacancy_id"].isNull()) {
+            vacancyId_ =
+                std::make_shared<int32_t>(r["vacancy_id"].as<int32_t>());
         }
-        if(!r["status"].isNull())
-        {
-            status_=std::make_shared<std::string>(r["status"].as<std::string>());
+        if (!r["status"].isNull()) {
+            status_ =
+                std::make_shared<std::string>(r["status"].as<std::string>());
         }
-        if(!r["created_at"].isNull())
-        {
+        if (!r["created_at"].isNull()) {
             auto timeStr = r["created_at"].as<std::string>();
             struct tm stm;
-            memset(&stm,0,sizeof(stm));
-            auto p = strptime(timeStr.c_str(),"%Y-%m-%d %H:%M:%S",&stm);
+            memset(&stm, 0, sizeof(stm));
+            auto p = strptime(timeStr.c_str(), "%Y-%m-%d %H:%M:%S", &stm);
             time_t t = mktime(&stm);
             size_t decimalNum = 0;
-            if(p)
-            {
-                if(*p=='.')
-                {
-                    std::string decimals(p+1,&timeStr[timeStr.length()]);
-                    while(decimals.length()<6)
-                    {
+            if (p) {
+                if (*p == '.') {
+                    std::string decimals(p + 1, &timeStr[timeStr.length()]);
+                    while (decimals.length() < 6) {
                         decimals += "0";
                     }
                     decimalNum = (size_t)atol(decimals.c_str());
                 }
-                createdAt_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
+                createdAt_ =
+                    std::make_shared<::trantor::Date>(t * 1000000 + decimalNum);
             }
         }
-        if(!r["contact_info"].isNull())
-        {
-            contactInfo_=std::make_shared<std::string>(r["contact_info"].as<std::string>());
+        if (!r["contact_info"].isNull()) {
+            contactInfo_ = std::make_shared<std::string>(
+                r["contact_info"].as<std::string>());
         }
-    }
-    else
-    {
+    } else {
         size_t offset = (size_t)indexOffset;
-        if(offset + 5 > r.size())
-        {
+        if (offset + 5 > r.size()) {
             LOG_FATAL << "Invalid SQL result for this model";
             return;
         }
         size_t index;
         index = offset + 0;
-        if(!r[index].isNull())
-        {
-            candidateId_=std::make_shared<int32_t>(r[index].as<int32_t>());
+        if (!r[index].isNull()) {
+            candidateId_ = std::make_shared<int32_t>(r[index].as<int32_t>());
         }
         index = offset + 1;
-        if(!r[index].isNull())
-        {
-            vacancyId_=std::make_shared<int32_t>(r[index].as<int32_t>());
+        if (!r[index].isNull()) {
+            vacancyId_ = std::make_shared<int32_t>(r[index].as<int32_t>());
         }
         index = offset + 2;
-        if(!r[index].isNull())
-        {
-            status_=std::make_shared<std::string>(r[index].as<std::string>());
+        if (!r[index].isNull()) {
+            status_ = std::make_shared<std::string>(r[index].as<std::string>());
         }
         index = offset + 3;
-        if(!r[index].isNull())
-        {
+        if (!r[index].isNull()) {
             auto timeStr = r[index].as<std::string>();
             struct tm stm;
-            memset(&stm,0,sizeof(stm));
-            auto p = strptime(timeStr.c_str(),"%Y-%m-%d %H:%M:%S",&stm);
+            memset(&stm, 0, sizeof(stm));
+            auto p = strptime(timeStr.c_str(), "%Y-%m-%d %H:%M:%S", &stm);
             time_t t = mktime(&stm);
             size_t decimalNum = 0;
-            if(p)
-            {
-                if(*p=='.')
-                {
-                    std::string decimals(p+1,&timeStr[timeStr.length()]);
-                    while(decimals.length()<6)
-                    {
+            if (p) {
+                if (*p == '.') {
+                    std::string decimals(p + 1, &timeStr[timeStr.length()]);
+                    while (decimals.length() < 6) {
                         decimals += "0";
                     }
                     decimalNum = (size_t)atol(decimals.c_str());
                 }
-                createdAt_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
+                createdAt_ =
+                    std::make_shared<::trantor::Date>(t * 1000000 + decimalNum);
             }
         }
         index = offset + 4;
-        if(!r[index].isNull())
-        {
-            contactInfo_=std::make_shared<std::string>(r[index].as<std::string>());
+        if (!r[index].isNull()) {
+            contactInfo_ =
+                std::make_shared<std::string>(r[index].as<std::string>());
         }
     }
-
 }
 
-Invitations::Invitations(const Json::Value &pJson, const std::vector<std::string> &pMasqueradingVector) noexcept(false)
-{
-    if(pMasqueradingVector.size() != 5)
-    {
+Invitations::Invitations(
+    const Json::Value &pJson,
+    const std::vector<std::string> &pMasqueradingVector) noexcept(false) {
+    if (pMasqueradingVector.size() != 5) {
         LOG_ERROR << "Bad masquerading vector";
         return;
     }
-    if(!pMasqueradingVector[0].empty() && pJson.isMember(pMasqueradingVector[0]))
-    {
+    if (!pMasqueradingVector[0].empty() &&
+        pJson.isMember(pMasqueradingVector[0])) {
         dirtyFlag_[0] = true;
-        if(!pJson[pMasqueradingVector[0]].isNull())
-        {
-            candidateId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[0]].asInt64());
+        if (!pJson[pMasqueradingVector[0]].isNull()) {
+            candidateId_ = std::make_shared<int32_t>(
+                (int32_t)pJson[pMasqueradingVector[0]].asInt64());
         }
     }
-    if(!pMasqueradingVector[1].empty() && pJson.isMember(pMasqueradingVector[1]))
-    {
+    if (!pMasqueradingVector[1].empty() &&
+        pJson.isMember(pMasqueradingVector[1])) {
         dirtyFlag_[1] = true;
-        if(!pJson[pMasqueradingVector[1]].isNull())
-        {
-            vacancyId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[1]].asInt64());
+        if (!pJson[pMasqueradingVector[1]].isNull()) {
+            vacancyId_ = std::make_shared<int32_t>(
+                (int32_t)pJson[pMasqueradingVector[1]].asInt64());
         }
     }
-    if(!pMasqueradingVector[2].empty() && pJson.isMember(pMasqueradingVector[2]))
-    {
+    if (!pMasqueradingVector[2].empty() &&
+        pJson.isMember(pMasqueradingVector[2])) {
         dirtyFlag_[2] = true;
-        if(!pJson[pMasqueradingVector[2]].isNull())
-        {
-            status_=std::make_shared<std::string>(pJson[pMasqueradingVector[2]].asString());
+        if (!pJson[pMasqueradingVector[2]].isNull()) {
+            status_ = std::make_shared<std::string>(
+                pJson[pMasqueradingVector[2]].asString());
         }
     }
-    if(!pMasqueradingVector[3].empty() && pJson.isMember(pMasqueradingVector[3]))
-    {
+    if (!pMasqueradingVector[3].empty() &&
+        pJson.isMember(pMasqueradingVector[3])) {
         dirtyFlag_[3] = true;
-        if(!pJson[pMasqueradingVector[3]].isNull())
-        {
+        if (!pJson[pMasqueradingVector[3]].isNull()) {
             auto timeStr = pJson[pMasqueradingVector[3]].asString();
             struct tm stm;
-            memset(&stm,0,sizeof(stm));
-            auto p = strptime(timeStr.c_str(),"%Y-%m-%d %H:%M:%S",&stm);
+            memset(&stm, 0, sizeof(stm));
+            auto p = strptime(timeStr.c_str(), "%Y-%m-%d %H:%M:%S", &stm);
             time_t t = mktime(&stm);
             size_t decimalNum = 0;
-            if(p)
-            {
-                if(*p=='.')
-                {
-                    std::string decimals(p+1,&timeStr[timeStr.length()]);
-                    while(decimals.length()<6)
-                    {
+            if (p) {
+                if (*p == '.') {
+                    std::string decimals(p + 1, &timeStr[timeStr.length()]);
+                    while (decimals.length() < 6) {
                         decimals += "0";
                     }
                     decimalNum = (size_t)atol(decimals.c_str());
                 }
-                createdAt_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
+                createdAt_ =
+                    std::make_shared<::trantor::Date>(t * 1000000 + decimalNum);
             }
         }
     }
-    if(!pMasqueradingVector[4].empty() && pJson.isMember(pMasqueradingVector[4]))
-    {
+    if (!pMasqueradingVector[4].empty() &&
+        pJson.isMember(pMasqueradingVector[4])) {
         dirtyFlag_[4] = true;
-        if(!pJson[pMasqueradingVector[4]].isNull())
-        {
-            contactInfo_=std::make_shared<std::string>(pJson[pMasqueradingVector[4]].asString());
+        if (!pJson[pMasqueradingVector[4]].isNull()) {
+            contactInfo_ = std::make_shared<std::string>(
+                pJson[pMasqueradingVector[4]].asString());
         }
     }
 }
 
-Invitations::Invitations(const Json::Value &pJson) noexcept(false)
-{
-    if(pJson.isMember("candidate_id"))
-    {
-        dirtyFlag_[0]=true;
-        if(!pJson["candidate_id"].isNull())
-        {
-            candidateId_=std::make_shared<int32_t>((int32_t)pJson["candidate_id"].asInt64());
+Invitations::Invitations(const Json::Value &pJson) noexcept(false) {
+    if (pJson.isMember("candidate_id")) {
+        dirtyFlag_[0] = true;
+        if (!pJson["candidate_id"].isNull()) {
+            candidateId_ = std::make_shared<int32_t>(
+                (int32_t)pJson["candidate_id"].asInt64());
         }
     }
-    if(pJson.isMember("vacancy_id"))
-    {
-        dirtyFlag_[1]=true;
-        if(!pJson["vacancy_id"].isNull())
-        {
-            vacancyId_=std::make_shared<int32_t>((int32_t)pJson["vacancy_id"].asInt64());
+    if (pJson.isMember("vacancy_id")) {
+        dirtyFlag_[1] = true;
+        if (!pJson["vacancy_id"].isNull()) {
+            vacancyId_ = std::make_shared<int32_t>(
+                (int32_t)pJson["vacancy_id"].asInt64());
         }
     }
-    if(pJson.isMember("status"))
-    {
-        dirtyFlag_[2]=true;
-        if(!pJson["status"].isNull())
-        {
-            status_=std::make_shared<std::string>(pJson["status"].asString());
+    if (pJson.isMember("status")) {
+        dirtyFlag_[2] = true;
+        if (!pJson["status"].isNull()) {
+            status_ = std::make_shared<std::string>(pJson["status"].asString());
         }
     }
-    if(pJson.isMember("created_at"))
-    {
-        dirtyFlag_[3]=true;
-        if(!pJson["created_at"].isNull())
-        {
+    if (pJson.isMember("created_at")) {
+        dirtyFlag_[3] = true;
+        if (!pJson["created_at"].isNull()) {
             auto timeStr = pJson["created_at"].asString();
             struct tm stm;
-            memset(&stm,0,sizeof(stm));
-            auto p = strptime(timeStr.c_str(),"%Y-%m-%d %H:%M:%S",&stm);
+            memset(&stm, 0, sizeof(stm));
+            auto p = strptime(timeStr.c_str(), "%Y-%m-%d %H:%M:%S", &stm);
             time_t t = mktime(&stm);
             size_t decimalNum = 0;
-            if(p)
-            {
-                if(*p=='.')
-                {
-                    std::string decimals(p+1,&timeStr[timeStr.length()]);
-                    while(decimals.length()<6)
-                    {
+            if (p) {
+                if (*p == '.') {
+                    std::string decimals(p + 1, &timeStr[timeStr.length()]);
+                    while (decimals.length() < 6) {
                         decimals += "0";
                     }
                     decimalNum = (size_t)atol(decimals.c_str());
                 }
-                createdAt_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
+                createdAt_ =
+                    std::make_shared<::trantor::Date>(t * 1000000 + decimalNum);
             }
         }
     }
-    if(pJson.isMember("contact_info"))
-    {
-        dirtyFlag_[4]=true;
-        if(!pJson["contact_info"].isNull())
-        {
-            contactInfo_=std::make_shared<std::string>(pJson["contact_info"].asString());
+    if (pJson.isMember("contact_info")) {
+        dirtyFlag_[4] = true;
+        if (!pJson["contact_info"].isNull()) {
+            contactInfo_ =
+                std::make_shared<std::string>(pJson["contact_info"].asString());
         }
     }
 }
 
-void Invitations::updateByMasqueradedJson(const Json::Value &pJson,
-                                            const std::vector<std::string> &pMasqueradingVector) noexcept(false)
-{
-    if(pMasqueradingVector.size() != 5)
-    {
+void Invitations::updateByMasqueradedJson(
+    const Json::Value &pJson,
+    const std::vector<std::string> &pMasqueradingVector) noexcept(false) {
+    if (pMasqueradingVector.size() != 5) {
         LOG_ERROR << "Bad masquerading vector";
         return;
     }
-    if(!pMasqueradingVector[0].empty() && pJson.isMember(pMasqueradingVector[0]))
-    {
-        if(!pJson[pMasqueradingVector[0]].isNull())
-        {
-            candidateId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[0]].asInt64());
+    if (!pMasqueradingVector[0].empty() &&
+        pJson.isMember(pMasqueradingVector[0])) {
+        if (!pJson[pMasqueradingVector[0]].isNull()) {
+            candidateId_ = std::make_shared<int32_t>(
+                (int32_t)pJson[pMasqueradingVector[0]].asInt64());
         }
     }
-    if(!pMasqueradingVector[1].empty() && pJson.isMember(pMasqueradingVector[1]))
-    {
-        if(!pJson[pMasqueradingVector[1]].isNull())
-        {
-            vacancyId_=std::make_shared<int32_t>((int32_t)pJson[pMasqueradingVector[1]].asInt64());
+    if (!pMasqueradingVector[1].empty() &&
+        pJson.isMember(pMasqueradingVector[1])) {
+        if (!pJson[pMasqueradingVector[1]].isNull()) {
+            vacancyId_ = std::make_shared<int32_t>(
+                (int32_t)pJson[pMasqueradingVector[1]].asInt64());
         }
     }
-    if(!pMasqueradingVector[2].empty() && pJson.isMember(pMasqueradingVector[2]))
-    {
+    if (!pMasqueradingVector[2].empty() &&
+        pJson.isMember(pMasqueradingVector[2])) {
         dirtyFlag_[2] = true;
-        if(!pJson[pMasqueradingVector[2]].isNull())
-        {
-            status_=std::make_shared<std::string>(pJson[pMasqueradingVector[2]].asString());
+        if (!pJson[pMasqueradingVector[2]].isNull()) {
+            status_ = std::make_shared<std::string>(
+                pJson[pMasqueradingVector[2]].asString());
         }
     }
-    if(!pMasqueradingVector[3].empty() && pJson.isMember(pMasqueradingVector[3]))
-    {
+    if (!pMasqueradingVector[3].empty() &&
+        pJson.isMember(pMasqueradingVector[3])) {
         dirtyFlag_[3] = true;
-        if(!pJson[pMasqueradingVector[3]].isNull())
-        {
+        if (!pJson[pMasqueradingVector[3]].isNull()) {
             auto timeStr = pJson[pMasqueradingVector[3]].asString();
             struct tm stm;
-            memset(&stm,0,sizeof(stm));
-            auto p = strptime(timeStr.c_str(),"%Y-%m-%d %H:%M:%S",&stm);
+            memset(&stm, 0, sizeof(stm));
+            auto p = strptime(timeStr.c_str(), "%Y-%m-%d %H:%M:%S", &stm);
             time_t t = mktime(&stm);
             size_t decimalNum = 0;
-            if(p)
-            {
-                if(*p=='.')
-                {
-                    std::string decimals(p+1,&timeStr[timeStr.length()]);
-                    while(decimals.length()<6)
-                    {
+            if (p) {
+                if (*p == '.') {
+                    std::string decimals(p + 1, &timeStr[timeStr.length()]);
+                    while (decimals.length() < 6) {
                         decimals += "0";
                     }
                     decimalNum = (size_t)atol(decimals.c_str());
                 }
-                createdAt_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
+                createdAt_ =
+                    std::make_shared<::trantor::Date>(t * 1000000 + decimalNum);
             }
         }
     }
-    if(!pMasqueradingVector[4].empty() && pJson.isMember(pMasqueradingVector[4]))
-    {
+    if (!pMasqueradingVector[4].empty() &&
+        pJson.isMember(pMasqueradingVector[4])) {
         dirtyFlag_[4] = true;
-        if(!pJson[pMasqueradingVector[4]].isNull())
-        {
-            contactInfo_=std::make_shared<std::string>(pJson[pMasqueradingVector[4]].asString());
+        if (!pJson[pMasqueradingVector[4]].isNull()) {
+            contactInfo_ = std::make_shared<std::string>(
+                pJson[pMasqueradingVector[4]].asString());
         }
     }
 }
 
-void Invitations::updateByJson(const Json::Value &pJson) noexcept(false)
-{
-    if(pJson.isMember("candidate_id"))
-    {
-        if(!pJson["candidate_id"].isNull())
-        {
-            candidateId_=std::make_shared<int32_t>((int32_t)pJson["candidate_id"].asInt64());
+void Invitations::updateByJson(const Json::Value &pJson) noexcept(false) {
+    if (pJson.isMember("candidate_id")) {
+        if (!pJson["candidate_id"].isNull()) {
+            candidateId_ = std::make_shared<int32_t>(
+                (int32_t)pJson["candidate_id"].asInt64());
         }
     }
-    if(pJson.isMember("vacancy_id"))
-    {
-        if(!pJson["vacancy_id"].isNull())
-        {
-            vacancyId_=std::make_shared<int32_t>((int32_t)pJson["vacancy_id"].asInt64());
+    if (pJson.isMember("vacancy_id")) {
+        if (!pJson["vacancy_id"].isNull()) {
+            vacancyId_ = std::make_shared<int32_t>(
+                (int32_t)pJson["vacancy_id"].asInt64());
         }
     }
-    if(pJson.isMember("status"))
-    {
+    if (pJson.isMember("status")) {
         dirtyFlag_[2] = true;
-        if(!pJson["status"].isNull())
-        {
-            status_=std::make_shared<std::string>(pJson["status"].asString());
+        if (!pJson["status"].isNull()) {
+            status_ = std::make_shared<std::string>(pJson["status"].asString());
         }
     }
-    if(pJson.isMember("created_at"))
-    {
+    if (pJson.isMember("created_at")) {
         dirtyFlag_[3] = true;
-        if(!pJson["created_at"].isNull())
-        {
+        if (!pJson["created_at"].isNull()) {
             auto timeStr = pJson["created_at"].asString();
             struct tm stm;
-            memset(&stm,0,sizeof(stm));
-            auto p = strptime(timeStr.c_str(),"%Y-%m-%d %H:%M:%S",&stm);
+            memset(&stm, 0, sizeof(stm));
+            auto p = strptime(timeStr.c_str(), "%Y-%m-%d %H:%M:%S", &stm);
             time_t t = mktime(&stm);
             size_t decimalNum = 0;
-            if(p)
-            {
-                if(*p=='.')
-                {
-                    std::string decimals(p+1,&timeStr[timeStr.length()]);
-                    while(decimals.length()<6)
-                    {
+            if (p) {
+                if (*p == '.') {
+                    std::string decimals(p + 1, &timeStr[timeStr.length()]);
+                    while (decimals.length() < 6) {
                         decimals += "0";
                     }
                     decimalNum = (size_t)atol(decimals.c_str());
                 }
-                createdAt_=std::make_shared<::trantor::Date>(t*1000000+decimalNum);
+                createdAt_ =
+                    std::make_shared<::trantor::Date>(t * 1000000 + decimalNum);
             }
         }
     }
-    if(pJson.isMember("contact_info"))
-    {
+    if (pJson.isMember("contact_info")) {
         dirtyFlag_[4] = true;
-        if(!pJson["contact_info"].isNull())
-        {
-            contactInfo_=std::make_shared<std::string>(pJson["contact_info"].asString());
+        if (!pJson["contact_info"].isNull()) {
+            contactInfo_ =
+                std::make_shared<std::string>(pJson["contact_info"].asString());
         }
     }
 }
 
-const int32_t &Invitations::getValueOfCandidateId() const noexcept
-{
+const int32_t &Invitations::getValueOfCandidateId() const noexcept {
     static const int32_t defaultValue = int32_t();
-    if(candidateId_)
+    if (candidateId_)
         return *candidateId_;
     return defaultValue;
 }
-const std::shared_ptr<int32_t> &Invitations::getCandidateId() const noexcept
-{
+const std::shared_ptr<int32_t> &Invitations::getCandidateId() const noexcept {
     return candidateId_;
 }
-void Invitations::setCandidateId(const int32_t &pCandidateId) noexcept
-{
+void Invitations::setCandidateId(const int32_t &pCandidateId) noexcept {
     candidateId_ = std::make_shared<int32_t>(pCandidateId);
     dirtyFlag_[0] = true;
 }
 
-const int32_t &Invitations::getValueOfVacancyId() const noexcept
-{
+const int32_t &Invitations::getValueOfVacancyId() const noexcept {
     static const int32_t defaultValue = int32_t();
-    if(vacancyId_)
+    if (vacancyId_)
         return *vacancyId_;
     return defaultValue;
 }
-const std::shared_ptr<int32_t> &Invitations::getVacancyId() const noexcept
-{
+const std::shared_ptr<int32_t> &Invitations::getVacancyId() const noexcept {
     return vacancyId_;
 }
-void Invitations::setVacancyId(const int32_t &pVacancyId) noexcept
-{
+void Invitations::setVacancyId(const int32_t &pVacancyId) noexcept {
     vacancyId_ = std::make_shared<int32_t>(pVacancyId);
     dirtyFlag_[1] = true;
 }
 
-const std::string &Invitations::getValueOfStatus() const noexcept
-{
+const std::string &Invitations::getValueOfStatus() const noexcept {
     static const std::string defaultValue = std::string();
-    if(status_)
+    if (status_)
         return *status_;
     return defaultValue;
 }
-const std::shared_ptr<std::string> &Invitations::getStatus() const noexcept
-{
+const std::shared_ptr<std::string> &Invitations::getStatus() const noexcept {
     return status_;
 }
-void Invitations::setStatus(const std::string &pStatus) noexcept
-{
+void Invitations::setStatus(const std::string &pStatus) noexcept {
     status_ = std::make_shared<std::string>(pStatus);
     dirtyFlag_[2] = true;
 }
-void Invitations::setStatus(std::string &&pStatus) noexcept
-{
+void Invitations::setStatus(std::string &&pStatus) noexcept {
     status_ = std::make_shared<std::string>(std::move(pStatus));
     dirtyFlag_[2] = true;
 }
-void Invitations::setStatusToNull() noexcept
-{
+void Invitations::setStatusToNull() noexcept {
     status_.reset();
     dirtyFlag_[2] = true;
 }
 
-const ::trantor::Date &Invitations::getValueOfCreatedAt() const noexcept
-{
+const ::trantor::Date &Invitations::getValueOfCreatedAt() const noexcept {
     static const ::trantor::Date defaultValue = ::trantor::Date();
-    if(createdAt_)
+    if (createdAt_)
         return *createdAt_;
     return defaultValue;
 }
-const std::shared_ptr<::trantor::Date> &Invitations::getCreatedAt() const noexcept
-{
+const std::shared_ptr<::trantor::Date> &
+Invitations::getCreatedAt() const noexcept {
     return createdAt_;
 }
-void Invitations::setCreatedAt(const ::trantor::Date &pCreatedAt) noexcept
-{
+void Invitations::setCreatedAt(const ::trantor::Date &pCreatedAt) noexcept {
     createdAt_ = std::make_shared<::trantor::Date>(pCreatedAt);
     dirtyFlag_[3] = true;
 }
-void Invitations::setCreatedAtToNull() noexcept
-{
+void Invitations::setCreatedAtToNull() noexcept {
     createdAt_.reset();
     dirtyFlag_[3] = true;
 }
 
-const std::string &Invitations::getValueOfContactInfo() const noexcept
-{
+const std::string &Invitations::getValueOfContactInfo() const noexcept {
     static const std::string defaultValue = std::string();
-    if(contactInfo_)
+    if (contactInfo_)
         return *contactInfo_;
     return defaultValue;
 }
-const std::shared_ptr<std::string> &Invitations::getContactInfo() const noexcept
-{
+const std::shared_ptr<std::string> &
+Invitations::getContactInfo() const noexcept {
     return contactInfo_;
 }
-void Invitations::setContactInfo(const std::string &pContactInfo) noexcept
-{
+void Invitations::setContactInfo(const std::string &pContactInfo) noexcept {
     contactInfo_ = std::make_shared<std::string>(pContactInfo);
     dirtyFlag_[4] = true;
 }
-void Invitations::setContactInfo(std::string &&pContactInfo) noexcept
-{
+void Invitations::setContactInfo(std::string &&pContactInfo) noexcept {
     contactInfo_ = std::make_shared<std::string>(std::move(pContactInfo));
     dirtyFlag_[4] = true;
 }
 
-void Invitations::updateId(const uint64_t id)
-{
-}
-typename Invitations::PrimaryKeyType Invitations::getPrimaryKey() const
-{
-    return std::make_tuple(*candidateId_,*vacancyId_);
+void Invitations::updateId(const uint64_t id) {}
+typename Invitations::PrimaryKeyType Invitations::getPrimaryKey() const {
+    return std::make_tuple(*candidateId_, *vacancyId_);
 }
 
-const std::vector<std::string> &Invitations::insertColumns() noexcept
-{
-    static const std::vector<std::string> inCols={
-        "candidate_id",
-        "vacancy_id",
-        "status",
-        "created_at",
-        "contact_info"
-    };
+const std::vector<std::string> &Invitations::insertColumns() noexcept {
+    static const std::vector<std::string> inCols = {
+        "candidate_id", "vacancy_id", "status", "created_at", "contact_info"};
     return inCols;
 }
 
-void Invitations::outputArgs(drogon::orm::internal::SqlBinder &binder) const
-{
-    if(dirtyFlag_[0])
-    {
-        if(getCandidateId())
-        {
+void Invitations::outputArgs(drogon::orm::internal::SqlBinder &binder) const {
+    if (dirtyFlag_[0]) {
+        if (getCandidateId()) {
             binder << getValueOfCandidateId();
-        }
-        else
-        {
+        } else {
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[1])
-    {
-        if(getVacancyId())
-        {
+    if (dirtyFlag_[1]) {
+        if (getVacancyId()) {
             binder << getValueOfVacancyId();
-        }
-        else
-        {
+        } else {
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[2])
-    {
-        if(getStatus())
-        {
+    if (dirtyFlag_[2]) {
+        if (getStatus()) {
             binder << getValueOfStatus();
-        }
-        else
-        {
+        } else {
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[3])
-    {
-        if(getCreatedAt())
-        {
+    if (dirtyFlag_[3]) {
+        if (getCreatedAt()) {
             binder << getValueOfCreatedAt();
-        }
-        else
-        {
+        } else {
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[4])
-    {
-        if(getContactInfo())
-        {
+    if (dirtyFlag_[4]) {
+        if (getContactInfo()) {
             binder << getValueOfContactInfo();
-        }
-        else
-        {
+        } else {
             binder << nullptr;
         }
     }
 }
 
-const std::vector<std::string> Invitations::updateColumns() const
-{
+const std::vector<std::string> Invitations::updateColumns() const {
     std::vector<std::string> ret;
-    if(dirtyFlag_[0])
-    {
+    if (dirtyFlag_[0]) {
         ret.push_back(getColumnName(0));
     }
-    if(dirtyFlag_[1])
-    {
+    if (dirtyFlag_[1]) {
         ret.push_back(getColumnName(1));
     }
-    if(dirtyFlag_[2])
-    {
+    if (dirtyFlag_[2]) {
         ret.push_back(getColumnName(2));
     }
-    if(dirtyFlag_[3])
-    {
+    if (dirtyFlag_[3]) {
         ret.push_back(getColumnName(3));
     }
-    if(dirtyFlag_[4])
-    {
+    if (dirtyFlag_[4]) {
         ret.push_back(getColumnName(4));
     }
     return ret;
 }
 
-void Invitations::updateArgs(drogon::orm::internal::SqlBinder &binder) const
-{
-    if(dirtyFlag_[0])
-    {
-        if(getCandidateId())
-        {
+void Invitations::updateArgs(drogon::orm::internal::SqlBinder &binder) const {
+    if (dirtyFlag_[0]) {
+        if (getCandidateId()) {
             binder << getValueOfCandidateId();
-        }
-        else
-        {
+        } else {
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[1])
-    {
-        if(getVacancyId())
-        {
+    if (dirtyFlag_[1]) {
+        if (getVacancyId()) {
             binder << getValueOfVacancyId();
-        }
-        else
-        {
+        } else {
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[2])
-    {
-        if(getStatus())
-        {
+    if (dirtyFlag_[2]) {
+        if (getStatus()) {
             binder << getValueOfStatus();
-        }
-        else
-        {
+        } else {
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[3])
-    {
-        if(getCreatedAt())
-        {
+    if (dirtyFlag_[3]) {
+        if (getCreatedAt()) {
             binder << getValueOfCreatedAt();
-        }
-        else
-        {
+        } else {
             binder << nullptr;
         }
     }
-    if(dirtyFlag_[4])
-    {
-        if(getContactInfo())
-        {
+    if (dirtyFlag_[4]) {
+        if (getContactInfo()) {
             binder << getValueOfContactInfo();
-        }
-        else
-        {
+        } else {
             binder << nullptr;
         }
     }
 }
-Json::Value Invitations::toJson() const
-{
+Json::Value Invitations::toJson() const {
     Json::Value ret;
-    if(getCandidateId())
-    {
-        ret["candidate_id"]=getValueOfCandidateId();
+    if (getCandidateId()) {
+        ret["candidate_id"] = getValueOfCandidateId();
+    } else {
+        ret["candidate_id"] = Json::Value();
     }
-    else
-    {
-        ret["candidate_id"]=Json::Value();
+    if (getVacancyId()) {
+        ret["vacancy_id"] = getValueOfVacancyId();
+    } else {
+        ret["vacancy_id"] = Json::Value();
     }
-    if(getVacancyId())
-    {
-        ret["vacancy_id"]=getValueOfVacancyId();
+    if (getStatus()) {
+        ret["status"] = getValueOfStatus();
+    } else {
+        ret["status"] = Json::Value();
     }
-    else
-    {
-        ret["vacancy_id"]=Json::Value();
+    if (getCreatedAt()) {
+        ret["created_at"] = getCreatedAt()->toDbStringLocal();
+    } else {
+        ret["created_at"] = Json::Value();
     }
-    if(getStatus())
-    {
-        ret["status"]=getValueOfStatus();
-    }
-    else
-    {
-        ret["status"]=Json::Value();
-    }
-    if(getCreatedAt())
-    {
-        ret["created_at"]=getCreatedAt()->toDbStringLocal();
-    }
-    else
-    {
-        ret["created_at"]=Json::Value();
-    }
-    if(getContactInfo())
-    {
-        ret["contact_info"]=getValueOfContactInfo();
-    }
-    else
-    {
-        ret["contact_info"]=Json::Value();
+    if (getContactInfo()) {
+        ret["contact_info"] = getValueOfContactInfo();
+    } else {
+        ret["contact_info"] = Json::Value();
     }
     return ret;
 }
 
 Json::Value Invitations::toMasqueradedJson(
-    const std::vector<std::string> &pMasqueradingVector) const
-{
+    const std::vector<std::string> &pMasqueradingVector) const {
     Json::Value ret;
-    if(pMasqueradingVector.size() == 5)
-    {
-        if(!pMasqueradingVector[0].empty())
-        {
-            if(getCandidateId())
-            {
-                ret[pMasqueradingVector[0]]=getValueOfCandidateId();
-            }
-            else
-            {
-                ret[pMasqueradingVector[0]]=Json::Value();
+    if (pMasqueradingVector.size() == 5) {
+        if (!pMasqueradingVector[0].empty()) {
+            if (getCandidateId()) {
+                ret[pMasqueradingVector[0]] = getValueOfCandidateId();
+            } else {
+                ret[pMasqueradingVector[0]] = Json::Value();
             }
         }
-        if(!pMasqueradingVector[1].empty())
-        {
-            if(getVacancyId())
-            {
-                ret[pMasqueradingVector[1]]=getValueOfVacancyId();
-            }
-            else
-            {
-                ret[pMasqueradingVector[1]]=Json::Value();
+        if (!pMasqueradingVector[1].empty()) {
+            if (getVacancyId()) {
+                ret[pMasqueradingVector[1]] = getValueOfVacancyId();
+            } else {
+                ret[pMasqueradingVector[1]] = Json::Value();
             }
         }
-        if(!pMasqueradingVector[2].empty())
-        {
-            if(getStatus())
-            {
-                ret[pMasqueradingVector[2]]=getValueOfStatus();
-            }
-            else
-            {
-                ret[pMasqueradingVector[2]]=Json::Value();
+        if (!pMasqueradingVector[2].empty()) {
+            if (getStatus()) {
+                ret[pMasqueradingVector[2]] = getValueOfStatus();
+            } else {
+                ret[pMasqueradingVector[2]] = Json::Value();
             }
         }
-        if(!pMasqueradingVector[3].empty())
-        {
-            if(getCreatedAt())
-            {
-                ret[pMasqueradingVector[3]]=getCreatedAt()->toDbStringLocal();
-            }
-            else
-            {
-                ret[pMasqueradingVector[3]]=Json::Value();
+        if (!pMasqueradingVector[3].empty()) {
+            if (getCreatedAt()) {
+                ret[pMasqueradingVector[3]] = getCreatedAt()->toDbStringLocal();
+            } else {
+                ret[pMasqueradingVector[3]] = Json::Value();
             }
         }
-        if(!pMasqueradingVector[4].empty())
-        {
-            if(getContactInfo())
-            {
-                ret[pMasqueradingVector[4]]=getValueOfContactInfo();
-            }
-            else
-            {
-                ret[pMasqueradingVector[4]]=Json::Value();
+        if (!pMasqueradingVector[4].empty()) {
+            if (getContactInfo()) {
+                ret[pMasqueradingVector[4]] = getValueOfContactInfo();
+            } else {
+                ret[pMasqueradingVector[4]] = Json::Value();
             }
         }
         return ret;
     }
     LOG_ERROR << "Masquerade failed";
-    if(getCandidateId())
-    {
-        ret["candidate_id"]=getValueOfCandidateId();
+    if (getCandidateId()) {
+        ret["candidate_id"] = getValueOfCandidateId();
+    } else {
+        ret["candidate_id"] = Json::Value();
     }
-    else
-    {
-        ret["candidate_id"]=Json::Value();
+    if (getVacancyId()) {
+        ret["vacancy_id"] = getValueOfVacancyId();
+    } else {
+        ret["vacancy_id"] = Json::Value();
     }
-    if(getVacancyId())
-    {
-        ret["vacancy_id"]=getValueOfVacancyId();
+    if (getStatus()) {
+        ret["status"] = getValueOfStatus();
+    } else {
+        ret["status"] = Json::Value();
     }
-    else
-    {
-        ret["vacancy_id"]=Json::Value();
+    if (getCreatedAt()) {
+        ret["created_at"] = getCreatedAt()->toDbStringLocal();
+    } else {
+        ret["created_at"] = Json::Value();
     }
-    if(getStatus())
-    {
-        ret["status"]=getValueOfStatus();
-    }
-    else
-    {
-        ret["status"]=Json::Value();
-    }
-    if(getCreatedAt())
-    {
-        ret["created_at"]=getCreatedAt()->toDbStringLocal();
-    }
-    else
-    {
-        ret["created_at"]=Json::Value();
-    }
-    if(getContactInfo())
-    {
-        ret["contact_info"]=getValueOfContactInfo();
-    }
-    else
-    {
-        ret["contact_info"]=Json::Value();
+    if (getContactInfo()) {
+        ret["contact_info"] = getValueOfContactInfo();
+    } else {
+        ret["contact_info"] = Json::Value();
     }
     return ret;
 }
 
-bool Invitations::validateJsonForCreation(const Json::Value &pJson, std::string &err)
-{
-    if(pJson.isMember("candidate_id"))
-    {
-        if(!validJsonOfField(0, "candidate_id", pJson["candidate_id"], err, true))
+bool Invitations::validateJsonForCreation(const Json::Value &pJson,
+                                          std::string &err) {
+    if (pJson.isMember("candidate_id")) {
+        if (!validJsonOfField(0, "candidate_id", pJson["candidate_id"], err,
+                              true))
             return false;
-    }
-    else
-    {
-        err="The candidate_id column cannot be null";
+    } else {
+        err = "The candidate_id column cannot be null";
         return false;
     }
-    if(pJson.isMember("vacancy_id"))
-    {
-        if(!validJsonOfField(1, "vacancy_id", pJson["vacancy_id"], err, true))
+    if (pJson.isMember("vacancy_id")) {
+        if (!validJsonOfField(1, "vacancy_id", pJson["vacancy_id"], err, true))
             return false;
-    }
-    else
-    {
-        err="The vacancy_id column cannot be null";
+    } else {
+        err = "The vacancy_id column cannot be null";
         return false;
     }
-    if(pJson.isMember("status"))
-    {
-        if(!validJsonOfField(2, "status", pJson["status"], err, true))
+    if (pJson.isMember("status")) {
+        if (!validJsonOfField(2, "status", pJson["status"], err, true))
             return false;
     }
-    if(pJson.isMember("created_at"))
-    {
-        if(!validJsonOfField(3, "created_at", pJson["created_at"], err, true))
+    if (pJson.isMember("created_at")) {
+        if (!validJsonOfField(3, "created_at", pJson["created_at"], err, true))
             return false;
     }
-    if(pJson.isMember("contact_info"))
-    {
-        if(!validJsonOfField(4, "contact_info", pJson["contact_info"], err, true))
+    if (pJson.isMember("contact_info")) {
+        if (!validJsonOfField(4, "contact_info", pJson["contact_info"], err,
+                              true))
             return false;
-    }
-    else
-    {
-        err="The contact_info column cannot be null";
+    } else {
+        err = "The contact_info column cannot be null";
         return false;
     }
     return true;
 }
-bool Invitations::validateMasqueradedJsonForCreation(const Json::Value &pJson,
-                                                     const std::vector<std::string> &pMasqueradingVector,
-                                                     std::string &err)
-{
-    if(pMasqueradingVector.size() != 5)
-    {
+bool Invitations::validateMasqueradedJsonForCreation(
+    const Json::Value &pJson,
+    const std::vector<std::string> &pMasqueradingVector, std::string &err) {
+    if (pMasqueradingVector.size() != 5) {
         err = "Bad masquerading vector";
         return false;
     }
     try {
-      if(!pMasqueradingVector[0].empty())
-      {
-          if(pJson.isMember(pMasqueradingVector[0]))
-          {
-              if(!validJsonOfField(0, pMasqueradingVector[0], pJson[pMasqueradingVector[0]], err, true))
-                  return false;
-          }
-        else
-        {
-            err="The " + pMasqueradingVector[0] + " column cannot be null";
-            return false;
+        if (!pMasqueradingVector[0].empty()) {
+            if (pJson.isMember(pMasqueradingVector[0])) {
+                if (!validJsonOfField(0, pMasqueradingVector[0],
+                                      pJson[pMasqueradingVector[0]], err, true))
+                    return false;
+            } else {
+                err =
+                    "The " + pMasqueradingVector[0] + " column cannot be null";
+                return false;
+            }
         }
-      }
-      if(!pMasqueradingVector[1].empty())
-      {
-          if(pJson.isMember(pMasqueradingVector[1]))
-          {
-              if(!validJsonOfField(1, pMasqueradingVector[1], pJson[pMasqueradingVector[1]], err, true))
-                  return false;
-          }
-        else
-        {
-            err="The " + pMasqueradingVector[1] + " column cannot be null";
-            return false;
+        if (!pMasqueradingVector[1].empty()) {
+            if (pJson.isMember(pMasqueradingVector[1])) {
+                if (!validJsonOfField(1, pMasqueradingVector[1],
+                                      pJson[pMasqueradingVector[1]], err, true))
+                    return false;
+            } else {
+                err =
+                    "The " + pMasqueradingVector[1] + " column cannot be null";
+                return false;
+            }
         }
-      }
-      if(!pMasqueradingVector[2].empty())
-      {
-          if(pJson.isMember(pMasqueradingVector[2]))
-          {
-              if(!validJsonOfField(2, pMasqueradingVector[2], pJson[pMasqueradingVector[2]], err, true))
-                  return false;
-          }
-      }
-      if(!pMasqueradingVector[3].empty())
-      {
-          if(pJson.isMember(pMasqueradingVector[3]))
-          {
-              if(!validJsonOfField(3, pMasqueradingVector[3], pJson[pMasqueradingVector[3]], err, true))
-                  return false;
-          }
-      }
-      if(!pMasqueradingVector[4].empty())
-      {
-          if(pJson.isMember(pMasqueradingVector[4]))
-          {
-              if(!validJsonOfField(4, pMasqueradingVector[4], pJson[pMasqueradingVector[4]], err, true))
-                  return false;
-          }
-        else
-        {
-            err="The " + pMasqueradingVector[4] + " column cannot be null";
-            return false;
+        if (!pMasqueradingVector[2].empty()) {
+            if (pJson.isMember(pMasqueradingVector[2])) {
+                if (!validJsonOfField(2, pMasqueradingVector[2],
+                                      pJson[pMasqueradingVector[2]], err, true))
+                    return false;
+            }
         }
-      }
-    }
-    catch(const Json::LogicError &e)
-    {
-      err = e.what();
-      return false;
+        if (!pMasqueradingVector[3].empty()) {
+            if (pJson.isMember(pMasqueradingVector[3])) {
+                if (!validJsonOfField(3, pMasqueradingVector[3],
+                                      pJson[pMasqueradingVector[3]], err, true))
+                    return false;
+            }
+        }
+        if (!pMasqueradingVector[4].empty()) {
+            if (pJson.isMember(pMasqueradingVector[4])) {
+                if (!validJsonOfField(4, pMasqueradingVector[4],
+                                      pJson[pMasqueradingVector[4]], err, true))
+                    return false;
+            } else {
+                err =
+                    "The " + pMasqueradingVector[4] + " column cannot be null";
+                return false;
+            }
+        }
+    } catch (const Json::LogicError &e) {
+        err = e.what();
+        return false;
     }
     return true;
 }
-bool Invitations::validateJsonForUpdate(const Json::Value &pJson, std::string &err)
-{
-    if(pJson.isMember("candidate_id"))
-    {
-        if(!validJsonOfField(0, "candidate_id", pJson["candidate_id"], err, false))
+bool Invitations::validateJsonForUpdate(const Json::Value &pJson,
+                                        std::string &err) {
+    if (pJson.isMember("candidate_id")) {
+        if (!validJsonOfField(0, "candidate_id", pJson["candidate_id"], err,
+                              false))
             return false;
-    }
-    else
-    {
-        err = "The value of primary key must be set in the json object for update";
+    } else {
+        err = "The value of primary key must be set in the json object for "
+              "update";
         return false;
     }
-    if(pJson.isMember("vacancy_id"))
-    {
-        if(!validJsonOfField(1, "vacancy_id", pJson["vacancy_id"], err, false))
+    if (pJson.isMember("vacancy_id")) {
+        if (!validJsonOfField(1, "vacancy_id", pJson["vacancy_id"], err, false))
             return false;
-    }
-    else
-    {
-        err = "The value of primary key must be set in the json object for update";
+    } else {
+        err = "The value of primary key must be set in the json object for "
+              "update";
         return false;
     }
-    if(pJson.isMember("status"))
-    {
-        if(!validJsonOfField(2, "status", pJson["status"], err, false))
+    if (pJson.isMember("status")) {
+        if (!validJsonOfField(2, "status", pJson["status"], err, false))
             return false;
     }
-    if(pJson.isMember("created_at"))
-    {
-        if(!validJsonOfField(3, "created_at", pJson["created_at"], err, false))
+    if (pJson.isMember("created_at")) {
+        if (!validJsonOfField(3, "created_at", pJson["created_at"], err, false))
             return false;
     }
-    if(pJson.isMember("contact_info"))
-    {
-        if(!validJsonOfField(4, "contact_info", pJson["contact_info"], err, false))
+    if (pJson.isMember("contact_info")) {
+        if (!validJsonOfField(4, "contact_info", pJson["contact_info"], err,
+                              false))
             return false;
     }
     return true;
 }
-bool Invitations::validateMasqueradedJsonForUpdate(const Json::Value &pJson,
-                                                   const std::vector<std::string> &pMasqueradingVector,
-                                                   std::string &err)
-{
-    if(pMasqueradingVector.size() != 5)
-    {
+bool Invitations::validateMasqueradedJsonForUpdate(
+    const Json::Value &pJson,
+    const std::vector<std::string> &pMasqueradingVector, std::string &err) {
+    if (pMasqueradingVector.size() != 5) {
         err = "Bad masquerading vector";
         return false;
     }
     try {
-      if(!pMasqueradingVector[0].empty() && pJson.isMember(pMasqueradingVector[0]))
-      {
-          if(!validJsonOfField(0, pMasqueradingVector[0], pJson[pMasqueradingVector[0]], err, false))
-              return false;
-      }
-    else
-    {
-        err = "The value of primary key must be set in the json object for update";
+        if (!pMasqueradingVector[0].empty() &&
+            pJson.isMember(pMasqueradingVector[0])) {
+            if (!validJsonOfField(0, pMasqueradingVector[0],
+                                  pJson[pMasqueradingVector[0]], err, false))
+                return false;
+        } else {
+            err = "The value of primary key must be set in the json object for "
+                  "update";
+            return false;
+        }
+        if (!pMasqueradingVector[1].empty() &&
+            pJson.isMember(pMasqueradingVector[1])) {
+            if (!validJsonOfField(1, pMasqueradingVector[1],
+                                  pJson[pMasqueradingVector[1]], err, false))
+                return false;
+        } else {
+            err = "The value of primary key must be set in the json object for "
+                  "update";
+            return false;
+        }
+        if (!pMasqueradingVector[2].empty() &&
+            pJson.isMember(pMasqueradingVector[2])) {
+            if (!validJsonOfField(2, pMasqueradingVector[2],
+                                  pJson[pMasqueradingVector[2]], err, false))
+                return false;
+        }
+        if (!pMasqueradingVector[3].empty() &&
+            pJson.isMember(pMasqueradingVector[3])) {
+            if (!validJsonOfField(3, pMasqueradingVector[3],
+                                  pJson[pMasqueradingVector[3]], err, false))
+                return false;
+        }
+        if (!pMasqueradingVector[4].empty() &&
+            pJson.isMember(pMasqueradingVector[4])) {
+            if (!validJsonOfField(4, pMasqueradingVector[4],
+                                  pJson[pMasqueradingVector[4]], err, false))
+                return false;
+        }
+    } catch (const Json::LogicError &e) {
+        err = e.what();
         return false;
-    }
-      if(!pMasqueradingVector[1].empty() && pJson.isMember(pMasqueradingVector[1]))
-      {
-          if(!validJsonOfField(1, pMasqueradingVector[1], pJson[pMasqueradingVector[1]], err, false))
-              return false;
-      }
-    else
-    {
-        err = "The value of primary key must be set in the json object for update";
-        return false;
-    }
-      if(!pMasqueradingVector[2].empty() && pJson.isMember(pMasqueradingVector[2]))
-      {
-          if(!validJsonOfField(2, pMasqueradingVector[2], pJson[pMasqueradingVector[2]], err, false))
-              return false;
-      }
-      if(!pMasqueradingVector[3].empty() && pJson.isMember(pMasqueradingVector[3]))
-      {
-          if(!validJsonOfField(3, pMasqueradingVector[3], pJson[pMasqueradingVector[3]], err, false))
-              return false;
-      }
-      if(!pMasqueradingVector[4].empty() && pJson.isMember(pMasqueradingVector[4]))
-      {
-          if(!validJsonOfField(4, pMasqueradingVector[4], pJson[pMasqueradingVector[4]], err, false))
-              return false;
-      }
-    }
-    catch(const Json::LogicError &e)
-    {
-      err = e.what();
-      return false;
     }
     return true;
 }
-bool Invitations::validJsonOfField(size_t index,
-                                   const std::string &fieldName,
-                                   const Json::Value &pJson,
-                                   std::string &err,
-                                   bool isForCreation)
-{
-    switch(index)
-    {
-        case 0:
-            if(pJson.isNull())
-            {
-                err="The " + fieldName + " column cannot be null";
-                return false;
-            }
-            if(!pJson.isInt())
-            {
-                err="Type error in the "+fieldName+" field";
-                return false;
-            }
-            break;
-        case 1:
-            if(pJson.isNull())
-            {
-                err="The " + fieldName + " column cannot be null";
-                return false;
-            }
-            if(!pJson.isInt())
-            {
-                err="Type error in the "+fieldName+" field";
-                return false;
-            }
-            break;
-        case 2:
-            if(pJson.isNull())
-            {
-                return true;
-            }
-            if(!pJson.isString())
-            {
-                err="Type error in the "+fieldName+" field";
-                return false;
-            }
-            if(pJson.isString() && std::strlen(pJson.asCString()) > 50)
-            {
-                err="String length exceeds limit for the " +
-                    fieldName +
-                    " field (the maximum value is 50)";
-                return false;
-            }
-
-            break;
-        case 3:
-            if(pJson.isNull())
-            {
-                return true;
-            }
-            if(!pJson.isString())
-            {
-                err="Type error in the "+fieldName+" field";
-                return false;
-            }
-            break;
-        case 4:
-            if(pJson.isNull())
-            {
-                err="The " + fieldName + " column cannot be null";
-                return false;
-            }
-            if(!pJson.isString())
-            {
-                err="Type error in the "+fieldName+" field";
-                return false;
-            }
-            if(pJson.isString() && std::strlen(pJson.asCString()) > 300)
-            {
-                err="String length exceeds limit for the " +
-                    fieldName +
-                    " field (the maximum value is 300)";
-                return false;
-            }
-
-            break;
-        default:
-            err="Internal error in the server";
+bool Invitations::validJsonOfField(size_t index, const std::string &fieldName,
+                                   const Json::Value &pJson, std::string &err,
+                                   bool isForCreation) {
+    switch (index) {
+    case 0:
+        if (pJson.isNull()) {
+            err = "The " + fieldName + " column cannot be null";
             return false;
+        }
+        if (!pJson.isInt()) {
+            err = "Type error in the " + fieldName + " field";
+            return false;
+        }
+        break;
+    case 1:
+        if (pJson.isNull()) {
+            err = "The " + fieldName + " column cannot be null";
+            return false;
+        }
+        if (!pJson.isInt()) {
+            err = "Type error in the " + fieldName + " field";
+            return false;
+        }
+        break;
+    case 2:
+        if (pJson.isNull()) {
+            return true;
+        }
+        if (!pJson.isString()) {
+            err = "Type error in the " + fieldName + " field";
+            return false;
+        }
+        if (pJson.isString() && std::strlen(pJson.asCString()) > 50) {
+            err = "String length exceeds limit for the " + fieldName +
+                  " field (the maximum value is 50)";
+            return false;
+        }
+
+        break;
+    case 3:
+        if (pJson.isNull()) {
+            return true;
+        }
+        if (!pJson.isString()) {
+            err = "Type error in the " + fieldName + " field";
+            return false;
+        }
+        break;
+    case 4:
+        if (pJson.isNull()) {
+            err = "The " + fieldName + " column cannot be null";
+            return false;
+        }
+        if (!pJson.isString()) {
+            err = "Type error in the " + fieldName + " field";
+            return false;
+        }
+        if (pJson.isString() && std::strlen(pJson.asCString()) > 300) {
+            err = "String length exceeds limit for the " + fieldName +
+                  " field (the maximum value is 300)";
+            return false;
+        }
+
+        break;
+    default:
+        err = "Internal error in the server";
+        return false;
     }
     return true;
 }

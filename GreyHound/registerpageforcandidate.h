@@ -17,25 +17,23 @@ class RegisterPageForCandidate;
 class RegisterPageForCandidate : public QWidget {
     Q_OBJECT
 
-public:
-    explicit RegisterPageForCandidate(
-        QNetworkAccessManager *manager,
-        QWidget *parent = nullptr
-    );
+  public:
+    explicit RegisterPageForCandidate(QNetworkAccessManager *manager,
+                                      QWidget *parent = nullptr);
     ~RegisterPageForCandidate();
 
-private slots:
+  private slots:
     void on_PBregistrationCandidate_clicked();
 
     void on_backToStatusPB_clicked();
 
-private:
+  private:
     Ui::RegisterPageForCandidate *ui;
     QNetworkAccessManager *networkManager;
 
-signals:
+  signals:
     void registerSuccessful();
     void backToRegisterStatusPagePressed();
 };
 
-#endif  // REGISTERWINDOWFORCANDIDATE_H
+#endif // REGISTERWINDOWFORCANDIDATE_H
