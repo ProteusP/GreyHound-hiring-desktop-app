@@ -63,8 +63,6 @@ private:
 
 private slots:
     void on_profilePB_3_clicked();
-    // void showVacancyDetails(int vacancy_id);
-    // void respondToVacancy(int vacancy_id);
     void on_pushButtonNext_clicked();
     void on_pushButtonPrev_clicked();
 

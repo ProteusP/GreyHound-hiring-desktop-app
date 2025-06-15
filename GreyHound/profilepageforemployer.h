@@ -61,8 +61,6 @@ private:
     void loadWorkScheduleData(QComboBox *comboBox);
     void loadEducStatusData(QComboBox *comboBox);
     void loadRemotenessData(QComboBox *comboBox);
-    void loadResponses();
-    void deleteResponse(int vacancyId, int candidateId);
     QString getExpThroughId(const int &id);
     QString getWorkScheduleThroughId(const int &id);
     QString getEducationStatusThroughId(const int &id);

@@ -1,6 +1,4 @@
 #include "validation.h"
-#include <QMessageBox>
-#include <QVector>
 
 bool isEmailValid(const QString &email) {
     static QRegularExpression regex(

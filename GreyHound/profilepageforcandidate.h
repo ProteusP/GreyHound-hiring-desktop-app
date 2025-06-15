@@ -11,9 +11,6 @@
 #include <QScrollArea>
 #include <QString>
 #include <QWidget>
-#include <QtSql/QSqlDatabase>
-#include <QtSql/QSqlError>
-#include <QtSql/QSqlQuery>
 #include "resume.h"
 
 namespace Ui {
@@ -45,8 +42,6 @@ public:
         const QString &newPlace,
         const QString &newSearchStatus
     );
-    void loadResumeData();
-    void saveResumeData();
 signals:
     void homeButtonClicked();
     void logoutButtonClicked();

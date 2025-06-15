@@ -1,6 +1,7 @@
 #include "vacancydetailswindow.h"
-#include "ui_vacancydetailswindow.h"
 #include <QDebug>
+#include "ui_vacancydetailswindow.h"
+
 vacancyDetailsWindow::vacancyDetailsWindow(
     QNetworkAccessManager *manager_,
     const QString &title_,
@@ -15,8 +16,7 @@ vacancyDetailsWindow::vacancyDetailsWindow(
     : QDialog(parent),
       ui(new Ui::vacancyDetailsWindow),
       networkManager(manager_),
-      vacancy_id(vacancy_id_)
-{
+      vacancy_id(vacancy_id_) {
     ui->setupUi(this);
     qDebug() << "tut1\n";
     ui->title->setText(title_);

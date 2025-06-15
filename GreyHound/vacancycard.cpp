@@ -69,7 +69,10 @@ VacancyCard::VacancyCard(
     layout->addStretch();
     layout->addWidget(detailsButton, 0, Qt::AlignRight);
 
-    connect(detailsButton, &QPushButton::clicked, this, &VacancyCard::on_detailsButton_clicked);
+    connect(
+        detailsButton, &QPushButton::clicked, this,
+        &VacancyCard::on_detailsButton_clicked
+    );
 }
 
 void VacancyCard::setFixedSize(int width, int height) {

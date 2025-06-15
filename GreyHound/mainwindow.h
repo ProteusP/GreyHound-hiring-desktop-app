@@ -51,7 +51,6 @@ private slots:
 private:
     QNetworkAccessManager *networkManager;
     Ui::MainWindow *ui;
-    QSqlDatabase db;
     QString email;
     LoginWidget *loginPage;
     RegisterStatus *registerStatusPage;
@@ -60,5 +59,6 @@ private:
     MainPage *mainPage;
     ProfilePageForCandidate *profileCandidatePage;
     ProfilePageForEmployer *profileEmployerPage;
+    friend class MainWindowTest;
 };
 #endif  // MAINWINDOW_H

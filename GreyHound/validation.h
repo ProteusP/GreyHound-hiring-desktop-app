@@ -2,7 +2,6 @@
 #define VALIDATION_H
 
 #include <QRegularExpression>
-#include <QWidget>
 
 bool isEmailValid(const QString &email);
 

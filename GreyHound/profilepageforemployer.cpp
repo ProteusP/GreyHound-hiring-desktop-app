@@ -16,8 +16,6 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QVBoxLayout>
-#include <QtSql/QSqlError>
-#include <QtSql/QSqlQuery>
 #include "ui_profilepageforemployer.h"
 
 ProfilePageForEmployer::ProfilePageForEmployer(
@@ -62,47 +60,6 @@ void ProfilePageForEmployer::setEmployerData(
     ui->emailEdit->setText(email);
     ui->aboutEdit->setPlainText(about);
     loadVacancies();
-    // loadResponses();
-}
-
-void ProfilePageForEmployer::loadResponses() {
-    QLayoutItem *item;
-    while ((item = candidatesLayout->takeAt(0)) != nullptr) {
-        delete item->widget();
-        delete item;
-    }
-
-    QSqlQuery query;
-    query.prepare(
-        "SELECT r.vacancy_id, r.candidate_id, r.created_at, "
-        "v.name as vacancy_name, "
-        "c.name, c.surname "
-        "FROM responces r "
-        "LEFT JOIN vacancies v ON r.vacancy_id = v.id "
-        "LEFT JOIN candidates c ON r.candidate_id = c.id "
-        "WHERE v.employer_id = :employer_id AND r.status = 'pending'"
-    );
-    query.bindValue(":employer_id", currentEmployerId);
-
-    if (query.exec()) {
-        while (query.next()) {
-            int vacancyId = query.value("vacancy_id").toInt();
-            int candidateId = query.value("candidate_id").toInt();
-            QString createdAt =
-                query.value("created_at").toDateTime().toString("dd.MM.yyyy");
-            QString vacancyName = query.value("vacancy_name").toString();
-            QString firstName = query.value("name").toString();
-            QString lastName = query.value("surname").toString();
-            QString fullName = QString("%1 %2").arg(firstName, lastName);
-
-            addCandidateWidget(
-                candidatesLayout, fullName, vacancyName, createdAt, vacancyId,
-                candidateId
-            );
-        }
-    } else {
-        qDebug() << "Ошибка загрузки откликов:" << query.lastError().text();
-    }
 }
 
 void ProfilePageForEmployer::onSaveClicked() {
@@ -297,37 +254,6 @@ void ProfilePageForEmployer::addCandidateWidget(
     connect(viewBtn, &QPushButton::clicked, this, [this, candidateId]() {
         qDebug() << "Просмотр кандидата ID:" << candidateId;
     });
-
-    connect(
-        acceptBtn, &QPushButton::clicked, this,
-        [this, candidateId, vacancyId]() {
-            deleteResponse(vacancyId, candidateId);
-        }
-    );
-
-    connect(
-        rejectBtn, &QPushButton::clicked, this,
-        [this, candidateId, vacancyId]() {
-            deleteResponse(vacancyId, candidateId);
-        }
-    );
-}
-
-void ProfilePageForEmployer::deleteResponse(int vacancyId, int candidateId) {
-    QSqlQuery query;
-    query.prepare(
-        "DELETE FROM responces WHERE vacancy_id = :vacancy_id AND candidate_id "
-        "= :candidate_id"
-    );
-    query.bindValue(":vacancy_id", vacancyId);
-    query.bindValue(":candidate_id", candidateId);
-
-    if (query.exec()) {
-        loadResponses();
-    } else {
-        qDebug() << "Ошибка удаления отклика:" << query.lastError().text();
-        QMessageBox::critical(this, "Ошибка", "Не удалось удалить отклик");
-    }
 }
 
 void ProfilePageForEmployer::onAddVacancyClicked() {

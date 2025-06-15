@@ -27,6 +27,7 @@ public:
 
 private slots:
     void on_detailsButton_clicked();
+
 private:
     QNetworkAccessManager *networkManager;
     QLabel *title;

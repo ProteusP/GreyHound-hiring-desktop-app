@@ -20,19 +20,6 @@ MainWindow::MainWindow(QWidget *parent)
     QHBoxLayout *centralLayout = new QHBoxLayout(centralWidget);
     centralLayout->addWidget(ui->stackedWidget);
 
-    db = QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("92.63.178.117");
-    db.setDatabaseName("default_db");
-    db.setUserName("gen_user");
-    db.setPassword("HskcQ!tRbm}f05");
-
-    if (!db.open()) {
-        qDebug() << "Error: Unable to connect to the database.";
-        qDebug() << db.lastError().text();
-    } else {
-        qDebug() << "Connected to the database successfully!";
-    }
-
     loginPage = new LoginWidget(networkManager, this);
     registerStatusPage = new RegisterStatus(this);
     registerCandidatePage = new RegisterPageForCandidate(networkManager, this);
@@ -114,8 +101,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::onMainPage(bool isCandidate) {
-    mainPage->setStatusOfCandidate(isCandidate
-    );  // надо будет убрать, тк не пригождится
+    mainPage->setStatusOfCandidate(isCandidate);
     if (mainPage->getFlowLayout() != nullptr) {
         mainPage->hide();
     }
