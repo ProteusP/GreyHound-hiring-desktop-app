@@ -35,7 +35,7 @@ public:
     }
 
 private slots:
-    void onMainPage(bool isemployee);
+    void onMainPage(bool isCandidate);
     void onRegisterStatusPage();
     void onBackToLoginPage();
     void onStatusCandidatePage();
@@ -43,6 +43,10 @@ private slots:
     void onBackToRegisterStatusPage();
     void onProfilePage();
     void loadProfileData();
+    void registerSuccess();
+    void onProfileCandidateHomeClicked();
+    void onProfileEmployerHomeClicked();
+    void onLogoutClicked();
 
 private:
     QNetworkAccessManager *networkManager;

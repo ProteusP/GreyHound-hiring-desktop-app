@@ -20,10 +20,6 @@ public:
     );
 
     void setFixedSize(int width, int height);
-
-signals:
-    void detailsRequested(int vacancyId);
-
 private slots:
     void on_detailsButton_clicked();
 

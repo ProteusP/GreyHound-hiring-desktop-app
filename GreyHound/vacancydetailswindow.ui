@@ -1,41 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>candidateDetailsWindow</class>
- <widget class="QDialog" name="candidateDetailsWindow">
+ <class>vacancyDetailsWindow</class>
+ <widget class="QDialog" name="vacancyDetailsWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>630</width>
-    <height>290</height>
+    <width>428</width>
+    <height>238</height>
    </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>630</width>
-    <height>290</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>634</width>
-    <height>290</height>
-   </size>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
-  </property>
-  <property name="styleSheet">
-   <string notr="true">#candidateDetailsWindow {
-	
-	background-color: #f9f9f9;
-}</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -81,7 +57,7 @@ QGroupBox {
            <number>10</number>
           </property>
           <item>
-           <widget class="QLabel" name="nameLabel">
+           <widget class="QLabel" name="titleLabel">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -105,12 +81,12 @@ QGroupBox {
 }</string>
             </property>
             <property name="text">
-             <string>Имя:</string>
+             <string>Название вакансии: </string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="surnameLabel">
+           <widget class="QLabel" name="companyLabel">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -128,12 +104,12 @@ QGroupBox {
 }</string>
             </property>
             <property name="text">
-             <string>Фамилия:</string>
+             <string>Компания:</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="cityLabel">
+           <widget class="QLabel" name="placeLabel">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -156,7 +132,7 @@ QGroupBox {
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="emailLabel">
+           <widget class="QLabel" name="salaryLabel">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -174,12 +150,12 @@ QGroupBox {
 }</string>
             </property>
             <property name="text">
-             <string>Email:</string>
+             <string>Зарплата:</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="phoneLabel">
+           <widget class="QLabel" name="workScheduleLabel">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -197,12 +173,12 @@ QGroupBox {
 }</string>
             </property>
             <property name="text">
-             <string>Телефон:</string>
+             <string>График работы</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="educationLabel">
+           <widget class="QLabel" name="remotenessLabel">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -220,30 +196,7 @@ QGroupBox {
 }</string>
             </property>
             <property name="text">
-             <string>Образование:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="experienceLabel">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="font">
-             <font>
-              <family>Golos Text</family>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QLabel {
-	color: black;
-}</string>
-            </property>
-            <property name="text">
-             <string>Опыт:</string>
+             <string>Удаленка:</string>
             </property>
            </widget>
           </item>
@@ -252,49 +205,42 @@ QGroupBox {
         <item>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="QLabel" name="name">
+           <widget class="QLabel" name="title">
             <property name="text">
              <string/>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="surname">
+           <widget class="QLabel" name="company">
             <property name="text">
              <string/>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="city">
+           <widget class="QLabel" name="place">
             <property name="text">
              <string/>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="email">
+           <widget class="QLabel" name="salary">
             <property name="text">
              <string/>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="phone">
+           <widget class="QLabel" name="workSchedule">
             <property name="text">
              <string/>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLabel" name="education">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="experience">
+           <widget class="QLabel" name="remoteness">
             <property name="text">
              <string/>
             </property>
@@ -350,49 +296,6 @@ QPushButton:hover {
          </property>
          <property name="text">
           <string>Откликнуться</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="resumeButton">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>200</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>200</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>Golos Text</family>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton {
-    background-color: #007BFF;
-    color: white;
-    border-radius: 8px;
-    padding: 6px 12px;
-}
-
-QPushButton:hover {
-    background-color: #0069d9;
-}</string>
-         </property>
-         <property name="text">
-          <string>Посмотреть резюме</string>
          </property>
         </widget>
        </item>

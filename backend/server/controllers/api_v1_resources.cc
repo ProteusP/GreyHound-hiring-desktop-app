@@ -498,6 +498,7 @@ void resources::getVacanciesCards(const
                             vacJson["name"] = row["name"].as<std::string>();
                             vacJson["place"] = row["place"].as<std::string>();
                             vacJson["status"] = row["status"].as<std::string>();
+                            vacJson["about"] = row["about"].as<std::string>();
                             vacJson["work_schedule_status_id"] = row["work_schedule_status_id"].as<std::string>();
                             vacJson["remoteness_status_id"] = row["remoteness_status_id"].as<std::string>();
                             vacsJson.append(vacJson);
@@ -543,7 +544,7 @@ void resources::getCandidateInfo(
             Json::Value jsonResp;
 
             if (candidate.empty()){
-                jsonResp["error"] = "User not found";\
+                jsonResp["error"] = "User not found";
                 LOG_ERROR << "no user in db with id: " + userId;
                 const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
                 resp->setStatusCode(drogon::k404NotFound);

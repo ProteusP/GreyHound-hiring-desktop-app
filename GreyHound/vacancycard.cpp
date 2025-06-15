@@ -1,12 +1,27 @@
 #include "vacancycard.h"
+#include "vacancydetailswindow.h"
 
 VacancyCard::VacancyCard(
-    const QString &title,
-    const QString &company,
-    const QString &description,
+    QNetworkAccessManager *manager_,
+    const QString &title_,
+    const QString &company_,
+    const QString &salary_,
+    const QString &place_,
+    const int &workSchedule_,
+    const int &remoteness_,
+    const int &vacancy_id_,
     QWidget *parent
 )
-    : QFrame(parent) {
+    : QFrame(parent),
+      vacancy_id(vacancy_id_),
+      networkManager(manager_),
+      titleString(title_),
+      companyString(company_),
+      salaryString(salary_),
+      placeString(place_),
+      workSchedule(workSchedule_),
+      remoteness(remoteness_) {
+    setFixedSize(140, 140);
     this->setFrameShape(QFrame::StyledPanel);
     this->setFrameShadow(QFrame::Raised);
     this->setStyleSheet(
@@ -18,23 +33,22 @@ VacancyCard::VacancyCard(
         "}"
     );
 
-    titleLabel = new QLabel(title);
-    titleLabel->setStyleSheet("color: #555; font-weight: bold; font-size: 14px;"
-    );
+    title = new QLabel(title_);
+    title->setStyleSheet("color: #555; font-weight: bold; font-size: 14px;");
 
-    companyLabel = new QLabel(company);
-    companyLabel->setStyleSheet("color: #555; font-size: 12px;");
+    company = new QLabel(company_);
+    company->setStyleSheet("color: #555; font-size: 12px;");
 
-    descLabel = new QLabel(description);
-    descLabel->setStyleSheet("font-size: 12px;");
-    descLabel->setWordWrap(true);
-    descLabel->setStyleSheet(R"(
-    font-size: 12px;
-    color: #333;
-    margin-top: 5px;
-    margin-bottom: 5px;
-)");
-    descLabel->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    salary = new QLabel(salary_);
+    salary->setStyleSheet("font-size: 12px;");
+    salary->setWordWrap(true);
+    salary->setStyleSheet(R"(
+            font-size: 12px;
+            color: #333;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            )");
+    salary->setAlignment(Qt::AlignLeft | Qt::AlignTop);
 
     detailsButton = new QPushButton("Подробнее");
     detailsButton->setStyleSheet(
@@ -49,21 +63,24 @@ VacancyCard::VacancyCard(
     );
 
     QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->addWidget(titleLabel);
-    layout->addWidget(companyLabel);
-    layout->addWidget(descLabel);
+    layout->addWidget(title);
+    layout->addWidget(company);
+    layout->addWidget(salary);
     layout->addStretch();
     layout->addWidget(detailsButton, 0, Qt::AlignRight);
 
-    connect(detailsButton, &QPushButton::clicked, [this]() {
-        emit detailsRequested(this->vacancyId);
-    });
+    connect(detailsButton, &QPushButton::clicked, this, &VacancyCard::on_detailsButton_clicked);
 }
 
 void VacancyCard::setFixedSize(int width, int height) {
     QFrame::setFixedSize(width, height);
 }
 
-void VacancyCard::setVacancyId(int id) {
-    vacancyId = id;
+void VacancyCard::on_detailsButton_clicked() {
+    auto *detailsWindow = new vacancyDetailsWindow(
+        networkManager, titleString, companyString, salaryString, placeString,
+        workSchedule, remoteness, vacancy_id
+    );
+    detailsWindow->setWindowTitle("Информация о вакансии");
+    detailsWindow->show();
 }

@@ -34,7 +34,14 @@ public:
 
     int getCurrentCandidateId();
 
+    void deleteData() {
+        currentPage = 0;
+        pageCache.clear();
+    }
+
     QWidget *createCandidatesPage(int numberPage);
+
+    QWidget *createVacanciesPage(int numberPage);
 
     FlowLayout *getFlowLayout();
 
@@ -56,11 +63,9 @@ private:
 
 private slots:
     void on_profilePB_3_clicked();
-    void showVacancyDetails(int vacancyId);
-    void respondToVacancy(int vacancyId);
-
+    // void showVacancyDetails(int vacancy_id);
+    // void respondToVacancy(int vacancy_id);
     void on_pushButtonNext_clicked();
-
     void on_pushButtonPrev_clicked();
 
 signals:

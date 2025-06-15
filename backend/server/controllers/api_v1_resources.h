@@ -51,11 +51,11 @@ static void getCandidateInfo(
 
 
 public:
-  METHOD_LIST_BEGIN
-  METHOD_ADD(resources::getResumes, "/resumes", drogon::Get,
-             "api::v1::checkAuthFilter"); // path is /api/v1/resources/resumes
-  METHOD_ADD(resources::getVacancies, "/vacancies", drogon::Get,
-             "api::v1::checkAuthFilter"); // path is /api/v1/resources/vacancies
+    METHOD_LIST_BEGIN
+    METHOD_ADD(resources::getResumes, "/resumes", drogon::Get,
+                "api::v1::checkAuthFilter"); // path is /api/v1/resources/resumes
+    METHOD_ADD(resources::getVacancies, "/vacancies", drogon::Get,
+                "api::v1::checkAuthFilter"); // path is /api/v1/resources/vacancies
     METHOD_ADD(resources::getResume, "/resume/{1}", drogon::Get /* "api::v1::checkAuthFilter" */); // path is /api/v1/resources/resume/{user_id}
 
     METHOD_ADD(resources::saveResume, "resume", drogon::Post, "api::v1::checkAuthFilter"); // path is /api/v1/resources/resume
@@ -69,13 +69,13 @@ public:
 
     METHOD_ADD(resources::getEmplVacancies, "emplVacancies", drogon::Get, "api::v1::checkAuthFilter"); // path is /api/v1/resources/emplVacancies
 
-    METHOD_ADD(resources::updateVacancy, "updateVacancy/{1}", drogon::Patch, "api::v1::checkAuthFilter"); // path is /api/v1/resources/updateVacancies/{vacancy_id}
+    METHOD_ADD(resources::updateVacancy, "updateVacancy/{1}", drogon::Patch, "api::v1::checkAuthFilter"); // path is /api/v1/resources/updateVacancy/{vacancy_id}
 
-    METHOD_ADD(resources::getVacanciesCards, "vacanciesCards", drogon::Get); // path is /api/v1/resources/vacanciesCards/?page=..&pageSize=..
+    METHOD_ADD(resources::getVacanciesCards, "/vacanciesCards", drogon::Get); // path is /api/v1/resources/vacanciesCards/?page=..&pageSize=..
     // no auth filter for faster responses
 
     METHOD_ADD(resources::getCandidateInfo, "/candidateInfo/{1}", drogon::Get); // path is /api/v1/resources/candidateInfo/{id}
 
-  METHOD_LIST_END
+    METHOD_LIST_END
 };
 } // namespace api::v1

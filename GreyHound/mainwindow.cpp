@@ -52,7 +52,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->stackedWidget->setCurrentWidget(loginPage);
     connect(
         loginPage, &LoginWidget::loginSuccessful, this,
-        [this](bool isemployee) { onMainPage(isemployee); }
+        [this](bool isCandidate) { onMainPage(isCandidate); }
     );
     connect(
         loginPage, &LoginWidget::registerPressed, this,
@@ -82,35 +82,30 @@ MainWindow::MainWindow(QWidget *parent)
     );
     connect(
         registerCandidatePage, &RegisterPageForCandidate::registerSuccessful,
-        this, [this]() { onBackToLoginPage(); }
+        this, &MainWindow::registerSuccess
     );
     connect(
         registerEmployerPage, &RegisterPageForEmployer::registerSuccessful,
-        this, [this]() { onBackToLoginPage(); }
+        this, &MainWindow::registerSuccess
     );
     connect(
         mainPage, &MainPage::onProfilePressed, this, &MainWindow::onProfilePage
     );
     connect(
         profileCandidatePage, &ProfilePageForCandidate::homeButtonClicked, this,
-        [this]() { onMainPage(true); }
+        &MainWindow::onProfileCandidateHomeClicked
     );
     connect(
         profileEmployerPage, &ProfilePageForEmployer::homeButtonClicked, this,
-        [this]() { onMainPage(false); }
+        &MainWindow::onProfileEmployerHomeClicked
     );
     connect(
         profileEmployerPage, &ProfilePageForEmployer::logoutButtonClicked, this,
-        [this]() { onBackToLoginPage(); }
+        &MainWindow::onLogoutClicked
     );
     connect(
         profileCandidatePage, &ProfilePageForCandidate::logoutButtonClicked,
-        this,
-        [this]() {
-            // TODO
-            // clear text in login page after pageback
-            onBackToLoginPage();
-        }
+        this, &MainWindow::onLogoutClicked
     );
 }
 
@@ -118,13 +113,13 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::onMainPage(bool isemployee) {
-    mainPage->setStatusOfCandidate(isemployee
+void MainWindow::onMainPage(bool isCandidate) {
+    mainPage->setStatusOfCandidate(isCandidate
     );  // надо будет убрать, тк не пригождится
     if (mainPage->getFlowLayout() != nullptr) {
         mainPage->hide();
     }
-    mainPage->show(isemployee);
+    mainPage->show(isCandidate);
     ui->stackedWidget->setCurrentWidget(mainPage);
 }
 
@@ -197,4 +192,35 @@ void MainWindow::loadProfileData() {
 
 void MainWindow::onProfilePage() {
     loadProfileData();
+}
+
+void MainWindow::registerSuccess() {
+    onBackToLoginPage();
+}
+
+void MainWindow::onProfileCandidateHomeClicked() {
+    onMainPage(true);
+}
+
+void MainWindow::onProfileEmployerHomeClicked() {
+    onMainPage(false);
+}
+
+void MainWindow::onLogoutClicked() {
+    mainPage->deleteData();
+    QNetworkRequest request;
+    request.setUrl(QUrl("http://localhost:80/api/v1/Auth/logout"));
+    request.setRawHeader("Accept", "application/json");
+    QNetworkReply *reply = networkManager->get(request);
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            onBackToLoginPage();
+        } else {
+            QMessageBox::warning(
+                this, "Ошибка сервера", "Для выхода закройте окно приложения"
+            );
+        }
+        reply->deleteLater();
+    });
+    onBackToLoginPage();
 }

@@ -3,6 +3,7 @@
 
 #include <QFrame>
 #include <QLabel>
+#include <QNetworkAccessManager>
 #include <QPushButton>
 #include <QVBoxLayout>
 
@@ -10,23 +11,35 @@ class VacancyCard : public QFrame {
     Q_OBJECT
 public:
     explicit VacancyCard(
-        const QString &title,
-        const QString &company,
-        const QString &description,
+        QNetworkAccessManager *manager_,
+        const QString &title_,
+        const QString &company_,
+        const QString &salary_,
+        const QString &place_,
+        const int &workSchedule_,
+        const int &remoteness_,
+        const int &vacancy_id_,
         QWidget *parent = nullptr
     );
 
     void setFixedSize(int width, int height);
     void setVacancyId(int id);  // Переопределяем для внутренней настройки
 
-signals:
-    void detailsRequested(int vacancyId);
-
+private slots:
+    void on_detailsButton_clicked();
 private:
-    int vacancyId = -1;
-    QLabel *titleLabel;
-    QLabel *companyLabel;
-    QLabel *descLabel;
+    QNetworkAccessManager *networkManager;
+    QLabel *title;
+    QLabel *company;
+    QLabel *salary;
+    QLabel *place;
+    const QString titleString;
+    const QString companyString;
+    const QString salaryString;
+    const QString placeString;
+    const int workSchedule;
+    const int remoteness;
+    const int vacancy_id;
     QPushButton *detailsButton;
 };
 
