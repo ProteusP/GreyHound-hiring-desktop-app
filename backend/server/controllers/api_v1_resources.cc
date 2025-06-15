@@ -654,7 +654,7 @@ void resources::getCandidateInfo(
             Json::Value jsonResp;
 
             if (candidate.empty()){
-                jsonResp["error"] = "User not found";\
+                jsonResp["error"] = "User not found";
                 LOG_ERROR << "no user in db with id: " + userId;
                 const auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
                 resp->setStatusCode(drogon::k404NotFound);

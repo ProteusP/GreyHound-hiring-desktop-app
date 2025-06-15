@@ -10,11 +10,11 @@ candidateCard::candidateCard(
     QWidget *parent
 )
     : QFrame(parent), user_id(id_), networkManager(manager) {
-    setFixedSize(170, 110);
+    setFixedSize(170, 150);
     this->setFrameShape(QFrame::StyledPanel);
     this->setFrameShadow(QFrame::Raised);
     this->setStyleSheet(
-        "VacancyCard {"
+        "candidateCard {"
         "background: white;"
         "border-radius: 8px;"
         "padding: 10px;"
@@ -28,9 +28,7 @@ candidateCard::candidateCard(
     );
 
     facultyOfEducation = new QLabel(facultyOfEducation_);
-    facultyOfEducation->setStyleSheet(
-        "color: #555; font-weight: bold; font-size: 14px;"
-    );
+    facultyOfEducation->setStyleSheet("color: #555; font-size: 12px;");
 
     experience = new QLabel(experience_);
     experience->setStyleSheet("color: #555; font-size: 12px;");
@@ -53,12 +51,6 @@ candidateCard::candidateCard(
     layout->addWidget(experience);
     layout->addStretch();
     layout->addWidget(detailsButton, 0, Qt::AlignRight);
-    layout->setSpacing(4);
-    layout->setContentsMargins(8, 8, 8, 8);
-
-    // connect(detailsButton, &QPushButton::clicked, [this]() {
-    //     emit detailsRequested(this->vacancyId);
-    // });
 
     connect(
         detailsButton, &QPushButton::clicked, this,

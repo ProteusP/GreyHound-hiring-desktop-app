@@ -6,6 +6,7 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QMessageBox>
@@ -60,7 +61,7 @@ void ProfilePageForEmployer::setEmployerData(
     ui->companyNameEdit->setText(companyName);
     ui->emailEdit->setText(email);
     ui->aboutEdit->setPlainText(about);
-    // loadVacancies();
+    loadVacancies();
     // loadResponses();
 }
 
@@ -146,54 +147,61 @@ void ProfilePageForEmployer::saveCompanyInfo() {
 void ProfilePageForEmployer::loadVacancies() {
     ui->vacanciesTable->setRowCount(0);
 
-    QSqlQuery query;
-    query.prepare(
-        "SELECT v.*, exp.name AS experience, w_s.name AS schedule, educ_s.name "
-        "AS educ FROM vacancies v"
-        " JOIN employers e ON v.employer_id = e.id"
-        " LEFT JOIN experience exp ON v.experience_status_id = exp.id"
-        " LEFT JOIN work_schedule w_s ON v.work_schedule_status_id = w_s.id"
-        " LEFT JOIN educ_statuses educ_s ON v.educ_status_id= educ_s.id"
-        " WHERE e.email = :email;"
+    QNetworkRequest request(
+        QUrl("http://localhost:80/api/v1/resources/emplVacancies")
     );
-    query.bindValue(":email", ui->emailLabel->text());
-    int counter = 0;
-    if (query.exec()) {
-        while (query.next()) {
-            qDebug() << counter << "\n";
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    QNetworkReply *reply = networkManager->get(request);
+
+    connect(reply, &QNetworkReply::finished, this, [=]() {
+        if (reply->error() != QNetworkReply::NoError) {
+            qDebug() << "Ошибка загрузки вакансий:" << reply->errorString();
+            reply->deleteLater();
+            return;
+        }
+
+        QByteArray responseData = reply->readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(responseData);
+        QJsonObject root = doc.object();
+        QJsonArray vacancies = root["vacancies"].toArray();
+
+        for (int i = 0; i < vacancies.size(); i++) {
+            QJsonObject vac = vacancies[i].toObject();
             int row = ui->vacanciesTable->rowCount();
             ui->vacanciesTable->insertRow(row);
 
-            QTableWidgetItem *nameItem =
-                new QTableWidgetItem(query.value("name").toString());
-            QTableWidgetItem *salaryItem =
-                new QTableWidgetItem(query.value("salary").toString());
-            QTableWidgetItem *placeItem =
-                new QTableWidgetItem(query.value("place").toString());
-            QTableWidgetItem *educPlaceItem =
-                new QTableWidgetItem(query.value("educ_place").toString());
-            QTableWidgetItem *experienceItem =
-                new QTableWidgetItem(query.value("experience").toString());
-            QTableWidgetItem *scheduleItem =
-                new QTableWidgetItem(query.value("schedule").toString());
-            QTableWidgetItem *educItem =
-                new QTableWidgetItem(query.value("educ").toString());
-            QTableWidgetItem *remotenessItem = new QTableWidgetItem(
-                query.value("remoteness_status_id").toString()
+            auto addItem = [&](int column, const QString &value) {
+                ui->vacanciesTable->setItem(
+                    row, column, new QTableWidgetItem(value)
+                );
+            };
+
+            addItem(0, vac["name"].toString());
+            addItem(1, vac["salary"].toString());
+            addItem(2, vac["place"].toString());
+            addItem(3, vac["educ_place"].toString());
+            addItem(4, getExpThroughId(vac["experience_status_id"].toInt()));
+            addItem(
+                5,
+                getWorkScheduleThroughId(vac["work_schedule_status_id"].toInt())
             );
+            addItem(
+                6, getEducationStatusThroughId(vac["educ_status_id"].toInt())
+            );
+            addItem(7, vac["remoteness_status_id"].toString());
 
             QWidget *actionWidget = new QWidget();
             QHBoxLayout *layout = new QHBoxLayout(actionWidget);
 
             QPushButton *editButton = new QPushButton("✎");
-            editButton->setProperty("vacancyId", query.value("id").toInt());
+            editButton->setProperty("vacancyId", vac["id"].toInt());
             connect(
                 editButton, &QPushButton::clicked, this,
                 &ProfilePageForEmployer::onEditVacancyClicked
             );
 
             QPushButton *deleteButton = new QPushButton("🗑");
-            deleteButton->setProperty("vacancyId", query.value("id").toInt());
+            deleteButton->setProperty("vacancyId", vac["id"].toInt());
             connect(
                 deleteButton, &QPushButton::clicked, this,
                 &ProfilePageForEmployer::onDeleteVacancyClicked
@@ -203,17 +211,11 @@ void ProfilePageForEmployer::loadVacancies() {
             layout->addWidget(deleteButton);
             layout->setContentsMargins(0, 0, 0, 0);
 
-            ui->vacanciesTable->setItem(row, 0, nameItem);
-            ui->vacanciesTable->setItem(row, 1, salaryItem);
-            ui->vacanciesTable->setItem(row, 2, placeItem);
-            ui->vacanciesTable->setItem(row, 3, educPlaceItem);
-            ui->vacanciesTable->setItem(row, 4, experienceItem);
-            ui->vacanciesTable->setItem(row, 5, scheduleItem);
-            ui->vacanciesTable->setItem(row, 6, educItem);
-            ui->vacanciesTable->setItem(row, 7, remotenessItem);
             ui->vacanciesTable->setCellWidget(row, 8, actionWidget);
         }
-    }
+
+        reply->deleteLater();
+    });
 }
 
 void ProfilePageForEmployer::addCandidateWidget(
@@ -321,7 +323,7 @@ void ProfilePageForEmployer::deleteResponse(int vacancyId, int candidateId) {
     query.bindValue(":candidate_id", candidateId);
 
     if (query.exec()) {
-        loadResponses();  // Обновляем список
+        loadResponses();
     } else {
         qDebug() << "Ошибка удаления отклика:" << query.lastError().text();
         QMessageBox::critical(this, "Ошибка", "Не удалось удалить отклик");
@@ -421,50 +423,10 @@ void ProfilePageForEmployer::onAddVacancyClicked() {
     statusCombo->addItem("active", 1);
     statusCombo->addItem("inactive", 0);
 
-    QSqlQuery queryExperience;
-    queryExperience.prepare("SELECT * FROM experience");
-
-    if (queryExperience.exec()) {
-        while (queryExperience.next()) {
-            int id = queryExperience.value("id").toInt();
-            QString name = queryExperience.value("name").toString();
-            desiredExperienceCombo->addItem(name, id);
-        }
-    } else {
-        qDebug() << "Ошибка получения данных из таблицы experience:"
-                 << queryExperience.lastError();
-    }
-
-    QSqlQuery querySchedule;
-    querySchedule.prepare("SELECT * FROM work_schedule");
-
-    if (querySchedule.exec()) {
-        while (querySchedule.next()) {
-            int id = querySchedule.value("id").toInt();
-            QString name = querySchedule.value("name").toString();
-            workScheduleCombo->addItem(name, id);
-        }
-    } else {
-        qDebug() << "Ошибка получения данных из таблицы experience:"
-                 << querySchedule.lastError();
-    }
-
-    QSqlQuery queryEduc;
-    queryEduc.prepare("SELECT * FROM educ_statuses");
-
-    if (queryEduc.exec()) {
-        while (queryEduc.next()) {
-            int id = queryEduc.value("id").toInt();
-            QString name = queryEduc.value("name").toString();
-            educationCombo->addItem(name, id);
-        }
-    } else {
-        qDebug() << "Ошибка получения данных из таблицы experience:"
-                 << queryEduc.lastError();
-    }
-
-    remotePossibleCombo->addItem("Да", 1);
-    remotePossibleCombo->addItem("Нет", 0);
+    loadExperienceData(desiredExperienceCombo);
+    loadWorkScheduleData(workScheduleCombo);
+    loadEducStatusData(educationCombo);
+    loadRemotenessData(remotePossibleCombo);
 
     form.addRow("Название:", nameEdit);
     form.addRow("Зарплата:", salaryEdit);
@@ -491,45 +453,45 @@ void ProfilePageForEmployer::onAddVacancyClicked() {
     connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     if (dialog.exec() == QDialog::Accepted) {
-        QSqlQuery queryInsert;
-        queryInsert.prepare(
-            "INSERT INTO vacancies (name, salary, status, about, employer_id, "
-            "place, "
-            "educ_place, experience_status_id, work_schedule_status_id, "
-            "educ_status_id, remoteness_status_id) "
-            "VALUES (:name, :salary, :status, :about, :employer_id, :place, "
-            ":educ_place, "
-            ":experience_status_id, :work_schedule_status_id, :educ_status_id, "
-            ":remoteness_status_id)"
+        QNetworkRequest request(
+            QUrl("http://localhost:80/api/v1/resources/createVacancy")
         );
-        queryInsert.bindValue(":name", nameEdit->text());
-        queryInsert.bindValue(":salary", salaryEdit->text().toDouble());
-        queryInsert.bindValue(":status", statusCombo->currentData().toInt());
-        queryInsert.bindValue(":about", aboutEdit->toPlainText());
-        queryInsert.bindValue(":employer_id", currentEmployerId);
-        queryInsert.bindValue(":place", locationEdit->text());
-        queryInsert.bindValue(":educ_place", educationInstitutionEdit->text());
-        queryInsert.bindValue(
-            ":experience_status_id",
-            desiredExperienceCombo->currentData().toInt()
+        request.setHeader(
+            QNetworkRequest::ContentTypeHeader, "application/json"
         );
-        queryInsert.bindValue(
-            ":work_schedule_status_id", workScheduleCombo->currentData().toInt()
-        );
-        queryInsert.bindValue(
-            ":educ_status_id", educationCombo->currentData().toInt()
-        );
-        queryInsert.bindValue(
-            ":remoteness_status_id", remotePossibleCombo->currentData().toInt()
-        );
+        QJsonObject json;
+        json["name"] = nameEdit->text();
+        json["salary"] = salaryEdit->text().toDouble();
+        json["status"] = statusCombo->currentData().toInt();
+        json["about"] = aboutEdit->toPlainText();
+        json["place"] = locationEdit->text();
+        json["educ_place"] = educationInstitutionEdit->text();
+        json["experience_status_id"] =
+            desiredExperienceCombo->currentData().toInt();
+        json["work_schedule_status_id"] =
+            workScheduleCombo->currentData().toInt();
+        json["educ_status_id"] = educationCombo->currentData().toInt();
+        json["remoteness_status_id"] =
+            remotePossibleCombo->currentData().toInt();
+        QJsonDocument doc(json);
+        QByteArray data = doc.toJson();
+        QNetworkReply *reply = networkManager->post(request, data);
 
-        if (!queryInsert.exec()) {
-            qDebug() << "Ошибка добавления вакансии:"
-                     << queryInsert.lastError();
-            return;
-        }
-
-        loadVacancies();
+        connect(reply, &QNetworkReply::finished, this, [=]() {
+            if (reply->error() == QNetworkReply::NoError) {
+                QByteArray response_data = reply->readAll();
+                QJsonDocument response_doc =
+                    QJsonDocument::fromJson(response_data);
+                QJsonObject obj = response_doc.object();
+                qDebug() << "Вакансия ID:" << obj["vacancy_id"];
+                loadVacancies();
+            } else {
+                QMessageBox::warning(
+                    this, "Упс...", "Ошибка при отправке запроса."
+                );
+            }
+            reply->deleteLater();
+        });
     }
 }
 
@@ -537,179 +499,283 @@ void ProfilePageForEmployer::onEditVacancyClicked() {
     QPushButton *button = qobject_cast<QPushButton *>(sender());
     int vacancyId = button->property("vacancyId").toInt();
 
-    QSqlQuery query;
-    query.prepare("SELECT * FROM vacancies WHERE id = :id");
-    query.bindValue(":id", vacancyId);
+    QDialog dialog(this);
 
-    if (query.exec() && query.next()) {
-        QDialog dialog(this);
-        QFormLayout form(&dialog);
+    dialog.setStyleSheet(R"(
+        QDialog {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+        }
 
-        QLineEdit *nameEdit = new QLineEdit(query.value("name").toString());
-        QDoubleSpinBox *salaryEdit = new QDoubleSpinBox();
-        salaryEdit->setValue(query.value("salary").toDouble());
-        QLineEdit *placeEdit = new QLineEdit(query.value("place").toString());
-        QLineEdit *educPlaceEdit =
-            new QLineEdit(query.value("educ_place").toString());
-        QComboBox *experienceCombo = new QComboBox();
-        QComboBox *workScheduleCombo = new QComboBox();
-        QComboBox *educStatusCombo = new QComboBox();
-        QComboBox *remotenessCombo = new QComboBox();
-        QTextEdit *aboutEdit = new QTextEdit(query.value("about").toString());
+        QLineEdit, QTextEdit {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 5px 8px;
+            font-size: 14px;
+            color: black;
+        }
+        QComboBox {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 6px 12px;
+            background-color: #f9f9f9;
+            font-size: 14px;
+                color: black;
+        }
+        QComboBox QAbstractItemView {
+            background-color: white;
+            color: black;
+            selection-background-color: white;
+            selection-color: black;
+            border: 1px solid #ccc;
+            font-size: 14px;
 
-        loadExperienceData(experienceCombo);
-        loadWorkScheduleData(workScheduleCombo);
-        loadEducStatusData(educStatusCombo);
-        loadRemotenessData(remotenessCombo);
+        }
+        QComboBox::down-arrow {
 
-        experienceCombo->setCurrentIndex(experienceCombo->findData(
-            query.value("experience_status_id").toInt()
+                image: url(:/caret-down.png);
+            width: 12px;
+            height: 12px;
+        background-color: white;
+        }
+        QComboBox::drop-down {
+            subcontrol-origin: padding;
+            subcontrol-position: top right;
+            width: 24px;
+            border-left: 1px solid #ccc;
+        background-color: white;
+        }
+
+        QTextEdit {
+            padding: 6px;
+        }
+
+        QDialogButtonBox QPushButton {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 16px;
+            font-size: 14px;
+        }
+
+        QDialogButtonBox QPushButton:hover {
+            background-color: #005ecb;
+        }
+
+        QDialogButtonBox QPushButton:disabled {
+            background-color: #ccc;
+            color: #666;
+        }
+
+        QLabel {
+            font-size: 14px;
+            color: black;
+        }
+    )");
+
+    QFormLayout form(&dialog);
+
+    QLineEdit *nameEdit = new QLineEdit();
+    QLineEdit *salaryEdit = new QLineEdit();
+    QComboBox *statusCombo = new QComboBox();
+    QTextEdit *aboutEdit = new QTextEdit();
+    QLineEdit *locationEdit = new QLineEdit();
+    QLineEdit *educationInstitutionEdit = new QLineEdit();
+    QComboBox *desiredExperienceCombo = new QComboBox();
+    QComboBox *workScheduleCombo = new QComboBox();
+    QComboBox *educationCombo = new QComboBox();
+    QComboBox *remotePossibleCombo = new QComboBox();
+
+    statusCombo->addItem("active", 1);
+    statusCombo->addItem("inactive", 0);
+
+    loadExperienceData(desiredExperienceCombo);
+    loadWorkScheduleData(workScheduleCombo);
+    loadEducStatusData(educationCombo);
+    loadRemotenessData(remotePossibleCombo);
+
+    form.addRow("Название:", nameEdit);
+    form.addRow("Зарплата:", salaryEdit);
+    form.addRow("Статус:", statusCombo);
+    form.addRow("Описание:", aboutEdit);
+    form.addRow("Местоположение:", locationEdit);
+    form.addRow("Место обучения:", educationInstitutionEdit);
+    form.addRow("Желаемый опыт:", desiredExperienceCombo);
+    form.addRow("Требуемый график:", workScheduleCombo);
+    form.addRow("Образование:", educationCombo);
+    form.addRow("Удаленность:", remotePossibleCombo);
+
+    QDialogButtonBox buttonBox(
+        QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal, &dialog
+    );
+    form.addRow(&buttonBox);
+    buttonBox.button(QDialogButtonBox::Ok)->setText("Сохранить");
+    buttonBox.button(QDialogButtonBox::Ok)->setIcon(QIcon());
+
+    buttonBox.button(QDialogButtonBox::Cancel)->setText("Отмена");
+    buttonBox.button(QDialogButtonBox::Cancel)->setIcon(QIcon());
+
+    connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    if (dialog.exec() == QDialog::Accepted) {
+        QNetworkRequest request(QUrl(
+            QString("http://localhost:80/api/v1/resources/updateVacancy/%1")
+                .arg(vacancyId)
         ));
-        workScheduleCombo->setCurrentIndex(workScheduleCombo->findData(
-            query.value("work_schedule_status_id").toInt()
-        ));
-        educStatusCombo->setCurrentIndex(
-            educStatusCombo->findData(query.value("educ_status_id").toInt())
+        request.setHeader(
+            QNetworkRequest::ContentTypeHeader, "application/json"
         );
-        remotenessCombo->setCurrentIndex(remotenessCombo->findData(
-            query.value("remoteness_status_id").toInt()
-        ));
-
-        form.addRow("Название:", nameEdit);
-        form.addRow("Зарплата:", salaryEdit);
-        form.addRow("Местоположение:", placeEdit);
-        form.addRow("Место обучения:", educPlaceEdit);
-        form.addRow("Желаемый опыт:", experienceCombo);
-        form.addRow("Требуемый график:", workScheduleCombo);
-        form.addRow("Образование:", educStatusCombo);
-        form.addRow("Удаленность:", remotenessCombo);
-        form.addRow("Описание вакансии:", aboutEdit);
-
-        QDialogButtonBox buttonBox(
-            QDialogButtonBox::Ok | QDialogButtonBox::Cancel, Qt::Horizontal,
-            &dialog
-        );
-        form.addRow(&buttonBox);
-
-        connect(
-            &buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept
-        );
-        connect(
-            &buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject
-        );
-
-        if (dialog.exec() == QDialog::Accepted) {
-            QSqlQuery updateQuery;
-            updateQuery.prepare(
-                "UPDATE vacancies SET name = :name, salary = :salary, place = "
-                ":place, "
-                "educ_place = :educ_place, experience_status_id = "
-                ":experience_status_id, "
-                "work_schedule_status_id = :work_schedule_status_id, "
-                "educ_status_id = :educ_status_id, "
-                "remoteness_status_id = :remoteness_status_id, about = :about "
-                "WHERE id = :id"
-            );
-
-            updateQuery.bindValue(":name", nameEdit->text());
-            updateQuery.bindValue(":salary", salaryEdit->value());
-            updateQuery.bindValue(":place", placeEdit->text());
-            updateQuery.bindValue(":educ_place", educPlaceEdit->text());
-            updateQuery.bindValue(
-                ":experience_status_id", experienceCombo->currentData().toInt()
-            );
-            updateQuery.bindValue(
-                ":work_schedule_status_id",
-                workScheduleCombo->currentData().toInt()
-            );
-            updateQuery.bindValue(
-                ":educ_status_id", educStatusCombo->currentData().toInt()
-            );
-            updateQuery.bindValue(
-                ":remoteness_status_id", remotenessCombo->currentData().toInt()
-            );
-            updateQuery.bindValue(":about", aboutEdit->toPlainText());
-            updateQuery.bindValue(":id", vacancyId);
-
-            if (updateQuery.exec()) {
+        QJsonObject updated;
+        updated["name"] = nameEdit->text();
+        updated["salary"] = salaryEdit->text().toInt();
+        updated["status"] = statusCombo->currentData().toInt();
+        updated["about"] = aboutEdit->toPlainText();
+        updated["place"] = locationEdit->text();
+        updated["educ_place"] = educationInstitutionEdit->text();
+        updated["experience_status_id"] =
+            desiredExperienceCombo->currentData().toInt();
+        updated["work_schedule_status_id"] =
+            workScheduleCombo->currentData().toInt();
+        updated["educ_status_id"] = educationCombo->currentData().toInt();
+        updated["remoteness_status_id"] =
+            remotePossibleCombo->currentData().toInt();
+        QByteArray data = QJsonDocument(updated).toJson();
+        QNetworkReply *reply =
+            networkManager->sendCustomRequest(request, "PATCH", data);
+        connect(reply, &QNetworkReply::finished, this, [=]() {
+            if (reply->error() == QNetworkReply::NoError) {
                 loadVacancies();
             } else {
-                qDebug() << "Ошибка обновления вакансии:"
-                         << updateQuery.lastError();
+                QMessageBox::warning(this, "Упс...", "Произошла ошибка");
             }
-        }
+            reply->deleteLater();
+        });
     }
-}
-
-void ProfilePageForEmployer::loadExperienceData(QComboBox *comboBox) {
-    QSqlQuery query;
-    query.prepare("SELECT * FROM experience");
-    if (query.exec()) {
-        while (query.next()) {
-            comboBox->addItem(
-                query.value("name").toString(), query.value("id")
-            );
-        }
-    } else {
-        qDebug() << "Ошибка загрузки данных опыта:" << query.lastError();
-    }
-}
-
-void ProfilePageForEmployer::loadWorkScheduleData(QComboBox *comboBox) {
-    QSqlQuery query;
-    query.prepare("SELECT * FROM work_schedule");
-    if (query.exec()) {
-        while (query.next()) {
-            comboBox->addItem(
-                query.value("name").toString(), query.value("id")
-            );
-        }
-    } else {
-        qDebug() << "Ошибка загрузки данных расписания работы:"
-                 << query.lastError();
-    }
-}
-
-void ProfilePageForEmployer::loadEducStatusData(QComboBox *comboBox) {
-    QSqlQuery query;
-    query.prepare("SELECT * FROM educ_statuses");
-    if (query.exec()) {
-        while (query.next()) {
-            comboBox->addItem(
-                query.value("name").toString(), query.value("id")
-            );
-        }
-    } else {
-        qDebug() << "Ошибка загрузки данных статусов образования:"
-                 << query.lastError();
-    }
-}
-
-void ProfilePageForEmployer::loadRemotenessData(QComboBox *comboBox) {
-    comboBox->addItem("Да", 1);
-    comboBox->addItem("Нет", 0);
 }
 
 void ProfilePageForEmployer::onDeleteVacancyClicked() {
     QPushButton *button = qobject_cast<QPushButton *>(sender());
     int vacancyId = button->property("vacancyId").toInt();
 
-    QMessageBox::StandardButton reply = QMessageBox::question(
+    QMessageBox::StandardButton replyToDelete = QMessageBox::question(
         this, "Удаление", "Удалить вакансию?",
         QMessageBox::Yes | QMessageBox::No
     );
 
-    if (reply == QMessageBox::Yes) {
-        QSqlQuery query;
-        query.prepare("DELETE FROM vacancies WHERE id = :id");
-        query.bindValue(":id", vacancyId);
+    if (replyToDelete == QMessageBox::Yes) {
+        QNetworkRequest request(QUrl(
+            QString("http://localhost:80/api/v1/resources/deleteVacancy/%1")
+                .arg(vacancyId)
+        ));
+        request.setHeader(
+            QNetworkRequest::ContentTypeHeader, "application/json"
+        );
+        QNetworkReply *reply =
+            networkManager->sendCustomRequest(request, "DELETE");
 
-        if (query.exec()) {
-            loadVacancies();
-        } else {
-            QMessageBox::critical(
-                this, "Ошибка", "Ошибка удаления: " + query.lastError().text()
-            );
-        }
+        connect(reply, &QNetworkReply::finished, this, [=]() {
+            if (reply->error() == QNetworkReply::NoError) {
+                QByteArray response = reply->readAll();
+                QJsonDocument doc = QJsonDocument::fromJson(response);
+                QJsonObject obj = doc.object();
+
+                if (obj.contains("count")) {
+                    loadVacancies();
+                } else {
+                    QMessageBox::warning(
+                        this, "Ошибка", "Вакансия не найдена или уже удалена."
+                    );
+                }
+            } else {
+                QMessageBox::critical(
+                    this, "Ошибка сети", "Что-то непонятное..."
+                );
+            }
+            reply->deleteLater();
+        });
+    }
+}
+
+void ProfilePageForEmployer::loadExperienceData(
+    QComboBox *desiredExperienceCombo
+) {
+    desiredExperienceCombo->addItem("Без опыта", 1);
+    desiredExperienceCombo->addItem("1-3 лет", 2);
+    desiredExperienceCombo->addItem("3-5 лет", 3);
+    desiredExperienceCombo->addItem("5+ лет", 4);
+}
+
+void ProfilePageForEmployer::loadWorkScheduleData(QComboBox *workScheduleCombo
+) {
+    workScheduleCombo->addItem("Полный рабочий день", 1);
+    workScheduleCombo->addItem("Частичная занятость", 2);
+    workScheduleCombo->addItem("Гибкий график", 3);
+    workScheduleCombo->addItem("Другое", 4);
+}
+
+void ProfilePageForEmployer::loadEducStatusData(QComboBox *educationCombo) {
+    educationCombo->addItem("Среднее", 1);
+    educationCombo->addItem("Среднее специальное", 2);
+    educationCombo->addItem("Бакалавриат", 3);
+    educationCombo->addItem("Магистратура", 4);
+    educationCombo->addItem("Аспирантура", 5);
+    educationCombo->addItem("Не имеет значения", 6);
+}
+
+void ProfilePageForEmployer::loadRemotenessData(QComboBox *remotePossibleCombo
+) {
+    remotePossibleCombo->addItem("Да", 1);
+    remotePossibleCombo->addItem("Нет", 0);
+}
+
+QString ProfilePageForEmployer::getExpThroughId(const int &id) {
+    switch (id) {
+        case 1:
+            return "Без опыта";
+        case 2:
+            return "1-3 лет";
+        case 3:
+            return "3-5 лет";
+        case 4:
+            return "5+ лет";
+        default:
+            return "...";
+    }
+}
+
+QString ProfilePageForEmployer::getWorkScheduleThroughId(const int &id) {
+    switch (id) {
+        case 1:
+            return "Полный рабочий день";
+        case 2:
+            return "Частичная занятость";
+        case 3:
+            return "Гибкий график";
+        case 4:
+            return "Другое";
+        default:
+            return "...";
+    }
+}
+
+QString ProfilePageForEmployer::getEducationStatusThroughId(const int &id) {
+    switch (id) {
+        case 1:
+            return "Среднее";
+        case 2:
+            return "Среднее специальное";
+        case 3:
+            return "Бакалавриат";
+        case 4:
+            return "Магистратура";
+        case 5:
+            return "Аспирантура";
+        case 6:
+            return "Не имеет значения";
+        default:
+            return "...";
     }
 }

@@ -42,6 +42,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         validation.h validation.cpp
         candidatecard.h candidatecard.cpp
         candidatedetailswindow.h candidatedetailswindow.cpp candidatedetailswindow.ui
+        vacancydetailswindow.h vacancydetailswindow.cpp vacancydetailswindow.ui
+
 
 
     )
