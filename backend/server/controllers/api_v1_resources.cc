@@ -186,6 +186,8 @@ void resources::getCandidateCards(
   const auto &graduationYearFilter = req->getParameter("graduation_year");
   const auto &placeFilter = req->getParameter("place");
   const auto &searchStatusIdFilter = req->getParameter("search_status_id");
+	const auto &educStatusIdFilter = req->getParameter("educ_status_id");
+
   const auto &experienceStatusIdFilter = req->getParameter("experience_status_id");
   const auto &workScheduleIdFilter = req->getParameter("work_schedule_status_id");
 
@@ -263,6 +265,21 @@ void resources::getCandidateCards(
       return;
     }
   }
+
+	if (!educStatusIdFilter.empty()) {
+  try {
+    std::stoi(educStatusIdFilter);
+    sql += " AND educ_status_id = ?";
+    paramStrings.push_back(educStatusIdFilter);
+  } catch (...) {
+    Json::Value err;
+    err["error"] = "Invalid educ_status_id format";
+    auto resp = HttpResponse::newHttpJsonResponse(err);
+    resp->setStatusCode(k400BadRequest);
+    callback(resp);
+    return;
+  }
+}
 
   sql += " LIMIT " + std::to_string(pageSize) + " OFFSET " + std::to_string(offset);
 
