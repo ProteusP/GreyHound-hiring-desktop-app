@@ -189,6 +189,7 @@ add_executable(test_mainpage
     candidatecard.cpp
     vacancydetailswindow.cpp
     candidatedetailswindow.cpp
+    flowlayout.cpp
 )
 set_target_properties(test_mainpage PROPERTIES AUTOMOC ON AUTOUIC ON)
 target_link_libraries(test_mainpage
