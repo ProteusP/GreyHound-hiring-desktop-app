@@ -63,7 +63,14 @@ cmake ..
 make
 ./GreyHound-hiring-desktop-app
 ```
-4. __Сборка сервера:__
+4. __Запуск Redis:__
+```bash
+# Установите docker, чтобы воспользоваться этим способом
+cd ../../backend/redis
+docker build -t rediska .
+docker run -d -p 6379:6379 --name cache-container rediska
+```
+5. __Сборка сервера:__
 ```bash
 cd ../../backend/server
 mkdir build && cd build
@@ -71,7 +78,6 @@ cmake ..
 make
 cd ..
 ./build/server
-
 ```
 
 ---
@@ -88,9 +94,8 @@ ctest
 ---
 ## Авторы
 
-__Михеев Дмитрий:__
-- __Github:__ [click](https://github.com/ProteusP)
-__Никитин Михаил:__
-- __Github:__ [click](https://github.com/nikitinMaclay)
-__Легостаев Глеб:__
-- __Github:__ [click](https://github.com/gle6a6y)
+__`Михеев Дмитрий`__ [Github](https://github.com/ProteusP)
+
+__`Никитин Михаил`__ [Github](https://github.com/nikitinMaclay)
+
+__`Легостаев Глеб`__ [Github](https://github.com/gle6a6y)
