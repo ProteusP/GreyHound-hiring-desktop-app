@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QNetworkAccessManager>
+#include <QVBoxLayout>
 #include <QWidget>
 
 namespace Ui {
@@ -27,6 +28,7 @@ class RegisterPageForEmployer : public QWidget {
   private:
     Ui::RegisterPageForEmployer *ui;
     QNetworkAccessManager *networkManager;
+    QVBoxLayout *responsesLayout = nullptr;
 
   signals:
     void registerSuccessful();

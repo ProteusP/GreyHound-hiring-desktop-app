@@ -30,23 +30,29 @@ ProfilePageForEmployer::~ProfilePageForEmployer() = default;
 
 void ProfilePageForEmployer::SetupUI() {
     ui->vacanciesTable->resizeColumnsToContents();
-
-    responsesScrollArea = new QScrollArea(this);
-    responsesScrollArea->setWidgetResizable(true);
-    responsesScrollArea->setSizePolicy(QSizePolicy::Expanding,
-                                       QSizePolicy::Expanding);
-    responsesScrollArea->setStyleSheet("border: none;");
-
-
-    responsesContainer = new QWidget();
+    ui->responsesScrollArea->setWidgetResizable(true);
+    QWidget *responsesContainer = new QWidget();
     responsesLayout = new QVBoxLayout(responsesContainer);
-    responsesLayout->setContentsMargins(10, 10, 10, 10);
-    responsesLayout->setSpacing(12);
     responsesContainer->setLayout(responsesLayout);
 
-    responsesScrollArea->setWidget(responsesContainer);
+    ui->responsesScrollArea->setWidget(responsesContainer);
+    // responsesScrollArea = new QScrollArea(this);
+    // responsesScrollArea->setWidgetResizable(true);
+    // responsesScrollArea->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    // responsesScrollArea->setMaximumWidth(300);
+    // responsesScrollArea->setStyleSheet("border: none;");
 
-    ui->verticalLayout->addWidget(responsesScrollArea);
+    // responsesContainer = new QWidget();
+    // responsesContainer->setMaximumWidth(300);
+
+    // responsesLayout = new QVBoxLayout(responsesContainer);
+    // responsesLayout->setContentsMargins(10, 10, 10, 10);
+    // responsesLayout->setSpacing(12);
+    // responsesContainer->setLayout(responsesLayout);
+
+    // responsesScrollArea->setWidget(responsesContainer);
+    // ui->verticalLayout->addWidget(responsesScrollArea);
+
 
     connect(ui->addVacancyButton, &QPushButton::clicked, this,
             &ProfilePageForEmployer::onAddVacancyClicked);
@@ -65,6 +71,7 @@ void ProfilePageForEmployer::setEmployerData(const QString &companyName,
     ui->emailEdit->setText(email);
     ui->aboutEdit->setPlainText(about);
     loadResponses();
+    loadVacancies();
 }
 
 void ProfilePageForEmployer::loadResponses() {
@@ -98,8 +105,9 @@ void ProfilePageForEmployer::loadResponses() {
 
         QJsonArray responses = doc.object()["responses"].toArray();
         if (responses.isEmpty()) {
-            QLabel *emptyLabel = new QLabel("Нет новых откликов.");
+            QLabel *emptyLabel = new QLabel("Нет новых откликов");
             emptyLabel->setStyleSheet("color: grey; font-size: 14px;");
+            emptyLabel->setAlignment(Qt::AlignHCenter);
             responsesLayout->addWidget(emptyLabel);
             return;
         }
@@ -265,28 +273,38 @@ void ProfilePageForEmployer::addCandidateWidget(
 
     QHBoxLayout *buttonsLayout = new QHBoxLayout();
     buttonsLayout->setSpacing(4);
-    auto createButton = [](const QString &text, const QString &color,
-                           const QString &hoverColor) {
+    auto createButton = [](const QString &text, const QString &bgColor, const QString &hoverColor) {
         QPushButton *btn = new QPushButton(text);
-        btn->setStyleSheet(QString("QPushButton {"
-                                   "  background: %1;"
-                                   "  color: white;"
-                                   "  border: none;"
-                                   "  border-radius: 3px;"
-                                   "  padding: 2px 5px;"
-                                   "  font-size: 10px;"
-                                   "  min-width: 60px;"
-                                   "  max-width: 60px;"
-                                   "}"
-                                   "QPushButton:hover { background: %2; }")
-                               .arg(color, hoverColor));
+        btn->setFixedHeight(28);
+        btn->setMinimumWidth(80);
+
+        btn->setStyleSheet(QString(
+                               "QPushButton {"
+                               "  background-color: %1;"
+                               "  color: white;"
+                               "  border: none;"
+                               "  border-radius: 6px;"
+                               "  font-size: 12px;"
+                               "  font-weight: 500;"
+                               "  padding: 4px 12px;"
+                               "}"
+                               "QPushButton:hover {"
+                               "  background-color: %2;"
+                               "}"
+                               "QPushButton:pressed {"
+                               "  background-color: #00000022;"
+                               "}")
+                               .arg(bgColor, hoverColor));
+
         return btn;
     };
+
 
     QPushButton *acceptBtn = createButton("Принять", "#27AE60", "#219653");
     QPushButton *rejectBtn = createButton("Отклонить", "#E74C3C", "#C0392B");
 
     buttonsLayout->addWidget(acceptBtn);
+    buttonsLayout->addSpacing(8);
     buttonsLayout->addWidget(rejectBtn);
     buttonsLayout->addStretch();
 

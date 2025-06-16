@@ -28,9 +28,9 @@ private slots:
             university, experience
         );
 
-        auto nameEdit = page.findChild<QLineEdit *>("nameEdit");
-        auto surnameEdit = page.findChild<QLineEdit *>("surnameEdit");
-        auto emailEdit = page.findChild<QLineEdit *>("emailEdit");
+        auto nameEdit = page.findChild<QLabel *>("nameEdit");
+        auto surnameEdit = page.findChild<QLabel *>("surnameEdit");
+        auto emailEdit = page.findChild<QLabel *>("emailEdit");
         auto phoneEdit = page.findChild<QLineEdit *>("phoneEdit");
         auto placeEdit = page.findChild<QLineEdit *>("placeEdit");
         auto facultyEdit = page.findChild<QLineEdit *>("facultyEdit");

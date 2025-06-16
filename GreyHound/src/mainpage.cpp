@@ -16,74 +16,107 @@ MainPage::MainPage(QNetworkAccessManager *manager, QWidget *parent)
 
 void MainPage::createEmplFilters() {
     ui->verticalLayout_3->setAlignment(Qt::AlignTop);
+    filterInputs.clear();
 
-    QWidget *container = new QWidget(this);
-    container->setMaximumWidth(320);
-    QVBoxLayout *mainVBox = new QVBoxLayout(container);
-    ui->verticalLayout_3->addWidget(container);
+    QWidget *card = new QWidget(this);
+    card->setStyleSheet(
+        "background-color: white;"
+        "border-radius: 16px;"
+        "padding: 16px;"
+        "border: 1px solid #eee;"
+        );
+    card->setMaximumWidth(260);
+    card->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
-    QLabel *label = new QLabel("Фильтры", this);
-    label->setStyleSheet("font-weight: bold; font-size: 18px; color: black; "
-                         "margin-bottom: 8px;");
-    mainVBox->addWidget(label);
+    QVBoxLayout *mainVBox = new QVBoxLayout(card);
+    mainVBox->setSpacing(10);
+    mainVBox->setContentsMargins(12, 12, 12, 12);
+    ui->verticalLayout_3->addWidget(card);
 
-    QMap<QString, QString> textFields = {{"place_of_study", "Место обучения"},
-                                         {"faculty_of_educ", "Факультет"},
-                                         {"place", "Местоположение"}};
+    QLabel *title = new QLabel("Фильтры", this);
+    title->setAlignment(Qt::AlignHCenter);
+    title->setStyleSheet(
+        "font-weight: 600;"
+        "font-size: 20px;"
+        "margin-bottom: 10px;"
+        "background: transparent;"
+        "border: none;"
+        );
+    mainVBox->addWidget(title);
+
+    QWidget *filterFields = new QWidget(this);
+    QVBoxLayout *fieldsLayout = new QVBoxLayout(filterFields);
+    fieldsLayout->setSpacing(10);
+    fieldsLayout->setContentsMargins(0, 0, 0, 0);
+
+    QMap<QString, QString> textFields = {
+        {"place_of_study", "Место обучения"},
+        {"faculty_of_educ", "Факультет"},
+        {"place", "Местоположение"}
+    };
 
     QMap<QString, QString> comboFields = {
         {"graduation_year", "Год выпуска"},
         {"search_status_id", "Статус поиска"},
         {"educ_status_id", "Статус обучения"},
         {"experience_status_id", "Опыт"},
-        {"work_schedule_status_id", "График"}};
+        {"work_schedule_status_id", "График"}
+    };
 
-    filterInputs.clear();
+    QString lineEditStyle = R"(
+        QLineEdit {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 6px 10px;
+            font-size: 13px;
+        })";
+
+    QString comboBoxStyle = R"(
+        QComboBox {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 6px 12px;
+            background-color: #f9f9f9;
+            font-size: 14px;
+            color: black;
+        }
+        QComboBox QAbstractItemView {
+            background-color: white;
+            color: black;
+            selection-background-color: white;
+            selection-color: black;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+        QComboBox::down-arrow {
+            image: url(:/caret-down.png);
+            width: 12px;
+            height: 12px;
+            background-color: white;
+        }
+        QComboBox::drop-down {
+            subcontrol-origin: padding;
+            subcontrol-position: top right;
+            width: 24px;
+            border-left: 1px solid #ccc;
+            background-color: white;
+        })";
 
     for (const auto &key : textFields.keys()) {
-        QHBoxLayout *h = new QHBoxLayout();
-        QLabel *lbl = new QLabel(textFields[key], this);
-        lbl->setStyleSheet("color: black; font-size: 13px;");
-        lbl->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         QLineEdit *line = new QLineEdit(this);
-        line->setFixedWidth(160);
-        line->setAlignment(Qt::AlignLeft);
-        line->setStyleSheet("QLineEdit {"
-                            " background-color: white;"
-                            " color: black;"
-                            " border: 1px solid #ccc;"
-                            " border-radius: 6px;"
-                            " padding: 4px 8px;"
-                            " font-size: 13px;"
-                            " }");
-        h->addWidget(lbl, 1, Qt::AlignLeft);
-        h->addWidget(line, 0, Qt::AlignRight);
-        mainVBox->addLayout(h);
+        line->setPlaceholderText(textFields[key]);
+        line->setStyleSheet(lineEditStyle);
+        line->setMinimumHeight(32);
+        fieldsLayout->addWidget(line);
         filterInputs[key] = line;
     }
 
     for (const auto &key : comboFields.keys()) {
-        QHBoxLayout *h = new QHBoxLayout();
-        QLabel *lbl = new QLabel(comboFields[key], this);
-        lbl->setStyleSheet("color: black; font-size: 13px;");
-        lbl->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         QComboBox *box = new QComboBox(this);
-        box->setFixedWidth(160);
-        box->setStyleSheet("QComboBox {"
-                           " background-color: white;"
-                           " color: black;"
-                           " border: 1px solid #ccc;"
-                           " border-radius: 6px;"
-                           " padding: 4px 8px;"
-                           " font-size: 13px;"
-                           " }"
-                           "QComboBox::drop-down { border: none; }"
-                           "QComboBox QAbstractItemView {"
-                           " background-color: white;"
-                           " color: black;"
-                           " selection-background-color: #e0e0e0;"
-                           " }");
-        box->addItem("Без фильтров", QVariant());
+        box->setStyleSheet(comboBoxStyle);
+        box->setMinimumHeight(32);
+        box->addItem(comboFields[key], QVariant());
 
         if (key == "graduation_year") {
             for (int year = 1975; year <= 2032; ++year)
@@ -111,46 +144,37 @@ void MainPage::createEmplFilters() {
             box->addItem("Другое", 4);
         }
 
-        h->addWidget(lbl, 1, Qt::AlignLeft);
-        h->addWidget(box, 0, Qt::AlignRight);
-        mainVBox->addLayout(h);
+        fieldsLayout->addWidget(box);
         filterInputs[key] = box;
     }
 
+    mainVBox->addWidget(filterFields);
     mainVBox->addStretch();
 
     QPushButton *applyButton = new QPushButton("Применить", this);
-    applyButton->setFixedWidth(160);
-    applyButton->setStyleSheet("QPushButton {"
-                               " background-color: #3498db;"
-                               " color: white;"
-                               " border: none;"
-                               " padding: 6px;"
-                               " font-size: 14px;"
-                               " border-radius: 4px;"
-                               " }"
-                               "QPushButton:hover {"
-                               " background-color: #2980b9;"
-                               " }");
-    mainVBox->addWidget(applyButton, 0, Qt::AlignHCenter);
+    applyButton->setMinimumHeight(36);
+    applyButton->setStyleSheet(
+        "QPushButton {"
+        " background-color: #347EFF;"
+        " color: white;"
+        " font-size: 14px;"
+        " font-weight: 500;"
+        " border: none;"
+        " border-radius: 10px;"
+        " }"
+        "QPushButton:hover { background-color: #2c6fe0; }");
+    mainVBox->addWidget(applyButton);
 
     connect(applyButton, &QPushButton::clicked, this, [=]() {
         QMap<QString, QVariant> filters;
 
         for (const auto &key : filterInputs.keys()) {
             if (auto line = qobject_cast<QLineEdit *>(filterInputs[key])) {
-                QString val = line->text().trimmed();
-                filters[key] = val;
-            } else if (auto box =
-                           qobject_cast<QComboBox *>(filterInputs[key])) {
+                filters[key] = line->text().trimmed();
+            } else if (auto box = qobject_cast<QComboBox *>(filterInputs[key])) {
                 QVariant val = box->currentData();
                 filters[key] = val.isValid() ? val : "Без фильтров";
             }
-        }
-
-        qDebug() << "Формируем фильтры для запроса:";
-        for (auto it = filters.constBegin(); it != filters.constEnd(); ++it) {
-            qDebug() << it.key() << "=>" << it.value().toString();
         }
 
         QWidget *filteredPage = createCandidatesPageWithFilters(filters);
@@ -167,73 +191,109 @@ void MainPage::createEmplFilters() {
     });
 }
 
+
 void MainPage::createCandFilters() {
     ui->verticalLayout_3->setAlignment(Qt::AlignTop);
-    QWidget *container = new QWidget(this);
-    container->setMaximumWidth(340);
-    QVBoxLayout *mainVBox = new QVBoxLayout(container);
-    ui->verticalLayout_3->addWidget(container);
-
-    QLabel *label = new QLabel("Фильтры", this);
-    label->setStyleSheet("font-weight: bold; font-size: 18px; color: black; "
-                         "margin-bottom: 8px;");
-    mainVBox->addWidget(label);
-
-    QMap<QString, QString> textFields = {{"salary", "Зарплата (от:)"},
-                                         {"place", "Местоположение"},
-                                         {"educ_place", "Место обучения"}};
-
-    QMap<QString, QString> comboFields = {{"experience_status_id", "Опыт"},
-                                          {"work_schedule_status_id", "График"},
-                                          {"educ_status_id", "Статус обучения"},
-                                          {"remoteness_status_id", "Удалёнка"}};
-
     candFilterInputs.clear();
 
+    QWidget *card = new QWidget(this);
+    card->setStyleSheet(
+        "background-color: white;"
+        "border-radius: 16px;"
+        "padding: 16px;"
+        "border: 1px solid #eee;"
+        );
+    card->setMaximumWidth(260);
+    card->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+
+    QVBoxLayout *mainVBox = new QVBoxLayout(card);
+    mainVBox->setSpacing(10);
+    mainVBox->setContentsMargins(12, 12, 12, 12);
+    ui->verticalLayout_3->addWidget(card);
+
+    QLabel *title = new QLabel("Фильтры", this);
+    title->setAlignment(Qt::AlignHCenter);
+    title->setStyleSheet(
+        "font-weight: 600;"
+        "font-size: 20px;"
+        "margin-bottom: 10px;"
+        "background: transparent;"
+        "border: none;"
+        );
+    mainVBox->addWidget(title);
+
+    QWidget *filterFields = new QWidget(this);
+    QVBoxLayout *fieldsLayout = new QVBoxLayout(filterFields);
+    fieldsLayout->setSpacing(10);
+    fieldsLayout->setContentsMargins(0, 0, 0, 0);
+
+    QMap<QString, QString> textFields = {
+        {"educ_place", "Место обучения"},
+        {"place", "Местоположение"},
+        {"salary", "Зарплата (от)"}
+    };
+
+    QMap<QString, QString> comboFields = {
+        {"educ_status_id", "Статус обучения"},
+        {"experience_status_id", "Опыт"},
+        {"remoteness_status_id", "Удалёнка"},
+        {"work_schedule_status_id", "График"}
+    };
+
+    QString lineEditStyle = R"(
+        QLineEdit {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 6px 10px;
+            font-size: 13px;
+        })";
+
+    QString comboBoxStyle = R"(
+        QComboBox {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 6px 12px;
+            background-color: #f9f9f9;
+            font-size: 14px;
+            color: black;
+        }
+        QComboBox QAbstractItemView {
+            background-color: white;
+            color: black;
+            selection-background-color: white;
+            selection-color: black;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+        QComboBox::down-arrow {
+            image: url(:/caret-down.png);
+            width: 12px;
+            height: 12px;
+            background-color: white;
+        }
+        QComboBox::drop-down {
+            subcontrol-origin: padding;
+            subcontrol-position: top right;
+            width: 24px;
+            border-left: 1px solid #ccc;
+            background-color: white;
+        })";
+
     for (const auto &key : textFields.keys()) {
-        QHBoxLayout *h = new QHBoxLayout();
-        QLabel *lbl = new QLabel(textFields[key], this);
-        lbl->setStyleSheet("color: black; font-size: 13px;");
-        lbl->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         QLineEdit *line = new QLineEdit(this);
-        line->setFixedWidth(160);
-        line->setAlignment(Qt::AlignLeft);
-        line->setStyleSheet("QLineEdit {"
-                            " background-color: white;"
-                            " color: black;"
-                            " border: 1px solid #ccc;"
-                            " border-radius: 6px;"
-                            " padding: 4px 8px;"
-                            " font-size: 13px;"
-                            " }");
-        h->addWidget(lbl, 1, Qt::AlignLeft);
-        h->addWidget(line, 0, Qt::AlignRight);
-        mainVBox->addLayout(h);
+        line->setPlaceholderText(textFields[key]);
+        line->setStyleSheet(lineEditStyle);
+        line->setMinimumHeight(32);
+        fieldsLayout->addWidget(line);
         candFilterInputs[key] = line;
     }
 
     for (const auto &key : comboFields.keys()) {
-        QHBoxLayout *h = new QHBoxLayout();
-        QLabel *lbl = new QLabel(comboFields[key], this);
-        lbl->setStyleSheet("color: black; font-size: 13px;");
-        lbl->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
         QComboBox *box = new QComboBox(this);
-        box->setFixedWidth(160);
-        box->setStyleSheet("QComboBox {"
-                           " background-color: white;"
-                           " color: black;"
-                           " border: 1px solid #ccc;"
-                           " border-radius: 6px;"
-                           " padding: 4px 8px;"
-                           " font-size: 13px;"
-                           " }"
-                           "QComboBox::drop-down { border: none; }"
-                           "QComboBox QAbstractItemView {"
-                           " background-color: white;"
-                           " color: black;"
-                           " selection-background-color: #e0e0e0;"
-                           " }");
-        box->addItem("Без фильтров", QVariant());
+        box->setStyleSheet(comboBoxStyle);
+        box->setMinimumHeight(32);
+        box->addItem(comboFields[key], QVariant());
 
         if (key == "experience_status_id") {
             box->addItem("Без опыта", 1);
@@ -257,27 +317,26 @@ void MainPage::createCandFilters() {
             box->addItem("Нет", 0);
         }
 
-        h->addWidget(lbl, 1, Qt::AlignLeft);
-        h->addWidget(box, 0, Qt::AlignRight);
-        mainVBox->addLayout(h);
+        fieldsLayout->addWidget(box);
         candFilterInputs[key] = box;
     }
 
+    mainVBox->addWidget(filterFields);
     mainVBox->addStretch();
 
     QPushButton *applyButton = new QPushButton("Применить", this);
-    applyButton->setFixedWidth(160);
+    applyButton->setMinimumHeight(36);
     applyButton->setStyleSheet(
         "QPushButton {"
-        " background-color: #3498db;"
+        " background-color: #347EFF;"
         " color: white;"
-        " border: none;"
-        " padding: 6px;"
         " font-size: 14px;"
-        " border-radius: 4px;"
+        " font-weight: 500;"
+        " border: none;"
+        " border-radius: 10px;"
         " }"
-        "QPushButton:hover { background-color: #2980b9; }");
-    mainVBox->addWidget(applyButton, 0, Qt::AlignHCenter);
+        "QPushButton:hover { background-color: #2c6fe0; }");
+    mainVBox->addWidget(applyButton);
 
     connect(applyButton, &QPushButton::clicked, this, [=]() {
         QMap<QString, QVariant> filters;
@@ -286,16 +345,10 @@ void MainPage::createCandFilters() {
             if (auto line = qobject_cast<QLineEdit *>(candFilterInputs[key])) {
                 QString val = line->text().trimmed();
                 filters[key] = val;
-            } else if (auto box =
-                           qobject_cast<QComboBox *>(candFilterInputs[key])) {
+            } else if (auto box = qobject_cast<QComboBox *>(candFilterInputs[key])) {
                 QVariant val = box->currentData();
                 filters[key] = val.isValid() ? val : "Без фильтров";
             }
-        }
-
-        qDebug() << "Фильтры кандидата:";
-        for (auto it = filters.begin(); it != filters.end(); ++it) {
-            qDebug() << it.key() << "=>" << it.value().toString();
         }
 
         QWidget *filteredPage = createVacanciesPageWithFilters(filters);
@@ -312,25 +365,7 @@ void MainPage::createCandFilters() {
     });
 }
 
-void MainPage::show(bool isemployee) {
-    if (!isemployee) {
-        int page = currentPage;
-        if (!pageCache.contains(page)) {
-            QWidget *newPage = createCandidatesPage(page);
-            ui->vacanciesPage->addWidget(newPage);
-            pageCache[page] = newPage;
-        }
-        ui->vacanciesPage->setCurrentWidget(pageCache[page]);
-    } else {
-        int page = currentPage;
-        if (!pageCache.contains(page)) {
-            QWidget *newPage = createVacanciesPage(page);
-            ui->vacanciesPage->addWidget(newPage);
-            pageCache[page] = newPage;
-        }
-        ui->vacanciesPage->setCurrentWidget(pageCache[page]);
-    }
-}
+
 
 QWidget *MainPage::createCandidatesPage(int numberPage) {
     QWidget *page = new QWidget;
@@ -458,6 +493,26 @@ QWidget *MainPage::createCandidatesPageWithFilters(
     });
 
     return page;
+}
+
+void MainPage::show(bool isemployee) {
+    if (!isemployee) {
+        int page = currentPage;
+        if (!pageCache.contains(page)) {
+            QWidget *newPage = createCandidatesPage(page);
+            ui->vacanciesPage->addWidget(newPage);
+            pageCache[page] = newPage;
+        }
+        ui->vacanciesPage->setCurrentWidget(pageCache[page]);
+    } else {
+        int page = currentPage;
+        if (!pageCache.contains(page)) {
+            QWidget *newPage = createVacanciesPage(page);
+            ui->vacanciesPage->addWidget(newPage);
+            pageCache[page] = newPage;
+        }
+        ui->vacanciesPage->setCurrentWidget(pageCache[page]);
+    }
 }
 
 QWidget *MainPage::createVacanciesPage(int numberPage) {

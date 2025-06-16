@@ -32,6 +32,9 @@ void profile::getProfile(
         std::istringstream stream(res);
         std::string errs;
         Json::parseFromStream(reader, stream, &jsonResp, &errs);
+        jsonResp["status"] = "empl";
+        if (userStatus == CAND_STATUS) jsonResp["status"] = "candidate";
+        if (userStatus == EMPL_STATUS) jsonResp["status"] = "empl";
         LOG_DEBUG << jsonResp.toStyledString();
         auto resp = HttpResponse::newHttpJsonResponse(jsonResp);
         resp->setStatusCode(k200OK);

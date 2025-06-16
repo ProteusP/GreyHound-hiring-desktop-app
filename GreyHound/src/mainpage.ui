@@ -246,6 +246,33 @@ border-left: none;
      <item row="0" column="0" colspan="2">
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
+        <widget class="QPushButton" name="pushButton">
+         <property name="minimumSize">
+          <size>
+           <width>150</width>
+           <height>35</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>150</width>
+           <height>35</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+    background-color: transparent;
+    color: transparent;
+    border: none;
+    border-radius: 8px;
+}</string>
+         </property>
+         <property name="text">
+          <string>PushButton</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Orientation::Horizontal</enum>
@@ -312,7 +339,7 @@ border-left: none;
          </property>
          <property name="maximumSize">
           <size>
-           <width>140</width>
+           <width>150</width>
            <height>35</height>
           </size>
          </property>

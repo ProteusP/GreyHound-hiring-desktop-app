@@ -690,7 +690,7 @@ QPushButton:hover {
          </property>
          <property name="styleSheet">
           <string notr="true">QPushButton {
-    background-color: #28a745;
+    background-color: #27AE60;
     color: white;
     border: none;
     border-radius: 8px;
@@ -720,7 +720,7 @@ QPushButton:hover {
          </property>
          <property name="styleSheet">
           <string notr="true">QPushButton {
-    background-color: #dc3545;
+    background-color: #E74C3C;
     color: white;
     border: none;
     border-radius: 8px;
